@@ -1,10 +1,30 @@
+"""
+Business logic services for college and branch operations
+"""
 from typing import List, Optional, Dict
+
 from app.database import execute_query
-from fastapi import HTTPException
+from app.exceptions import NoDataFoundError, CollegeNotFoundError
+
 
 class CollegeService:
+    """Service class for college-related operations"""
+    
     @staticmethod
     def get_colleges_by_rank(rank: int, round: int = 1) -> List[Dict]:
+        """
+        Get all colleges accessible for a given rank
+        
+        Args:
+            rank: Student's KCET rank
+            round: Counselling round number (1, 2, or 3)
+            
+        Returns:
+            List of dictionaries containing college information
+            
+        Raises:
+            NoDataFoundError: If no colleges found for the given rank
+        """
         query = """
         SELECT college_code, college_name, branch_name, 
                CASE 
@@ -23,11 +43,24 @@ class CollegeService:
         params = (round, round, round, round, rank, round, rank, round, rank)
         results = execute_query(query, params)
         if not results:
-            raise HTTPException(status_code=404, detail="No colleges found for given rank")
+            raise NoDataFoundError("No colleges found for given rank")
         return results
 
     @staticmethod
     def get_colleges_by_branch(branch: str, round: int = 1) -> List[Dict]:
+        """
+        Get all colleges offering a specific branch
+        
+        Args:
+            branch: Branch name
+            round: Counselling round number (1, 2, or 3)
+            
+        Returns:
+            List of dictionaries containing college information
+            
+        Raises:
+            NoDataFoundError: If no colleges found for the given branch
+        """
         query = """
         SELECT college_code, college_name,
                CASE 
@@ -42,11 +75,24 @@ class CollegeService:
         params = (round, round, round, branch)
         results = execute_query(query, params)
         if not results:
-            raise HTTPException(status_code=404, detail="No colleges found for given branch")
+            raise NoDataFoundError("No colleges found for given branch")
         return results
 
     @staticmethod
     def get_cutoff_trends(college_code: str, branch: str) -> Dict:
+        """
+        Get cutoff trends for all rounds for a specific college and branch
+        
+        Args:
+            college_code: College code
+            branch: Branch name
+            
+        Returns:
+            Dictionary containing college name, branch name, and cutoff trends
+            
+        Raises:
+            NoDataFoundError: If no data found for the given college and branch
+        """
         query = """
         SELECT college_name, branch_name, GM_rank_r1, GM_rank_r2, GM_rank_r3
         FROM kcet_2024
@@ -54,10 +100,8 @@ class CollegeService:
         """
         results = execute_query(query, (college_code, branch))
         if not results:
-            raise HTTPException(
-                status_code=404,
-                detail="No data found for given college and branch"
-            )
+            raise NoDataFoundError("No data found for given college and branch")
+        
         result = results[0]
         return {
             "college_name": result["college_name"],
@@ -76,6 +120,18 @@ class CollegeService:
         branch: Optional[str] = None,
         round: int = 1
     ) -> List[Dict]:
+        """
+        Search colleges with multiple filters
+        
+        Args:
+            min_rank: Minimum rank filter (optional)
+            max_rank: Maximum rank filter (optional)
+            branch: Branch name filter (optional)
+            round: Counselling round number (1, 2, or 3)
+            
+        Returns:
+            List of dictionaries containing college information
+        """
         conditions = []
         params = []
         
@@ -118,20 +174,34 @@ class CollegeService:
         query += " " + " ".join(conditions) + " ORDER BY cutoff_rank DESC"
         
         results = execute_query(query, tuple(params))
-        if not results:
-            raise HTTPException(status_code=404, detail="No colleges found matching criteria")
-        return results
+        return results  # Return empty list if no results found
 
     @staticmethod
     def get_all_branches() -> List[str]:
+        """
+        Get list of all available branches
+        
+        Returns:
+            List of branch names
+        """
         query = "SELECT DISTINCT branch_name FROM kcet_2024 ORDER BY branch_name"
         results = execute_query(query)
-        if not results:
-            raise HTTPException(status_code=404, detail="No branches found")
-        return [result["branch_name"] for result in results]
+        return [result["branch_name"] for result in results] if results else []
 
     @staticmethod
     def get_college_branches(college_code: str) -> Dict:
+        """
+        Get all branches and their cutoff ranks for a specific college
+        
+        Args:
+            college_code: College code
+            
+        Returns:
+            Dictionary containing college name and list of branches with cutoff ranks
+            
+        Raises:
+            CollegeNotFoundError: If college not found
+        """
         query = """
         SELECT college_name, branch_name, GM_rank_r1, GM_rank_r2, GM_rank_r3
         FROM kcet_2024
@@ -139,7 +209,7 @@ class CollegeService:
         """
         results = execute_query(query, (college_code,))
         if not results:
-            raise HTTPException(status_code=404, detail="College not found")
+            raise CollegeNotFoundError("College not found")
         
         college_name = results[0]["college_name"]
         branches = []
