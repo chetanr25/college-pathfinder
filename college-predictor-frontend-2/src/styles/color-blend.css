@@ -1,0 +1,229 @@
+:root{
+  --bg-start: #eef2ff;
+  --bg-end: #f0f9ff;
+  --accent-1: #6a11cb;
+  --accent-2: #2575fc;
+  --card-bg: #ffffff;
+  --muted: #6b7280;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(to right, var(--accent-1), var(--accent-2));
+    color: #ffffff;
+    font-family: 'Arial', sans-serif;
+    min-height: 100vh;
+}
+
+.colleges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
+}
+
+.college-card {
+  background: var(--card-bg);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+  color: #333;
+}
+
+.college-card:hover {
+  transform: translateY(-5px);
+}
+
+.branches-preview {
+  margin: 10px 0;
+}
+
+.branch-tag {
+  display: inline-block;
+  background: var(--accent-2);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin: 2px;
+  font-size: 0.8rem;
+}
+
+.view-details-btn {
+  width: 100%;
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.search-filters {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  gap: 10px;
+}
+
+.search-filters input,
+.search-filters select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  min-width: 150px;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: var(--card-bg);
+}
+
+.layout-container {
+  min-height: 100vh;
+  background: linear-gradient(180deg,var(--bg-start),var(--bg-end));
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  gap:16px;
+  padding:2rem;
+  box-sizing:border-box;
+}
+
+.layout-header{
+  width:100%;
+  max-width:900px;
+  background: linear-gradient(90deg,var(--accent-1),var(--accent-2));
+  color:#fff;
+  padding:18px;
+  border-radius:10px;
+  text-align:center;
+  box-shadow:0 6px 20px rgba(16,24,40,0.08);
+}
+
+.layout-main{
+  width:100%;
+  max-width:900px;
+  display:flex;
+  justify-content:center;
+  padding:12px;
+  box-sizing:border-box;
+}
+
+.layout-footer{
+  width:100%;
+  max-width:900px;
+  text-align:center;
+  color:var(--muted);
+  font-size:0.85rem;
+  padding:8px 0 24px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.input-field {
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #ffffff;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: #2575fc;
+}
+
+.button {
+    background: #6a11cb;
+    color: #ffffff;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.button:hover {
+    background: #2575fc;
+}
+
+.chat-message {
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.user-message {
+    background: rgba(0, 123, 255, 0.7);
+    align-self: flex-end;
+}
+
+.bot-message {
+    background: rgba(255, 193, 7, 0.7);
+    align-self: flex-start;
+}
+
+/* Chatbot card / form styles (if used) */
+.chatbot-card{
+  width:420px;
+  background:var(--card-bg);
+  border-radius:12px;
+  box-shadow:0 10px 30px rgba(20,20,40,0.06);
+  padding:16px;
+  border:1px solid rgba(16,24,40,0.04);
+}
+
+.input-form .form-group{ margin-bottom:12px; display:flex; flex-direction:column; gap:6px; }
+.input-form label{ color:var(--muted); font-size:0.85rem; }
+.input-form input,
+.input-form select,
+.input-form textarea{
+  padding:10px 12px;
+  border-radius:8px;
+  border:1px solid rgba(16,24,40,0.08);
+  background:#fff;
+  outline:none;
+  font-size:0.95rem;
+}
+.input-form textarea{ min-height:80px; resize:vertical; }
+.input-form button{
+  width:100%;
+  margin-top:6px;
+  padding:10px 12px;
+  background: linear-gradient(90deg,var(--accent-1),var(--accent-2));
+  color:white;
+  border:none;
+  border-radius:8px;
+  font-weight:700;
+  cursor:pointer;
+}
+@media (max-width:480px){
+  .chatbot-card{ width:95%; }
+}
