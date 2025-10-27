@@ -16,4 +16,6 @@ yarn-error.log*
 # OS files
 .DS_Store
 
-bacend/.venv
+backend/.venv
+backend/__pycache__
+backend/app/__pycache__
