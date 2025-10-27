@@ -26,10 +26,26 @@ async def get_colleges_by_rank(
         ge=settings.MIN_ROUND, 
         le=settings.MAX_ROUND, 
         description="Counselling round number"
+    ),
+    limit: Optional[int] = Query(
+        10,
+        ge=1,
+        le=500,
+        description="Maximum number of colleges to return (default: 10)"
+    ),
+    sort_order: str = Query(
+        "asc",
+        regex="^(asc|desc)$",
+        description="Sort order: 'asc' for best colleges first, 'desc' for worst first"
     )
 ):
-    """Get all colleges accessible for a given rank"""
-    colleges = CollegeService.get_colleges_by_rank(rank, round)
+    """
+    Get colleges accessible for a given rank
+    
+    Returns colleges sorted by cutoff rank (lower rank = better college).
+    By default, returns top 10 colleges with cutoff >= your rank.
+    """
+    colleges = CollegeService.get_colleges_by_rank(rank, round, limit, sort_order)
     return {"colleges": colleges, "total_count": len(colleges)}
 
 
@@ -41,10 +57,25 @@ async def get_colleges_by_branch(
         ge=settings.MIN_ROUND, 
         le=settings.MAX_ROUND, 
         description="Counselling round number"
+    ),
+    limit: Optional[int] = Query(
+        None,
+        ge=1,
+        le=500,
+        description="Maximum number of colleges to return (default: all)"
+    ),
+    sort_order: str = Query(
+        "asc",
+        regex="^(asc|desc)$",
+        description="Sort order: 'asc' for best colleges first, 'desc' for worst first"
     )
 ):
-    """Get all colleges offering a specific branch"""
-    colleges = CollegeService.get_colleges_by_branch(branch, round)
+    """
+    Get all colleges offering a specific branch
+    
+    Returns colleges sorted by cutoff rank (lower rank = better college).
+    """
+    colleges = CollegeService.get_colleges_by_branch(branch, round, limit, sort_order)
     return {"colleges": colleges, "total_count": len(colleges)}
 
 
@@ -67,10 +98,25 @@ async def search_colleges(
         ge=settings.MIN_ROUND, 
         le=settings.MAX_ROUND, 
         description="Counselling round number"
+    ),
+    limit: Optional[int] = Query(
+        None,
+        ge=1,
+        le=500,
+        description="Maximum number of colleges to return (default: all)"
+    ),
+    sort_order: str = Query(
+        "asc",
+        regex="^(asc|desc)$",
+        description="Sort order: 'asc' for best colleges first, 'desc' for worst first"
     )
 ):
-    """Search colleges with multiple filters"""
-    colleges = CollegeService.search_colleges(min_rank, max_rank, branch, round)
+    """
+    Search colleges with multiple filters
+    
+    Returns colleges sorted by cutoff rank (lower rank = better college).
+    """
+    colleges = CollegeService.search_colleges(min_rank, max_rank, branch, round, limit, sort_order)
     return {"colleges": colleges, "total_count": len(colleges)}
 
 

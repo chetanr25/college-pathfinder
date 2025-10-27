@@ -73,6 +73,8 @@ export interface SearchParams {
   max_rank?: number;
   branch?: string;
   round?: number;
+  limit?: number;
+  sort_order?: 'asc' | 'desc';
 }
 
 // API Service
@@ -80,9 +82,18 @@ export const collegeApi = {
   /**
    * Get colleges accessible for a given rank
    */
-  async getCollegesByRank(rank: number, round: number = 1): Promise<CollegeList> {
+  async getCollegesByRank(
+    rank: number, 
+    round: number = 1, 
+    limit: number = 10,
+    sortOrder: 'asc' | 'desc' = 'asc'
+  ): Promise<CollegeList> {
     const response = await apiClient.get<CollegeList>(`/colleges/by-rank/${rank}`, {
-      params: { round },
+      params: { 
+        round,
+        limit,
+        sort_order: sortOrder
+      },
     });
     return response.data;
   },
@@ -90,9 +101,18 @@ export const collegeApi = {
   /**
    * Get colleges offering a specific branch
    */
-  async getCollegesByBranch(branch: string, round: number = 1): Promise<CollegeList> {
+  async getCollegesByBranch(
+    branch: string, 
+    round: number = 1,
+    limit?: number,
+    sortOrder: 'asc' | 'desc' = 'asc'
+  ): Promise<CollegeList> {
     const response = await apiClient.get<CollegeList>(`/colleges/by-branch/${encodeURIComponent(branch)}`, {
-      params: { round },
+      params: { 
+        round,
+        limit,
+        sort_order: sortOrder
+      },
     });
     return response.data;
   },
@@ -117,6 +137,8 @@ export const collegeApi = {
         max_rank: params.max_rank,
         branch: params.branch,
         round: params.round || 1,
+        limit: params.limit,
+        sort_order: params.sort_order || 'asc',
       },
     });
     return response.data;

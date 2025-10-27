@@ -9,6 +9,7 @@ import theme from '../theme';
 const RankPredictor: React.FC = () => {
   const [rank, setRank] = useState<string>('');
   const [selectedRound, setSelectedRound] = useState(1);
+  const [limit, setLimit] = useState<string>('10');
   const [colleges, setColleges] = useState<CollegeList['colleges']>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
@@ -18,8 +19,15 @@ const RankPredictor: React.FC = () => {
     e.preventDefault();
     
     const rankNum = parseInt(rank);
+    const limitNum = parseInt(limit);
+    
     if (!rankNum || rankNum <= 0) {
       setError('Please enter a valid rank');
+      return;
+    }
+
+    if (!limitNum || limitNum <= 0 || limitNum > 500) {
+      setError('Please enter a valid limit (1-500)');
       return;
     }
 
@@ -27,7 +35,7 @@ const RankPredictor: React.FC = () => {
       setLoading(true);
       setError('');
       setHasSearched(true);
-      const data = await collegeApi.getCollegesByRank(rankNum, selectedRound);
+      const data = await collegeApi.getCollegesByRank(rankNum, selectedRound, limitNum, 'asc');
       setColleges(data.colleges);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to predict colleges');
@@ -65,6 +73,21 @@ const RankPredictor: React.FC = () => {
               min="1"
               required
             />
+          </div>
+
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Number of Colleges</label>
+            <input
+              type="number"
+              placeholder="e.g., 10"
+              value={limit}
+              onChange={(e) => setLimit(e.target.value)}
+              style={styles.input}
+              min="1"
+              max="500"
+              required
+            />
+            <small style={styles.hint}>Show top 1-500 colleges (default: 10)</small>
           </div>
 
           <div style={styles.inputGroup}>
@@ -241,6 +264,12 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: theme.borderRadius.md,
     outline: 'none',
     transition: theme.transitions.base,
+  },
+  hint: {
+    display: 'block',
+    fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.text.secondary,
+    marginTop: theme.spacing[1],
   },
   roundSelector: {
     display: 'flex',

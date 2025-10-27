@@ -11,21 +11,31 @@ class CollegeService:
     """Service class for college-related operations"""
     
     @staticmethod
-    def get_colleges_by_rank(rank: int, round: int = 1) -> List[Dict]:
+    def get_colleges_by_rank(
+        rank: int, 
+        round: int = 1, 
+        limit: Optional[int] = 10,
+        sort_order: str = "asc"
+    ) -> List[Dict]:
         """
         Get all colleges accessible for a given rank
         
         Args:
             rank: Student's KCET rank
             round: Counselling round number (1, 2, or 3)
+            limit: Maximum number of colleges to return (default: 10, None for all)
+            sort_order: Sort order - 'asc' for best colleges first, 'desc' for worst first
             
         Returns:
-            List of dictionaries containing college information
+            List of dictionaries containing college information sorted by cutoff rank
             
         Raises:
             NoDataFoundError: If no colleges found for the given rank
         """
-        query = """
+        # Determine sort direction (asc = lower rank numbers = better colleges)
+        order = "ASC" if sort_order.lower() == "asc" else "DESC"
+        
+        query = f"""
         SELECT college_code, college_name, branch_name, 
                CASE 
                    WHEN ? = 1 THEN GM_rank_r1
@@ -38,8 +48,12 @@ class CollegeService:
                 WHEN ? = 2 THEN GM_rank_r2 >= ?
                 WHEN ? = 3 THEN GM_rank_r3 >= ?
               END
-        ORDER BY cutoff_rank DESC
+        ORDER BY cutoff_rank {order}
         """
+        
+        if limit is not None:
+            query += f" LIMIT {limit}"
+        
         params = (round, round, round, round, rank, round, rank, round, rank)
         results = execute_query(query, params)
         if not results:
@@ -47,22 +61,32 @@ class CollegeService:
         return results
 
     @staticmethod
-    def get_colleges_by_branch(branch: str, round: int = 1) -> List[Dict]:
+    def get_colleges_by_branch(
+        branch: str, 
+        round: int = 1,
+        limit: Optional[int] = None,
+        sort_order: str = "asc"
+    ) -> List[Dict]:
         """
         Get all colleges offering a specific branch
         
         Args:
             branch: Branch name
             round: Counselling round number (1, 2, or 3)
+            limit: Maximum number of colleges to return (None for all)
+            sort_order: Sort order - 'asc' for best colleges first, 'desc' for worst first
             
         Returns:
-            List of dictionaries containing college information
+            List of dictionaries containing college information sorted by cutoff rank
             
         Raises:
             NoDataFoundError: If no colleges found for the given branch
         """
-        query = """
-        SELECT college_code, college_name,
+        # Determine sort direction (asc = lower rank numbers = better colleges)
+        order = "ASC" if sort_order.lower() == "asc" else "DESC"
+        
+        query = f"""
+        SELECT college_code, college_name, branch_name,
                CASE 
                    WHEN ? = 1 THEN GM_rank_r1
                    WHEN ? = 2 THEN GM_rank_r2
@@ -70,8 +94,12 @@ class CollegeService:
                END as cutoff_rank
         FROM kcet_2024
         WHERE LOWER(branch_name) = LOWER(?)
-        ORDER BY cutoff_rank DESC
+        ORDER BY cutoff_rank {order}
         """
+        
+        if limit is not None:
+            query += f" LIMIT {limit}"
+        
         params = (round, round, round, branch)
         results = execute_query(query, params)
         if not results:
@@ -118,7 +146,9 @@ class CollegeService:
         min_rank: Optional[int] = None,
         max_rank: Optional[int] = None,
         branch: Optional[str] = None,
-        round: int = 1
+        round: int = 1,
+        limit: Optional[int] = None,
+        sort_order: str = "asc"
     ) -> List[Dict]:
         """
         Search colleges with multiple filters
@@ -128,14 +158,19 @@ class CollegeService:
             max_rank: Maximum rank filter (optional)
             branch: Branch name filter (optional)
             round: Counselling round number (1, 2, or 3)
+            limit: Maximum number of colleges to return (None for all)
+            sort_order: Sort order - 'asc' for best colleges first, 'desc' for worst first
             
         Returns:
-            List of dictionaries containing college information
+            List of dictionaries containing college information sorted by cutoff rank
         """
+        # Determine sort direction
+        order = "ASC" if sort_order.lower() == "asc" else "DESC"
+        
         conditions = []
         params = []
         
-        query = """
+        query = f"""
         SELECT college_code, college_name, branch_name,
                CASE 
                    WHEN ? = 1 THEN GM_rank_r1
@@ -171,7 +206,10 @@ class CollegeService:
             conditions.append("AND LOWER(branch_name) = LOWER(?)")
             params.append(branch)
 
-        query += " " + " ".join(conditions) + " ORDER BY cutoff_rank DESC"
+        query += " " + " ".join(conditions) + f" ORDER BY cutoff_rank {order}"
+        
+        if limit is not None:
+            query += f" LIMIT {limit}"
         
         results = execute_query(query, tuple(params))
         return results  # Return empty list if no results found

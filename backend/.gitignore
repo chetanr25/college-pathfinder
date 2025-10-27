@@ -5,3 +5,4 @@ instance/
 .env
 .pytest_cache/
 *.md
+temp/
