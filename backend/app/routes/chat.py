@@ -102,20 +102,26 @@ async def websocket_chat(websocket: WebSocket, session_id: str):
                 # Define callback functions for streaming
                 async def emit_thinking(step: str):
                     """Emit thinking step"""
-                    await websocket.send_json({
-                        "type": "thinking",
-                        "step": step,
-                        "timestamp": user_msg.timestamp.isoformat()
-                    })
+                    try:
+                        await websocket.send_json({
+                            "type": "thinking",
+                            "step": step,
+                            "timestamp": user_msg.timestamp.isoformat()
+                        })
+                    except Exception as e:
+                        print(f"⚠️ Failed to send thinking step: {e}")
                 
                 async def emit_tool_call(tool_name: str, parameters: dict, status: str):
                     """Emit tool call status"""
-                    await websocket.send_json({
-                        "type": "tool_call",
-                        "tool_name": tool_name,
-                        "parameters": parameters,
-                        "status": status
-                    })
+                    try:
+                        await websocket.send_json({
+                            "type": "tool_call",
+                            "tool_name": tool_name,
+                            "parameters": parameters,
+                            "status": status
+                        })
+                    except Exception as e:
+                        print(f"⚠️ Failed to send tool call status: {e}")
                 
                 try:
                     # Process message with AI agent
@@ -127,11 +133,15 @@ async def websocket_chat(websocket: WebSocket, session_id: str):
                         emit_tool_call=emit_tool_call
                     ):
                         response_text += chunk
-                        await websocket.send_json({
-                            "type": "response_chunk",
-                            "content": chunk,
-                            "is_final": False
-                        })
+                        try:
+                            await websocket.send_json({
+                                "type": "response_chunk",
+                                "content": chunk,
+                                "is_final": False
+                            })
+                        except Exception as e:
+                            print(f"⚠️ Failed to send response chunk (client may have disconnected): {e}")
+                            # Continue processing even if client disconnected
                     
                     # Add assistant response to session
                     assistant_msg = Message(role="assistant", content=response_text)
@@ -139,11 +149,14 @@ async def websocket_chat(websocket: WebSocket, session_id: str):
                     session_manager.update_session(session)
                     
                     # Send completion message
-                    await websocket.send_json({
-                        "type": "response_complete",
-                        "message_id": assistant_msg.message_id,
-                        "full_content": response_text
-                    })
+                    try:
+                        await websocket.send_json({
+                            "type": "response_complete",
+                            "message_id": assistant_msg.message_id,
+                            "full_content": response_text
+                        })
+                    except Exception as e:
+                        print(f"⚠️ Failed to send completion message: {e}")
                     
                 except Exception as e:
                     import traceback

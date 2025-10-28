@@ -5,6 +5,7 @@ Handles conversation with Gemini 2.0 Flash model using function calling
 """
 import os
 import json
+import asyncio
 from typing import List, Dict, Any, Optional, AsyncGenerator, Callable
 import google.generativeai as genai
 
@@ -93,6 +94,8 @@ class AIAgent:
         if emit_thinking:
             await emit_thinking("💭 Understanding your question...")
         
+        last_tool_result = None
+        last_tool_name = None
         response = await chat.send_message_async(user_message)
         
         # Handle function calls
@@ -126,6 +129,10 @@ class AIAgent:
             
             tool_name = function_call.name
             parameters = dict(function_call.args)
+            print(f"Agent: executing tool {tool_name} with params {parameters}")
+            
+            print(f"\n🔧 TOOL CALL: {tool_name}")
+            print(f"📥 Parameters: {parameters}")
             
             # Emit tool call start
             if emit_thinking:
@@ -140,9 +147,12 @@ class AIAgent:
             
             if emit_tool_call:
                 await emit_tool_call(tool_name, parameters, "started")
-            
-            # Execute tool
+
             result = execute_tool(tool_name, parameters)
+            last_tool_result = result
+            last_tool_name = tool_name
+
+            print(f"📤 Result: success={result.get('success')}, data_length={len(str(result.get('data', [])))}")
             
             # Emit tool call completion
             if emit_tool_call:
@@ -153,14 +163,43 @@ class AIAgent:
                 await emit_thinking(f"✅ {result['summary']}")
             
             # Send tool result back to Gemini
+            # IMPORTANT: FunctionResponse.response must be a dict, not a list
+            # Wrap the result properly
+            if result.get("success"):
+                # Wrap data in a dict with 'result' key
+                tool_response_data = {"result": result.get("data", [])}
+            else:
+                # Send error in a dict
+                tool_response_data = {"error": result.get("error", "Unknown error")}
+            
+            print(f"📨 Sending to Gemini: {type(tool_response_data)}, keys={list(tool_response_data.keys())}")
+            
             function_response = genai.protos.Part(
                 function_response=genai.protos.FunctionResponse(
                     name=tool_name,
-                    response={"result": result}
+                    response=tool_response_data
                 )
             )
             
-            response = await chat.send_message_async(function_response)
+            print("⏳ Waiting for Gemini response after tool call...")
+            try:
+                # Add timeout to prevent hanging
+                response = await asyncio.wait_for(
+                    chat.send_message_async(function_response),
+                    timeout=30.0  # 30 second timeout
+                )
+                print("✅ Received response from Gemini")
+            except asyncio.TimeoutError:
+                print("❌ Timeout waiting for Gemini response")
+                # Break out and return what we have
+                final_text = "I found the colleges, but encountered a timeout processing the response. Please try asking again."
+                yield final_text
+                return
+            except Exception as e:
+                print(f"❌ Error getting response from Gemini: {e}")
+                final_text = "I encountered an error after fetching the data. Please try asking again."
+                yield final_text
+                return
         
         # Emit final thinking
         if emit_thinking:
@@ -185,6 +224,49 @@ class AIAgent:
         for i in range(0, len(final_text), chunk_size):
             chunk = final_text[i:i + chunk_size]
             yield chunk
+
+    def _synthesize_from_tool(self, tool_name: str, result: Dict[str, Any]) -> str:
+        """Create a readable summary string from a tool result as a fallback when Gemini returns no text.
+
+        This attempts to handle the common tools (lists of colleges, branches, trends) and produce
+        a compact user-facing summary.
+        """
+        data = result.get("data")
+        if data is None:
+            return result.get("summary", "No results available.")
+
+        # If data is a list of colleges, summarize top entries
+        if isinstance(data, list):
+            lines = []
+            limit = min(8, len(data))
+            for i in range(limit):
+                item = data[i]
+                # Try common keys
+                name = item.get("college_name") or item.get("college") or item.get("name")
+                code = item.get("college_code") or item.get("code") or item.get("id")
+                branch = item.get("branch") or item.get("course") or item.get("branch_name")
+                cutoff = item.get("cutoff_rank") or item.get("closing_rank") or item.get("rank")
+                parts = []
+                if name:
+                    parts.append(f"{name}")
+                if code:
+                    parts.append(f"({code})")
+                if branch:
+                    parts.append(f"- {branch}")
+                if cutoff:
+                    parts.append(f"Cutoff: {cutoff}")
+                lines.append(" ".join(parts))
+            header = f"Here are the top {limit} results from {tool_name}:\n\n"
+            return header + "\n".join(lines)
+
+        # If data is a dict with branches or trends
+        if isinstance(data, dict):
+            try:
+                return json.dumps(data, indent=2, ensure_ascii=False)
+            except Exception:
+                return str(data)
+
+        return str(data)
     
     def process_message_sync(
         self,
@@ -212,22 +294,33 @@ class AIAgent:
         
         # Track tool calls
         tool_calls = []
-        
+        last_tool_result = None
+        last_tool_name = None
+
         # Handle function calls
-        while response.candidates[0].content.parts[0].function_call:
-            function_call = response.candidates[0].content.parts[0].function_call
+        while True:
+            try:
+                part = response.candidates[0].content.parts[0]
+            except Exception:
+                break
+            if not getattr(part, "function_call", None):
+                break
+
+            function_call = part.function_call
             tool_name = function_call.name
             parameters = dict(function_call.args)
-            
+
             # Execute tool
             result = execute_tool(tool_name, parameters)
-            
+            last_tool_result = result
+            last_tool_name = tool_name
+
             tool_calls.append({
                 "tool": tool_name,
                 "parameters": parameters,
-                "result_summary": result["summary"]
+                "result_summary": result.get("summary")
             })
-            
+
             # Send tool result back
             function_response = genai.protos.Part(
                 function_response=genai.protos.FunctionResponse(
@@ -235,10 +328,18 @@ class AIAgent:
                     response={"result": result}
                 )
             )
-            
+
             response = chat.send_message(function_response)
-        
-        return response.text, tool_calls
+
+        # Get final text; if empty synthesize from last tool
+        final_text = response.text if getattr(response, 'text', None) else ""
+        if not final_text and last_tool_result and last_tool_result.get("success"):
+            try:
+                final_text = self._synthesize_from_tool(last_tool_name or "tool", last_tool_result)
+            except Exception:
+                final_text = final_text or ""
+
+        return final_text, tool_calls
 
 
 # Global agent instance

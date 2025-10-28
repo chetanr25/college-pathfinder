@@ -106,6 +106,98 @@ def get_college_branches(college_code: str):
     return result
 
 
+def search_college_by_name(query: str, limit: int = 10):
+    """
+    Search for colleges by name using fuzzy matching.
+    CRITICAL: Use this when user mentions a college name (e.g., "RV", "PES", "BMS College").
+    Returns a list of matching colleges with scores.
+    
+    If multiple matches found, present them to the user in a clean format and ask them to confirm.
+    If only one match with score > 0.8, you can proceed automatically.
+    
+    Args:
+        query: College name or partial name (e.g., "RV", "ramaiah", "BMS")
+        limit: Maximum number of results (default: 10)
+        
+    Returns:
+        List of dicts with college_code, college_name, match_score
+    """
+    results = CollegeService.search_college_by_name(query, limit)
+    return results
+
+
+def match_branch_names(query: str, limit: int = 10):
+    """
+    Match user's casual branch name to exact database branch names.
+    CRITICAL: Use this when user mentions a branch casually (e.g., "CS", "computer", "AI ML").
+    
+    Handles abbreviations: CS→Computer Science, ECE→Electronics, AI ML→Artificial Intelligence, etc.
+    
+    Args:
+        query: User's branch query (e.g., "CS", "computer science", "AI ML")
+        limit: Maximum number of matches (default: 10)
+        
+    Returns:
+        List of dicts with exact branch_name and match_score
+    """
+    results = CollegeService.match_branch_names(query, limit)
+    return results
+
+
+def analyze_rank_prospects(rank: int, round: int = 1):
+    """
+    Analyze a student's rank and provide detailed statistics.
+    Shows percentile, total options, and categorizes colleges as Best/Good/Moderate/Reach.
+    
+    Use this to give students an overview of their prospects.
+    
+    Args:
+        rank: Student's KCET rank
+        round: Counselling round (default: 1)
+        
+    Returns:
+        Dict with percentile, total_options, and categorized colleges
+    """
+    analysis = CollegeService.analyze_rank_prospects(rank, round)
+    return analysis
+
+
+def compare_colleges(college_codes: List[str], round: int = 1):
+    """
+    Compare 2-4 colleges side-by-side.
+    Returns structured data optimized for frontend table rendering.
+    
+    Use when user asks to compare colleges (e.g., "Compare RV and PES").
+    
+    Args:
+        college_codes: List of 2-4 college codes (e.g., ['E001', 'E005'])
+        round: Counselling round (default: 1)
+        
+    Returns:
+        Dict with comparison data for all colleges
+    """
+    comparison = CollegeService.compare_colleges(college_codes, round)
+    return comparison
+
+
+def get_branch_popularity(branch_name: Optional[str] = None, round: int = 1):
+    """
+    Analyze branch popularity and competitiveness.
+    Shows cutoff ranges, number of colleges, and competitiveness rating.
+    
+    Use when user asks "Which branches are most competitive?" or about a specific branch's popularity.
+    
+    Args:
+        branch_name: Specific branch (None for all branches summary)
+        round: Counselling round (default: 1)
+        
+    Returns:
+        Dict with branch statistics and competitiveness
+    """
+    stats = CollegeService.get_branch_popularity(branch_name, round)
+    return stats
+
+
 # List of tool functions for Gemini
 TOOL_FUNCTIONS = [
     get_colleges_by_rank,
@@ -113,7 +205,12 @@ TOOL_FUNCTIONS = [
     search_colleges,
     get_colleges_by_branch,
     get_cutoff_trends,
-    get_college_branches
+    get_college_branches,
+    search_college_by_name,
+    match_branch_names,
+    analyze_rank_prospects,
+    compare_colleges,
+    get_branch_popularity
 ]
 
 
@@ -125,7 +222,13 @@ TOOL_EXECUTORS: Dict[str, Callable] = {
     "get_colleges_by_branch": get_colleges_by_branch,
     "get_cutoff_trends": get_cutoff_trends,
     "get_college_branches": get_college_branches,
+    "search_college_by_name": search_college_by_name,
+    "match_branch_names": match_branch_names,
+    "analyze_rank_prospects": analyze_rank_prospects,
+    "compare_colleges": compare_colleges,
+    "get_branch_popularity": get_branch_popularity,
 }
+
 
 
 def execute_tool(tool_name: str, parameters: Dict[str, Any]) -> Dict[str, Any]:

@@ -1,0 +1,37 @@
+{
+  "session_id": "b3a62bf9-cf5f-4d74-addb-10e4a2829daf",
+  "created_at": "2025-10-28T21:33:15.623825",
+  "updated_at": "2025-10-28T21:35:57.992005",
+  "messages": [
+    {
+      "message_id": "59a4b12c-6be9-4c47-bdf7-c15be0451533",
+      "role": "assistant",
+      "content": "\ud83d\udc4b Hello! I'm your AI KCET College Counselor.\n\nI can help you with:\n- Finding colleges based on your rank\n- Exploring different engineering branches\n- Comparing cutoff trends across rounds\n- Understanding admission chances\n- Counselling strategy and guidance\n\n**To get started**, you can tell me your rank and preferences, or ask me any questions about KCET admissions!\n\nExample questions:\n- \"I got rank 5000, which colleges can I get?\"\n- \"Show me computer science colleges\"\n- \"Compare cutoffs for RV College across all rounds\"\n- \"What are the emerging tech branches available?\"\n",
+      "timestamp": "2025-10-28T21:33:15.641809",
+      "metadata": {}
+    },
+    {
+      "message_id": "e738b5c0-3720-4cb8-ae24-7b808493a8d8",
+      "role": "user",
+      "content": "can you give me list of colleges (top 10) for my kcet rank 20000, for round 2 of kcet, and i am interested in all computer and related branches.",
+      "timestamp": "2025-10-28T21:34:02.546851",
+      "metadata": {}
+    },
+    {
+      "message_id": "178b3e81-46ef-4df1-9951-5944c9567c3c",
+      "role": "assistant",
+      "content": "\ud83d\udca1 To give you the most accurate list of colleges for \"all computer and related branches,\" I need to know the **exact names** of the branches you're interested in, as they appear in the KCET database.\n\nLet me first show you all the available branches so you can pick the ones you consider \"computer and related.\"\n\n",
+      "timestamp": "2025-10-28T21:34:18.837720",
+      "metadata": {}
+    },
+    {
+      "message_id": "147a02cb-810c-4cb7-b847-f02bdbba657e",
+      "role": "user",
+      "content": "all branches which is related to computer, you can take from the list you have in your database",
+      "timestamp": "2025-10-28T21:35:57.991908",
+      "metadata": {}
+    }
+  ],
+  "context": {},
+  "metadata": {}
+}
