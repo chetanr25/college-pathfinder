@@ -71,7 +71,7 @@ export interface CollegeBranches {
 export interface SearchParams {
   min_rank?: number;
   max_rank?: number;
-  branch?: string;
+  branches?: string[];
   round?: number;
   limit?: number;
   sort_order?: 'asc' | 'desc';
@@ -131,14 +131,24 @@ export const collegeApi = {
    * Search colleges with multiple filters
    */
   async searchColleges(params: SearchParams): Promise<CollegeList> {
+    const queryParams: any = {
+      round: params.round || 1,
+      sort_order: params.sort_order || 'asc',
+    };
+
+    if (params.min_rank) queryParams.min_rank = params.min_rank;
+    if (params.max_rank) queryParams.max_rank = params.max_rank;
+    if (params.limit) queryParams.limit = params.limit;
+    
+    // Add branches as multiple query parameters
+    if (params.branches && params.branches.length > 0) {
+      queryParams.branches = params.branches;
+    }
+
     const response = await apiClient.get<CollegeList>('/colleges/search', {
-      params: {
-        min_rank: params.min_rank,
-        max_rank: params.max_rank,
-        branch: params.branch,
-        round: params.round || 1,
-        limit: params.limit,
-        sort_order: params.sort_order || 'asc',
+      params: queryParams,
+      paramsSerializer: {
+        indexes: null, // This makes axios send array params as ?branches=CS&branches=EC
       },
     });
     return response.data;

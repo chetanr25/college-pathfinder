@@ -145,7 +145,7 @@ class CollegeService:
     def search_colleges(
         min_rank: Optional[int] = None,
         max_rank: Optional[int] = None,
-        branch: Optional[str] = None,
+        branches: Optional[List[str]] = None,
         round: int = 1,
         limit: Optional[int] = None,
         sort_order: str = "asc"
@@ -156,7 +156,7 @@ class CollegeService:
         Args:
             min_rank: Minimum rank filter (optional)
             max_rank: Maximum rank filter (optional)
-            branch: Branch name filter (optional)
+            branches: List of branch names to filter (optional, shows all if None)
             round: Counselling round number (1, 2, or 3)
             limit: Maximum number of colleges to return (None for all)
             sort_order: Sort order - 'asc' for best colleges first, 'desc' for worst first
@@ -202,9 +202,11 @@ class CollegeService:
             )
             params.extend([round, max_rank, round, max_rank, round, max_rank])
 
-        if branch:
-            conditions.append("AND LOWER(branch_name) = LOWER(?)")
-            params.append(branch)
+        if branches and len(branches) > 0:
+            # Create placeholders for IN clause
+            placeholders = ",".join(["?" for _ in branches])
+            conditions.append(f"AND LOWER(branch_name) IN ({placeholders})")
+            params.extend([branch.lower() for branch in branches])
 
         query += " " + " ".join(conditions) + f" ORDER BY cutoff_rank {order}"
         

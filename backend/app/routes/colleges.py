@@ -92,7 +92,7 @@ async def get_college_cutoff(
 async def search_colleges(
     min_rank: Optional[int] = Query(None, description="Minimum rank", gt=0),
     max_rank: Optional[int] = Query(None, description="Maximum rank", gt=0),
-    branch: Optional[str] = Query(None, description="Branch name"),
+    branches: Optional[List[str]] = Query(None, description="Branch names (multiple allowed)"),
     round: int = Query(
         settings.DEFAULT_ROUND, 
         ge=settings.MIN_ROUND, 
@@ -115,8 +115,9 @@ async def search_colleges(
     Search colleges with multiple filters
     
     Returns colleges sorted by cutoff rank (lower rank = better college).
+    You can filter by multiple branches by passing multiple 'branches' query parameters.
     """
-    colleges = CollegeService.search_colleges(min_rank, max_rank, branch, round, limit, sort_order)
+    colleges = CollegeService.search_colleges(min_rank, max_rank, branches, round, limit, sort_order)
     return {"colleges": colleges, "total_count": len(colleges)}
 
 

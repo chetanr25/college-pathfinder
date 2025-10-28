@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TrendingUp } from '@mui/icons-material';
-import { collegeApi, type CollegeList } from '../services/api';
+import { Autocomplete, TextField, Chip } from '@mui/material';
+import { collegeApi, branchApi, type CollegeList } from '../services/api';
 import CollegeCardModern from '../components/CollegeCardModern';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
@@ -10,10 +11,29 @@ const RankPredictor: React.FC = () => {
   const [rank, setRank] = useState<string>('');
   const [selectedRound, setSelectedRound] = useState(1);
   const [limit, setLimit] = useState<string>('10');
+  const [selectedBranches, setSelectedBranches] = useState<string[]>([]);
+  const [availableBranches, setAvailableBranches] = useState<string[]>([]);
+  const [loadingBranches, setLoadingBranches] = useState(false);
   const [colleges, setColleges] = useState<CollegeList['colleges']>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [hasSearched, setHasSearched] = useState(false);
+
+  // Load branches on component mount
+  useEffect(() => {
+    const fetchBranches = async () => {
+      try {
+        setLoadingBranches(true);
+        const branches = await branchApi.getAllBranches();
+        setAvailableBranches(branches);
+      } catch (err) {
+        console.error('Failed to load branches:', err);
+      } finally {
+        setLoadingBranches(false);
+      }
+    };
+    fetchBranches();
+  }, []);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,8 +55,21 @@ const RankPredictor: React.FC = () => {
       setLoading(true);
       setError('');
       setHasSearched(true);
-      const data = await collegeApi.getCollegesByRank(rankNum, selectedRound, limitNum, 'asc');
-      setColleges(data.colleges);
+      
+      // If branches are selected, use search endpoint, otherwise use by-rank endpoint
+      if (selectedBranches.length > 0) {
+        const data = await collegeApi.searchColleges({
+          min_rank: rankNum,
+          branches: selectedBranches,
+          round: selectedRound,
+          limit: limitNum,
+          sort_order: 'asc'
+        });
+        setColleges(data.colleges);
+      } else {
+        const data = await collegeApi.getCollegesByRank(rankNum, selectedRound, limitNum, 'asc');
+        setColleges(data.colleges);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to predict colleges');
     } finally {
@@ -91,6 +124,63 @@ const RankPredictor: React.FC = () => {
           </div>
 
           <div style={styles.inputGroup}>
+            <label style={styles.label}>Filter by Branches (Optional)</label>
+            <Autocomplete
+              multiple
+              options={availableBranches}
+              value={selectedBranches}
+              onChange={(_, newValue) => setSelectedBranches(newValue)}
+              loading={loadingBranches}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  placeholder={selectedBranches.length === 0 ? "Search and select branches..." : ""}
+                  variant="outlined"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: '8px',
+                      backgroundColor: '#fff',
+                      '& fieldset': {
+                        borderColor: theme.colors.border.light,
+                        borderWidth: '2px',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: theme.colors.primary.main,
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: theme.colors.primary.main,
+                      },
+                    },
+                  }}
+                />
+              )}
+              renderTags={(value, getTagProps) =>
+                value.map((option, index) => (
+                  <Chip
+                    label={option}
+                    {...getTagProps({ index })}
+                    sx={{
+                      background: theme.colors.primary.gradient,
+                      color: theme.colors.text.inverse,
+                      fontWeight: 500,
+                    }}
+                  />
+                ))
+              }
+              sx={{
+                '& .MuiAutocomplete-tag': {
+                  margin: '2px',
+                },
+              }}
+            />
+            <small style={styles.hint}>
+              {selectedBranches.length > 0 
+                ? `Filtering by ${selectedBranches.length} branch${selectedBranches.length > 1 ? 'es' : ''}`
+                : 'Leave empty to show all branches'}
+            </small>
+          </div>
+
+          <div style={styles.inputGroup}>
             <label style={styles.label}>Counselling Round</label>
             <div style={styles.roundSelector}>
               {[1, 2, 3].map((round) => (
@@ -132,6 +222,11 @@ const RankPredictor: React.FC = () => {
             </h2>
             <p style={styles.resultsSubtitle}>
               Based on rank {parseInt(rank).toLocaleString()} in Round {selectedRound}
+              {selectedBranches.length > 0 && (
+                <span style={styles.filterBadge}>
+                  {' • '}Filtered by {selectedBranches.length} branch{selectedBranches.length > 1 ? 'es' : ''}
+                </span>
+              )}
             </p>
           </div>
 
@@ -331,6 +426,10 @@ const styles: Record<string, React.CSSProperties> = {
     margin: 0,
     fontSize: theme.typography.fontSize.base,
     color: theme.colors.text.secondary,
+  },
+  filterBadge: {
+    color: theme.colors.primary.main,
+    fontWeight: theme.typography.fontWeight.semibold,
   },
   collegesGrid: {
     display: 'grid',
