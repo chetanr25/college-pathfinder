@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+</head>
+<body>
+    <h1>WebSocket Connection Test</h1>
+    <div id="status">Connecting...</div>
+    <div id="messages"></div>
+    
+    <script>
+        const statusDiv = document.getElementById('status');
+        const messagesDiv = document.getElementById('messages');
+        
+        // Create session first
+        fetch('http://localhost:8000/chat/sessions', {
+            method: 'POST'
+        })
+        .then(r => r.json())
+        .then(session => {
+            statusDiv.textContent = `Session created: ${session.session_id}`;
+            
+            // Connect WebSocket
+            const ws = new WebSocket(`ws://localhost:8000/chat/ws/${session.session_id}`);
+            
+            ws.onopen = () => {
+                statusDiv.textContent = 'WebSocket CONNECTED!';
+                statusDiv.style.color = 'green';
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                const msgDiv = document.createElement('div');
+                msgDiv.textContent = `Received: ${data.type} - ${JSON.stringify(data)}`;
+                msgDiv.style.marginBottom = '10px';
+                msgDiv.style.padding = '10px';
+                msgDiv.style.background = '#f0f0f0';
+                messagesDiv.appendChild(msgDiv);
+                
+                if (data.type === 'welcome') {
+                    statusDiv.textContent = 'SUCCESS! Welcome message received!';
+                    statusDiv.style.color = 'darkgreen';
+                    statusDiv.style.fontSize = '24px';
+                }
+            };
+            
+            ws.onerror = (error) => {
+                statusDiv.textContent = `ERROR: ${error}`;
+                statusDiv.style.color = 'red';
+            };
+            
+            ws.onclose = () => {
+                statusDiv.textContent += ' (Connection closed)';
+            };
+        })
+        .catch(err => {
+            statusDiv.textContent = `Session creation failed: ${err}`;
+            statusDiv.style.color = 'red';
+        });
+    </script>
+</body>
+</html>

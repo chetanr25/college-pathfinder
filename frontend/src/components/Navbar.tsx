@@ -5,7 +5,8 @@ import {
   Category, 
   Search, 
   Home as HomeIcon,
-  TrendingUp 
+  TrendingUp,
+  SmartToy
 } from '@mui/icons-material';
 import theme from '../theme';
 
@@ -20,6 +21,7 @@ const Navbar: React.FC = () => {
     { path: '/branches', label: 'Branches', icon: <Category /> },
     { path: '/search', label: 'Search', icon: <Search /> },
     { path: '/predictor', label: 'Predictor', icon: <TrendingUp /> },
+    { path: '/ai-chat', label: 'AI Counselor', icon: <SmartToy /> },
   ];
 
   return (

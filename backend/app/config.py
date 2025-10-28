@@ -22,7 +22,7 @@ class Settings:
     # CORS Settings
     CORS_ORIGINS: List[str] = ["*"]
     CORS_METHODS: List[str] = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-    CORS_HEADERS: List[str] = ["Content-Type"]
+    CORS_HEADERS: List[str] = ["*"]
     
     # API Settings
     DEFAULT_ROUND: int = int(os.getenv("DEFAULT_ROUND", "1"))

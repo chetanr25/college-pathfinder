@@ -2,3 +2,6 @@ fastapi
 uvicorn
 pydantic
 db-sqlite3
+google-generativeai
+websockets
+python-dotenv

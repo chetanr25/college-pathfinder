@@ -1,0 +1,16 @@
+{
+  "session_id": "b15880cc-a3f5-48ba-b5a1-175f04ba0ea8",
+  "created_at": "2025-10-28T14:25:12.237859",
+  "updated_at": "2025-10-28T14:25:12.257151",
+  "messages": [
+    {
+      "message_id": "f42dfb60-8bf6-4f61-b804-2d8ee454984e",
+      "role": "assistant",
+      "content": "\ud83d\udc4b Hello! I'm your AI KCET College Counselor.\n\nI can help you with:\n- Finding colleges based on your rank\n- Exploring different engineering branches\n- Comparing cutoff trends across rounds\n- Understanding admission chances\n- Counselling strategy and guidance\n\n**To get started**, you can tell me your rank and preferences, or ask me any questions about KCET admissions!\n\nExample questions:\n- \"I got rank 5000, which colleges can I get?\"\n- \"Show me computer science colleges\"\n- \"Compare cutoffs for RV College across all rounds\"\n- \"What are the emerging tech branches available?\"\n",
+      "timestamp": "2025-10-28T14:25:12.257134",
+      "metadata": {}
+    }
+  ],
+  "context": {},
+  "metadata": {}
+}
