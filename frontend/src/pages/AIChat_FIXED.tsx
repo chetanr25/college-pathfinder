@@ -281,18 +281,27 @@ const AIChat: React.FC = () => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', background: theme.colors.background.default, paddingBottom: '20px' }}>
+    <Box 
+      sx={{ 
+        height: '100vh',
+        width: '100vw',
+        display: 'flex',
+        flexDirection: 'column',
+        background: '#f9fafb',
+        overflow: 'hidden',
+      }}
+    >
       {/* Header - Minimizes when chat starts */}
       <Box
         sx={{
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          padding: isHeaderMinimized ? '16px 24px' : '40px 24px',
-          marginBottom: '0',
-          position: 'relative',
+          padding: isHeaderMinimized ? '12px 24px' : '32px 24px',
           transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          flexShrink: 0,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
         }}
       >
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Box sx={{ 
             display: 'flex', 
             alignItems: 'center', 
@@ -301,7 +310,7 @@ const AIChat: React.FC = () => {
             position: 'relative',
             transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
           }}>
-            {/* New Chat Button - positioned absolutely on the right */}
+            {/* New Chat Button */}
             <Button
               variant="contained"
               startIcon={<Add />}
@@ -315,11 +324,11 @@ const AIChat: React.FC = () => {
                   background: 'rgba(255, 255, 255, 0.3)',
                 },
                 backdropFilter: 'blur(10px)',
-                borderRadius: '8px',
+                borderRadius: '24px',
                 textTransform: 'none',
                 fontWeight: 600,
                 fontSize: isHeaderMinimized ? '13px' : '14px',
-                padding: isHeaderMinimized ? '6px 12px' : '8px 16px',
+                padding: isHeaderMinimized ? '6px 16px' : '8px 20px',
                 transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
               }}
             >
@@ -327,14 +336,14 @@ const AIChat: React.FC = () => {
             </Button>
 
             <SmartToy sx={{ 
-              fontSize: isHeaderMinimized ? '32px' : '48px',
+              fontSize: isHeaderMinimized ? '28px' : '48px',
               color: '#ffffff',
               transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
             }} />
             <Box>
               <Typography
                 sx={{
-                  fontSize: isHeaderMinimized ? '20px' : '32px',
+                  fontSize: isHeaderMinimized ? '18px' : '32px',
                   fontWeight: 700,
                   color: '#ffffff',
                   marginBottom: isHeaderMinimized ? '0' : '8px',
@@ -357,156 +366,157 @@ const AIChat: React.FC = () => {
         </Container>
       </Box>
 
-      {/* Chat Container */}
-      <Container maxWidth="lg" sx={{ marginTop: '-20px' }}>
-        <Paper
-          elevation={3}
-          sx={{
-            height: '600px',
-            display: 'flex',
-            flexDirection: 'column',
-            borderRadius: '16px',
-            overflow: 'hidden',
-            border: '1px solid #e5e7eb',
-          }}
-        >
-          {/* Messages Area */}
-          <Box
-            sx={{
-              flex: 1,
-              overflowY: 'auto',
-              padding: '24px',
-              background: '#f9fafb',
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            {error && (
-              <Alert severity="error" sx={{ marginBottom: '16px' }}>
-                {error}
-              </Alert>
-            )}
+      {/* Messages Area - Full height, single scroll */}
+      <Box
+        sx={{
+          flex: 1,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          paddingBottom: '120px', // Space for floating input
+        }}
+      >
+        <Container maxWidth="xl" sx={{ paddingTop: '24px', paddingBottom: '24px' }}>
+          {error && (
+            <Alert severity="error" sx={{ marginBottom: '16px' }}>
+              {error}
+            </Alert>
+          )}
 
-            {/* Example Questions - Show when no messages */}
-            {!hasChatStarted && (
-              <Box
+          {/* Example Questions - Show when no messages */}
+          {!hasChatStarted && (
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '24px',
+                padding: '60px 20px',
+                minHeight: '60vh',
+                transition: 'opacity 0.3s ease-in-out',
+              }}
+            >
+              <Typography
                 sx={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '24px',
-                  padding: '40px 20px',
-                  transition: 'opacity 0.3s ease-in-out',
+                  fontSize: '24px',
+                  fontWeight: 600,
+                  color: '#374151',
+                  textAlign: 'center',
+                  marginBottom: '8px',
                 }}
               >
-                <Typography
-                  sx={{
-                    fontSize: '24px',
-                    fontWeight: 600,
-                    color: '#374151',
-                    textAlign: 'center',
-                    marginBottom: '8px',
-                  }}
-                >
-                  👋 Welcome! Ask me anything
-                </Typography>
-                <Typography
-                  sx={{
-                    fontSize: '14px',
-                    color: '#6b7280',
-                    textAlign: 'center',
-                    marginBottom: '24px',
-                  }}
-                >
-                  Try these example questions:
-                </Typography>
+                👋 Welcome! Ask me anything
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: '14px',
+                  color: '#6b7280',
+                  textAlign: 'center',
+                  marginBottom: '24px',
+                }}
+              >
+                Try these example questions:
+              </Typography>
 
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' },
-                    gap: '16px',
-                    width: '100%',
-                    maxWidth: '900px',
-                  }}
-                >
-                  {[
-                    {
-                      icon: '🎯',
-                      title: 'Find Colleges',
-                      question: 'I got rank 5000, which colleges can I get?',
-                    },
-                    {
-                      icon: '💻',
-                      title: 'Branch Options',
-                      question: 'Show me computer science colleges',
-                    },
-                    {
-                      icon: '📊',
-                      title: 'Compare Cutoffs',
-                      question: 'What are the cutoff trends for Round 2?',
-                    },
-                  ].map((example, index) => (
-                    <Paper
-                      key={index}
-                      elevation={1}
-                      onClick={() => handleSendMessage(example.question)}
-                      sx={{
-                        padding: '20px',
-                        borderRadius: '12px',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease-in-out',
-                        border: '1px solid #e5e7eb',
-                        '&:hover': {
-                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                          transform: 'translateY(-2px)',
-                          borderColor: '#667eea',
-                        },
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <Typography sx={{ fontSize: '24px' }}>{example.icon}</Typography>
-                          <Typography
-                            sx={{
-                              fontSize: '14px',
-                              fontWeight: 600,
-                              color: '#374151',
-                            }}
-                          >
-                            {example.title}
-                          </Typography>
-                        </Box>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' },
+                  gap: '16px',
+                  width: '100%',
+                  maxWidth: '900px',
+                }}
+              >
+                {[
+                  {
+                    icon: '🎯',
+                    title: 'Find Colleges',
+                    question: 'I got rank 5000, which colleges can I get?',
+                  },
+                  {
+                    icon: '💻',
+                    title: 'Branch Options',
+                    question: 'Show me computer science colleges',
+                  },
+                  {
+                    icon: '📊',
+                    title: 'Compare Cutoffs',
+                    question: 'What are the cutoff trends for Round 2?',
+                  },
+                ].map((example, index) => (
+                  <Paper
+                    key={index}
+                    elevation={1}
+                    onClick={() => handleSendMessage(example.question)}
+                    sx={{
+                      padding: '20px',
+                      borderRadius: '16px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease-in-out',
+                      border: '1px solid #e5e7eb',
+                      background: '#ffffff',
+                      '&:hover': {
+                        boxShadow: '0 8px 24px rgba(102, 126, 234, 0.15)',
+                        transform: 'translateY(-4px)',
+                        borderColor: '#667eea',
+                      },
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Typography sx={{ fontSize: '24px' }}>{example.icon}</Typography>
                         <Typography
                           sx={{
-                            fontSize: '13px',
-                            color: '#6b7280',
-                            lineHeight: 1.5,
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            color: '#374151',
                           }}
                         >
-                          "{example.question}"
+                          {example.title}
                         </Typography>
                       </Box>
-                    </Paper>
-                  ))}
-                </Box>
+                      <Typography
+                        sx={{
+                          fontSize: '13px',
+                          color: '#6b7280',
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        "{example.question}"
+                      </Typography>
+                    </Box>
+                  </Paper>
+                ))}
               </Box>
-            )}
+            </Box>
+          )}
 
-            {messages.map((msg) => (
-              <ChatMessage key={msg.message_id} message={msg} />
-            ))}
+          {messages.map((msg) => (
+            <ChatMessage key={msg.message_id} message={msg} />
+          ))}
 
-            {thinkingSteps.length > 0 && (
-              <ThinkingIndicator steps={thinkingSteps} />
-            )}
+          {thinkingSteps.length > 0 && (
+            <ThinkingIndicator steps={thinkingSteps} />
+          )}
 
-            <div ref={messagesEndRef} />
-          </Box>
+          <div ref={messagesEndRef} />
+        </Container>
+      </Box>
 
-          {/* Input Area */}
+      {/* Floating Input - Bottom Center */}
+      <Box
+        sx={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          padding: '24px',
+          background: 'linear-gradient(to top, rgba(249, 250, 251, 1) 0%, rgba(249, 250, 251, 0.95) 70%, transparent 100%)',
+          pointerEvents: 'none',
+          zIndex: 100,
+        }}
+      >
+        <Container maxWidth="md" sx={{ pointerEvents: 'auto' }}>
           <ChatInput
             onSendMessage={handleSendMessage}
             disabled={isProcessing || !isConnected}
@@ -518,61 +528,8 @@ const AIChat: React.FC = () => {
                 : 'Ask me anything about KCET colleges...'
             }
           />
-        </Paper>
-
-        {/* Info Cards */}
-        <Box
-          sx={{
-            marginTop: '24px',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: '16px',
-          }}
-        >
-          <Paper sx={{ padding: '16px', borderRadius: '12px' }}>
-            <Typography sx={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px', color: '#4F46E5' }}>
-              💡 Example Questions
-            </Typography>
-            <Typography sx={{ fontSize: '13px', color: '#6b7280', lineHeight: 1.6 }}>
-              • "I got rank 5000, which colleges can I get?"
-              <br />
-              • "Show me computer science colleges"
-              <br />
-              • "What are the cutoff trends for Round 2?"
-            </Typography>
-          </Paper>
-
-          <Paper sx={{ padding: '16px', borderRadius: '12px' }}>
-            <Typography sx={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px', color: '#4F46E5' }}>
-              🎯 What I Can Do
-            </Typography>
-            <Typography sx={{ fontSize: '13px', color: '#6b7280', lineHeight: 1.6 }}>
-              • Find colleges based on your rank
-              <br />
-              • Filter by branches and preferences
-              <br />
-              • Compare cutoffs across rounds
-              <br />
-              • Provide counselling strategy
-            </Typography>
-          </Paper>
-
-          <Paper sx={{ padding: '16px', borderRadius: '12px' }}>
-            <Typography sx={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px', color: '#4F46E5' }}>
-              ⚡ Smart Features
-            </Typography>
-            <Typography sx={{ fontSize: '13px', color: '#6b7280', lineHeight: 1.6 }}>
-              • Real-time data from KCET 2024
-              <br />
-              • Conversational memory
-              <br />
-              • Intelligent branch filtering
-              <br />
-              • Transparent thinking process
-            </Typography>
-          </Paper>
-        </Box>
-      </Container>
+        </Container>
+      </Box>
     </Box>
   );
 };
