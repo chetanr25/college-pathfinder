@@ -26,16 +26,14 @@ def create_app() -> FastAPI:
         version=settings.APP_VERSION
     )
     
-    # Add CORS middleware - must be before other middleware
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.CORS_ORIGINS,
-        allow_credentials=True,
-        allow_methods=settings.CORS_METHODS,
-        allow_headers=settings.CORS_HEADERS,
+        allow_origins=["*"],  
+        allow_credentials=False, 
+        allow_methods=["*"],  
+        allow_headers=["*"],  
     )
     
-    # Add exception handlers
     app.add_exception_handler(HTTPException, http_exception_handler)  # type: ignore
     app.add_exception_handler(Exception, general_exception_handler)  # type: ignore
     

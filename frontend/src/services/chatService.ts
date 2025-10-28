@@ -2,7 +2,13 @@
  * Chat Service - WebSocket connection for AI chat
  */
 
-const WS_BASE_URL = import.meta.env.VITE_WS_BASE_URL || 'ws://localhost:8000';
+// Convert HTTP/HTTPS URL to WS/WSS
+const getWebSocketUrl = () => {
+  const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  return apiUrl.replace(/^http/, 'ws');
+};
+
+const WS_BASE_URL = getWebSocketUrl();
 
 export interface ChatMessage {
   message_id: string;
@@ -42,7 +48,13 @@ export class ChatService {
   connect(): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        this.ws = new WebSocket(`${WS_BASE_URL}/chat/ws/${this.sessionId}`);
+        // Build WebSocket URL dynamically to ensure correct session ID
+        const wsUrl = `${WS_BASE_URL}/chat/ws/${this.sessionId}`;
+        console.log('🔌 Connecting to WebSocket:', wsUrl);
+        console.log('📌 Session ID:', this.sessionId);
+        console.log('🌐 WS Base URL:', WS_BASE_URL);
+        
+        this.ws = new WebSocket(wsUrl);
 
         this.ws.onopen = () => {
           console.log('WebSocket connected');
@@ -61,12 +73,19 @@ export class ChatService {
         };
 
         this.ws.onerror = (error) => {
-          console.error('WebSocket error:', error);
+          console.error('❌ WebSocket error:', error);
+          console.error('❌ WebSocket URL was:', wsUrl);
+          console.error('❌ Session ID:', this.sessionId);
+          console.error('❌ WS Base URL:', WS_BASE_URL);
+          console.error('❌ ReadyState:', this.ws?.readyState);
           reject(error);
         };
 
-        this.ws.onclose = () => {
-          console.log('WebSocket closed');
+        this.ws.onclose = (event) => {
+          console.log('🔌 WebSocket closed');
+          console.log('Close code:', event.code);
+          console.log('Close reason:', event.reason);
+          console.log('Was clean:', event.wasClean);
           this.handleReconnect();
         };
       } catch (error) {
@@ -213,13 +232,18 @@ export const chatApi = {
       url.searchParams.append('limit', limit.toString());
     }
 
-    const response = await fetch(url.toString());
+    const response = await fetch(url.toString(), {
+      headers: {
+        'ngrok-skip-browser-warning': 'true',
+      },
+    });
 
     if (!response.ok) {
-      throw new Error('Failed to get messages');
+      throw new Error(`Failed to get messages: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
-    return data.messages;
+    console.log('📦 Raw messages data from backend:', data);
+    return data.messages || [];
   },
 };

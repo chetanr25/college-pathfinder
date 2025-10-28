@@ -1,22 +1,68 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Box, Container, Typography, Paper, Alert } from '@mui/material';
-import { SmartToy } from '@mui/icons-material';
+import React, { useState, useEffect, useRef  }  from 'react';
+//  'r    const initializeChat = async () => {
+//       try {
+//         // Check if session_id exists in URL
+//         const sessionIdFromUrl = searchParams.get('session_id');
+//         let sessionId: string;
+//         let isExistingSession = false;
+
+//         if (sessionIdFromUrl) {
+//           console.log('📌 Using session from URL:', sessionIdFromUrl);
+//           sessionId = sessionIdFromUrl;
+//           isExistingSession = true;
+          
+//           // Load existing session history
+//           try {
+//             console.log('📜 Loading session history...');
+//             const history = await chatApi.getMessages(sessionId);
+//             console.log('✅ History loaded:', history.length, 'messages');
+            
+//             if (history.length > 0) {
+//               setMessages(history);
+//             }
+//           } catch (err) {
+//             console.warn('⚠️ Could not load history (session may be new):', err);
+//             // Continue anyway - might be a new session
+//           }
+//         } else {
+//           console.log('📞 Creating new session...');
+//           const session = await chatApi.createSession();
+//           sessionId = session.session_id;
+//           console.log('✅ Session created:', sessionId);
+          
+//           // Update URL with session_id
+//           navigate(`/ai-chat?session_id=${sessionId}`, { replace: true });
+//         }
+import {Box, Container, Typography, Paper, Alert, Button } from '@mui/material';
+import { SmartToy, Add } from '@mui/icons-material';
 import { ChatService, chatApi } from '../services/chatService';
 import type { ChatMessage as ChatMessageType } from '../services/chatService';
 import ChatMessage from '../components/chat/ChatMessage';
 import ChatInput from '../components/chat/ChatInput';
 import ThinkingIndicator from '../components/chat/ThinkingIndicator';
 import theme from '../theme';
-
+ import { useNavigate, useSearchParams } from 'react-router-dom';
+  
+ 
 const AIChat: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const [thinkingSteps, setThinkingSteps] = useState<Array<{ step: string; timestamp: string; completed?: boolean }>>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isConnected, setIsConnected] = useState(true);
   const [error, setError] = useState<string>('');
-  const chatServiceRef = useRef<ChatService | null>(null); // Use ref instead of state
+  const [isHeaderMinimized, setIsHeaderMinimized] = useState(false);
+  const chatServiceRef = useRef<ChatService | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const isInitializedRef = useRef(false); // Prevent double initialization
+
+  // Check if chat has started (has messages beyond welcome)
+  const hasChatStarted = messages.length > 1;
+
+  // Minimize header when chat starts
+  useEffect(() => {
+    setIsHeaderMinimized(hasChatStarted);
+  }, [hasChatStarted]);
 
   // Auto-scroll to bottom
   const scrollToBottom = () => {
@@ -27,30 +73,73 @@ const AIChat: React.FC = () => {
     scrollToBottom();
   }, [messages, thinkingSteps]);
 
-  // Initialize chat session - runs only once
+  // Initialize chat session - runs only once per session_id
   useEffect(() => {
-    // Prevent double initialization (React StrictMode in dev runs effects twice)
-    if (isInitializedRef.current) {
-      console.log('🛑 Already initialized, skipping...');
-      return;
-    }
+    let cancelled = false;
     
     console.log('🚀 Initializing chat...');
-    isInitializedRef.current = true;
 
     const initializeChat = async () => {
+      if (cancelled) return;
+      
       try {
-        console.log('📞 Creating session...');
-        const session = await chatApi.createSession();
-        console.log('✅ Session created:', session.session_id);
+        // Check if session_id exists in URL
+        const sessionIdFromUrl = searchParams.get('session_id');
+        let sessionId: string;
+        let isExistingSession = false;
+
+        if (sessionIdFromUrl) {
+          console.log('📌 Using session from URL:', sessionIdFromUrl);
+          sessionId = sessionIdFromUrl;
+          isExistingSession = true;
+          
+          // Load existing session history
+          try {
+            console.log('📜 Loading session history...');
+            const history = await chatApi.getMessages(sessionId);
+            console.log('✅ History loaded:', history.length, 'messages');
+            console.log('📊 History data:', JSON.stringify(history, null, 2));
+            
+            if (history.length > 0 && !cancelled) {
+              console.log('💾 Setting messages state with history');
+              setMessages(history);
+              setIsConnected(true);
+            } else if (history.length === 0) {
+              console.log('📭 No history found for this session (empty chat)');
+            }
+          } catch (err) {
+            console.error('❌ Error loading history:', err);
+            console.warn('⚠️ Could not load history (session may be new):', err);
+            // Continue anyway - might be a new session or first connection
+          }
+        } else {
+          console.log('📞 Creating new session...');
+          const session = await chatApi.createSession();
+          sessionId = session.session_id;
+          console.log('✅ Session created:', sessionId);
+          
+          // Update URL with session_id
+          if (!cancelled) {
+            navigate(`/ai-chat?session_id=${sessionId}`, { replace: true });
+          }
+        }
+
+        if (cancelled) return;
 
         // Create chat service
-        const service = new ChatService(session.session_id);
+        const service = new ChatService(sessionId);
         chatServiceRef.current = service;
 
         // Connect to WebSocket
         console.log('🔌 Connecting to WebSocket...');
         await service.connect();
+        
+        if (cancelled) {
+          console.log('⚠️ Component unmounted during connection, disconnecting...');
+          service.disconnect();
+          return;
+        }
+        
         console.log('✅ WebSocket connected');
 
         // Set up message handlers
@@ -60,12 +149,15 @@ const AIChat: React.FC = () => {
           switch (type) {
             case 'welcome':
               console.log('👋 Welcome message received');
-              setMessages([{
-                message_id: 'welcome',
-                role: 'assistant',
-                content: message.message,
-                timestamp: new Date().toISOString(),
-              }]);
+              // Only add welcome message if this is a new session (no history)
+              if (!isExistingSession) {
+                setMessages([{
+                  message_id: 'welcome',
+                  role: 'assistant',
+                  content: message.message,
+                  timestamp: new Date().toISOString(),
+                }]);
+              }
               setIsConnected(true);
               console.log('✅ isConnected set to true');
               break;
@@ -143,12 +235,14 @@ const AIChat: React.FC = () => {
     // Cleanup function
     return () => {
       console.log('🧹 Cleaning up chat service...');
+      cancelled = true;
+      
       if (chatServiceRef.current) {
         chatServiceRef.current.disconnect();
         chatServiceRef.current = null;
       }
     };
-  }, []); // Empty deps - run only once
+  }, [searchParams, navigate]); // Re-run when session_id in URL changes
 
   const handleSendMessage = (message: string) => {
     const service = chatServiceRef.current;
@@ -175,33 +269,89 @@ const AIChat: React.FC = () => {
     }
   };
 
+  const handleNewChat = () => {
+    // Cleanup current session
+    if (chatServiceRef.current) {
+      chatServiceRef.current.disconnect();
+      chatServiceRef.current = null;
+    }
+    
+    // Navigate to /ai-chat without session_id to create new session
+    navigate('/ai-chat', { replace: true });
+  };
+
   return (
     <Box sx={{ minHeight: '100vh', background: theme.colors.background.default, paddingBottom: '20px' }}>
-      {/* Header */}
+      {/* Header - Minimizes when chat starts */}
       <Box
         sx={{
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          padding: '40px 24px',
+          padding: isHeaderMinimized ? '16px 24px' : '40px 24px',
           marginBottom: '0',
+          position: 'relative',
+          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
         <Container maxWidth="lg">
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: '16px', justifyContent: 'center' }}>
-            <SmartToy sx={{ fontSize: '48px', color: '#ffffff' }} />
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: isHeaderMinimized ? '12px' : '16px', 
+            justifyContent: isHeaderMinimized ? 'flex-start' : 'center',
+            position: 'relative',
+            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          }}>
+            {/* New Chat Button - positioned absolutely on the right */}
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={handleNewChat}
+              sx={{
+                position: 'absolute',
+                right: 0,
+                background: 'rgba(255, 255, 255, 0.2)',
+                color: '#ffffff',
+                '&:hover': {
+                  background: 'rgba(255, 255, 255, 0.3)',
+                },
+                backdropFilter: 'blur(10px)',
+                borderRadius: '8px',
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: isHeaderMinimized ? '13px' : '14px',
+                padding: isHeaderMinimized ? '6px 12px' : '8px 16px',
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              }}
+            >
+              New Chat
+            </Button>
+
+            <SmartToy sx={{ 
+              fontSize: isHeaderMinimized ? '32px' : '48px',
+              color: '#ffffff',
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+            }} />
             <Box>
               <Typography
                 sx={{
-                  fontSize: '32px',
+                  fontSize: isHeaderMinimized ? '20px' : '32px',
                   fontWeight: 700,
                   color: '#ffffff',
-                  marginBottom: '8px',
+                  marginBottom: isHeaderMinimized ? '0' : '8px',
+                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
               >
                 AI College Counselor
               </Typography>
-              <Typography sx={{ fontSize: '16px', color: 'rgba(255, 255, 255, 0.9)' }}>
-                Get personalized guidance for your KCET college admissions
-              </Typography>
+              {!isHeaderMinimized && (
+                <Typography sx={{ 
+                  fontSize: '16px', 
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  transition: 'opacity 0.3s ease-in-out',
+                }}>
+                  Get personalized guidance for your KCET college admissions
+                </Typography>
+              )}
             </Box>
           </Box>
         </Container>
@@ -227,12 +377,122 @@ const AIChat: React.FC = () => {
               overflowY: 'auto',
               padding: '24px',
               background: '#f9fafb',
+              display: 'flex',
+              flexDirection: 'column',
             }}
           >
             {error && (
               <Alert severity="error" sx={{ marginBottom: '16px' }}>
                 {error}
               </Alert>
+            )}
+
+            {/* Example Questions - Show when no messages */}
+            {!hasChatStarted && (
+              <Box
+                sx={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '24px',
+                  padding: '40px 20px',
+                  transition: 'opacity 0.3s ease-in-out',
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: '24px',
+                    fontWeight: 600,
+                    color: '#374151',
+                    textAlign: 'center',
+                    marginBottom: '8px',
+                  }}
+                >
+                  👋 Welcome! Ask me anything
+                </Typography>
+                <Typography
+                  sx={{
+                    fontSize: '14px',
+                    color: '#6b7280',
+                    textAlign: 'center',
+                    marginBottom: '24px',
+                  }}
+                >
+                  Try these example questions:
+                </Typography>
+
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' },
+                    gap: '16px',
+                    width: '100%',
+                    maxWidth: '900px',
+                  }}
+                >
+                  {[
+                    {
+                      icon: '🎯',
+                      title: 'Find Colleges',
+                      question: 'I got rank 5000, which colleges can I get?',
+                    },
+                    {
+                      icon: '💻',
+                      title: 'Branch Options',
+                      question: 'Show me computer science colleges',
+                    },
+                    {
+                      icon: '📊',
+                      title: 'Compare Cutoffs',
+                      question: 'What are the cutoff trends for Round 2?',
+                    },
+                  ].map((example, index) => (
+                    <Paper
+                      key={index}
+                      elevation={1}
+                      onClick={() => handleSendMessage(example.question)}
+                      sx={{
+                        padding: '20px',
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease-in-out',
+                        border: '1px solid #e5e7eb',
+                        '&:hover': {
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                          transform: 'translateY(-2px)',
+                          borderColor: '#667eea',
+                        },
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Typography sx={{ fontSize: '24px' }}>{example.icon}</Typography>
+                          <Typography
+                            sx={{
+                              fontSize: '14px',
+                              fontWeight: 600,
+                              color: '#374151',
+                            }}
+                          >
+                            {example.title}
+                          </Typography>
+                        </Box>
+                        <Typography
+                          sx={{
+                            fontSize: '13px',
+                            color: '#6b7280',
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          "{example.question}"
+                        </Typography>
+                      </Box>
+                    </Paper>
+                  ))}
+                </Box>
+              </Box>
             )}
 
             {messages.map((msg) => (
