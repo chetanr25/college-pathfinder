@@ -25,3 +25,5 @@ dist-ssr
 *.md
 
 .env
+.vercel
+package-lock.json
