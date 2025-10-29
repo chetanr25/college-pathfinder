@@ -7,6 +7,7 @@ import Branches from './pages/Branches';
 import CollegeDetails from './pages/CollegeDetails';
 import BranchDetails from './pages/BranchDetails';
 import RankPredictor from './pages/RankPredictor';
+import AIChat from './pages/AIChat';
 import './styles/globals.css';
 
 const App: React.FC = () => {
@@ -22,6 +23,7 @@ const App: React.FC = () => {
           <Route path="/branch/:branchName" element={<BranchDetails />} />
           <Route path="/predictor" element={<RankPredictor />} />
           <Route path="/search" element={<RankPredictor />} />
+          <Route path="/ai-chat" element={<AIChat />} />
         </Routes>
       </div>
     </Router>

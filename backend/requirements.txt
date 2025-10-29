@@ -1,4 +1,8 @@
-fastapi
-uvicorn
-pydantic
-db-sqlite3
+fastapi==0.120.1
+uvicorn[standard]==0.38.0
+gunicorn==23.0.0
+pydantic==2.12.3
+db-sqlite3==0.0.1
+google-generativeai==0.8.5
+websockets==15.0.1
+python-dotenv==1.2.1
