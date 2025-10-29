@@ -1,7 +1,4 @@
-// Example usage of TableMessage component
-// This shows how the enhanced table rendering will look in action
 
-import React from 'react';
 import TableMessage from '../components/chat/TableMessage';
 
 const TableExamples = () => {

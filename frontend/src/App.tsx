@@ -7,7 +7,7 @@ import Branches from './pages/Branches';
 import CollegeDetails from './pages/CollegeDetails';
 import BranchDetails from './pages/BranchDetails';
 import RankPredictor from './pages/RankPredictor';
-import AIChat from './pages/AIChat_FIXED';
+import AIChat from './pages/AIChat';
 import './styles/globals.css';
 
 const App: React.FC = () => {
