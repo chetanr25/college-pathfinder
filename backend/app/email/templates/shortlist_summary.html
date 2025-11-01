@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Shortlisted Colleges</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f5f7fa; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%); padding: 40px 30px; text-align: center; color: #2d3436; }
+        .header .icon { font-size: 48px; margin-bottom: 15px; }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .content { padding: 40px 30px; }
+        .summary-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 12px; margin: 25px 0; text-align: center; }
+        .summary-card .big-number { font-size: 48px; font-weight: bold; margin-bottom: 10px; }
+        .summary-card .label { font-size: 16px; opacity: 0.9; }
+        .shortlist-item { background: #ffffff; border: 2px solid #e9ecef; border-radius: 10px; padding: 20px; margin: 15px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.05); position: relative; }
+        .shortlist-number { position: absolute; top: -15px; left: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3); }
+        .college-name { color: #2c3e50; font-size: 18px; font-weight: 600; margin: 10px 0 15px 0; }
+        .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f3f5; font-size: 14px; }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { color: #6c757d; }
+        .detail-value { color: #333; font-weight: 600; }
+        .action-buttons { display: flex; gap: 10px; margin-top: 15px; }
+        .btn { flex: 1; padding: 10px; text-align: center; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 600; }
+        .btn-primary { background-color: #667eea; color: white; }
+        .btn-secondary { background-color: #f8f9fa; color: #667eea; border: 1px solid #667eea; }
+        .tips-section { background-color: #e7f3ff; border-left: 4px solid #3498db; padding: 20px; border-radius: 4px; margin: 30px 0; }
+        .tips-section h3 { color: #2c3e50; margin-bottom: 12px; }
+        .tips-section ul { margin-left: 20px; }
+        .tips-section li { margin: 8px 0; color: #495057; font-size: 14px; }
+        .footer { background-color: #f8f9fa; padding: 30px; text-align: center; color: #6c757d; font-size: 14px; border-top: 1px solid #e9ecef; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">⭐</div>
+            <h1>Your Shortlisted Colleges</h1>
+            <p>Keep track of your favorite options</p>
+        </div>
+        
+        <div class="content">
+            <p style="font-size: 16px; margin-bottom: 25px;">
+                Hi {{ student_name|default('Student') }},
+            </p>
+            <p style="font-size: 16px; margin-bottom: 25px; line-height: 1.8;">
+                Here's a summary of all the colleges you've shortlisted for KCET {{ year|default('2024') }} admissions. Keep this email handy for quick reference during counseling!
+            </p>
+            
+            <div class="summary-card">
+                <div class="big-number">{{ shortlisted_colleges|length }}</div>
+                <div class="label">Colleges in Your Shortlist</div>
+            </div>
+            
+            {% for college in shortlisted_colleges %}
+            <div class="shortlist-item">
+                <div class="shortlist-number">{{ loop.index }}</div>
+                <div class="college-name">{{ college.college_name }}</div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Branch:</span>
+                    <span class="detail-value">{{ college.branch }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Location:</span>
+                    <span class="detail-value">{{ college.college_place }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Closing Rank:</span>
+                    <span class="detail-value">{{ college.closing_rank|format_number }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Admission Chance:</span>
+                    <span class="detail-value" style="color: #28a745;">{{ college.admission_chance }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Added on:</span>
+                    <span class="detail-value">{{ college.added_date|format_date }}</span>
+                </div>
+                
+                {% if college.notes %}
+                <div style="background-color: #fff3cd; padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 13px;">
+                    <strong>Your Note:</strong> {{ college.notes }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+            <div class="tips-section">
+                <h3>📝 Next Steps with Your Shortlist</h3>
+                <ul>
+                    <li>Prioritize colleges based on location, branch preference, and admission chance</li>
+                    <li>Research campus facilities, placements, and faculty for each college</li>
+                    <li>Visit college websites for the latest information</li>
+                    <li>Prepare option entry order before counseling starts</li>
+                    <li>Keep this list ready during document verification</li>
+                </ul>
+            </div>
+            
+            <div style="text-align: center; margin: 40px 0;">
+                <a href="{{ chat_url|default('https://collegepathfinder-95zwvpx1r-chetan-rs-projects.vercel.app/ai-chat') }}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 30px; font-weight: 600;">
+                    💬 Continue the Chat
+                </a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>{{ app_name }}</strong></p>
+            <p>© {{ current_year }} All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

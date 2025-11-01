@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Admission Tips & Guidance</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f5f7fa; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #fa8bff 0%, #2bd2ff 100%); padding: 40px 30px; text-align: center; color: white; }
+        .header .icon { font-size: 48px; margin-bottom: 15px; }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .content { padding: 40px 30px; }
+        .tip-card { background: #ffffff; border: 2px solid #e9ecef; border-radius: 12px; padding: 25px; margin: 20px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .tip-header { display: flex; align-items: center; margin-bottom: 15px; }
+        .tip-icon { width: 50px; height: 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 15px; }
+        .tip-title { color: #2c3e50; font-size: 18px; font-weight: 600; }
+        .tip-content { color: #495057; font-size: 14px; line-height: 1.8; }
+        .tip-content ul { margin: 10px 0 10px 20px; }
+        .tip-content li { margin: 8px 0; }
+        .important-note { background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 20px; border-radius: 4px; margin: 25px 0; }
+        .important-note h4 { color: #856404; margin-bottom: 10px; }
+        .important-note p { color: #856404; font-size: 14px; }
+        .timeline { position: relative; padding-left: 40px; margin: 30px 0; }
+        .timeline-item { position: relative; padding-bottom: 30px; }
+        .timeline-item::before { content: ''; position: absolute; left: -28px; top: 0; width: 12px; height: 12px; background-color: #667eea; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 2px #667eea; }
+        .timeline-item::after { content: ''; position: absolute; left: -23px; top: 12px; width: 2px; height: 100%; background-color: #e9ecef; }
+        .timeline-item:last-child::after { display: none; }
+        .timeline-date { color: #667eea; font-weight: 600; font-size: 14px; margin-bottom: 5px; }
+        .timeline-content { background-color: #f8f9fa; padding: 15px; border-radius: 8px; }
+        .cta-box { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin: 30px 0; }
+        .footer { background-color: #f8f9fa; padding: 30px; text-align: center; color: #6c757d; font-size: 14px; border-top: 1px solid #e9ecef; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">💡</div>
+            <h1>Admission Tips & Guidance</h1>
+            <p>Expert advice for KCET counseling success</p>
+        </div>
+        
+        <div class="content">
+            <p style="font-size: 16px; margin-bottom: 25px;">
+                Dear {{ student_name|default('Student') }},
+            </p>
+            <p style="font-size: 16px; margin-bottom: 25px; line-height: 1.8;">
+                Navigating the college admission process can be overwhelming. Here are our top tips to help you make the best decisions and secure your dream college!
+            </p>
+            
+            <div class="tip-card">
+                <div class="tip-header">
+                    <div class="tip-icon">🎯</div>
+                    <div class="tip-title">1. Strategic College Selection</div>
+                </div>
+                <div class="tip-content">
+                    <p>Choose colleges wisely using the 3-tier approach:</p>
+                    <ul>
+                        <li><strong>Safe choices (40%):</strong> Colleges where you have 80%+ admission chance</li>
+                        <li><strong>Target choices (40%):</strong> Colleges matching your rank closely</li>
+                        <li><strong>Reach choices (20%):</strong> Dream colleges slightly above your rank</li>
+                    </ul>
+                    <p><em>Pro tip: Don't be too conservative or too ambitious - balance is key!</em></p>
+                </div>
+            </div>
+            
+            <div class="tip-card">
+                <div class="tip-header">
+                    <div class="tip-icon">📋</div>
+                    <div class="tip-title">2. Document Preparation</div>
+                </div>
+                <div class="tip-content">
+                    <p>Keep these documents ready before counseling:</p>
+                    <ul>
+                        <li>KCET Admit Card & Score Card (Original + 3 copies)</li>
+                        <li>10th & 12th Marks Cards (Attested copies)</li>
+                        <li>Transfer Certificate from previous institution</li>
+                        <li>Caste, Income, Domicile certificates (if applicable)</li>
+                        <li>Passport size photos (10+ copies)</li>
+                        <li>Aadhar Card & PAN Card copies</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="tip-card">
+                <div class="tip-header">
+                    <div class="tip-icon">🏛️</div>
+                    <div class="tip-title">3. Research Beyond Rankings</div>
+                </div>
+                <div class="tip-content">
+                    <p>Consider these factors when choosing colleges:</p>
+                    <ul>
+                        <li>Placement statistics and average package</li>
+                        <li>Industry collaborations and internship opportunities</li>
+                        <li>Faculty qualifications and student-teacher ratio</li>
+                        <li>Infrastructure, labs, and library facilities</li>
+                        <li>Campus culture and extracurricular activities</li>
+                        <li>Distance from home and transportation</li>
+                        <li>Hostel facilities and safety measures</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="tip-card">
+                <div class="tip-header">
+                    <div class="tip-icon">⚡</div>
+                    <div class="tip-title">4. Option Entry Strategy</div>
+                </div>
+                <div class="tip-content">
+                    <ul>
+                        <li>Fill at least 50-100 options for maximum chances</li>
+                        <li>Order by preference, not by rank cutoffs</li>
+                        <li>Include colleges from different cities for backup</li>
+                        <li>Don't skip rounds - participate in all counseling rounds</li>
+                        <li>Review and modify options before each round deadline</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="tip-card">
+                <div class="tip-header">
+                    <div class="tip-icon">🔍</div>
+                    <div class="tip-title">5. Branch Selection Wisdom</div>
+                </div>
+                <div class="tip-content">
+                    <ul>
+                        <li><strong>Passion over hype:</strong> Choose what genuinely interests you</li>
+                        <li><strong>Future scope:</strong> Research industry demand and career paths</li>
+                        <li><strong>Flexibility:</strong> Some branches offer cross-domain opportunities</li>
+                        <li><strong>Good college > Brand branch:</strong> A reputed college in any branch beats an average college in CS</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="important-note">
+                <h4>⚠️ Common Mistakes to Avoid</h4>
+                <p>❌ Waiting for last minute to fill options<br>
+                ❌ Choosing only CS/IS branches and missing opportunities<br>
+                ❌ Ignoring college location and commute time<br>
+                ❌ Not verifying documents beforehand<br>
+                ❌ Skipping mock allotments<br>
+                ❌ Relying solely on peer advice without research</p>
+            </div>
+            
+                        <div style="text-align: center; margin: 40px 0; padding: 30px; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); border-radius: 15px;">
+                <h3 style="color: white; margin-bottom: 15px;">� Need Personal Guidance?</h3>
+                <p style="color: rgba(255,255,255,0.9); margin-bottom: 20px;">Chat with our AI counselor for instant answers</p>
+                <a href="{{ chat_url|default('https://collegepathfinder-95zwvpx1r-chetan-rs-projects.vercel.app/ai-chat') }}" style="display: inline-block; background-color: white; color: #11998e; padding: 12px 30px; text-decoration: none; border-radius: 25px; font-weight: 600;">Continue the Chat</a>
+            </div>
+            
+            <div class="cta-box">
+                <h3 style="margin-bottom: 15px;">🤖 Need Personalized Guidance?</h3>
+                <p style="margin-bottom: 20px;">Chat with our AI assistant for instant answers to your queries!</p>
+                <a href="{{ chatbot_url }}" style="display: inline-block; background-color: white; color: #11998e; padding: 12px 30px; text-decoration: none; border-radius: 25px; font-weight: 600;">Chat Now</a>
+            </div>
+            
+            <p style="text-align: center; color: #6c757d; margin-top: 30px; font-size: 15px;">
+                Remember: Your college journey is just beginning. Choose wisely, but don't stress too much. Success depends more on your effort than the college name! 💪
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>{{ app_name }}</strong></p>
+            <p>© {{ current_year }} All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

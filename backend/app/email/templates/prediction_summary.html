@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your College Prediction Summary</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f5f7fa; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center; color: white; }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .header p { font-size: 16px; opacity: 0.9; }
+        .content { padding: 40px 30px; }
+        .greeting { font-size: 18px; margin-bottom: 20px; color: #333; }
+        .info-box { background-color: #f8f9fa; border-left: 4px solid #667eea; padding: 20px; margin: 20px 0; border-radius: 4px; }
+        .info-box h3 { color: #667eea; margin-bottom: 10px; font-size: 16px; }
+        .info-box p { margin: 8px 0; font-size: 14px; }
+        .colleges-section { margin: 30px 0; }
+        .colleges-section h2 { color: #333; font-size: 22px; margin-bottom: 20px; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
+        .college-card { background: linear-gradient(to right, #f8f9fa, #ffffff); border: 1px solid #e9ecef; border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .college-card h3 { color: #667eea; font-size: 18px; margin-bottom: 12px; }
+        .college-detail { display: flex; justify-content: space-between; margin: 8px 0; font-size: 14px; }
+        .college-detail .label { color: #6c757d; font-weight: 500; }
+        .college-detail .value { color: #333; font-weight: 600; }
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-left: 10px; }
+        .badge-high { background-color: #d4edda; color: #155724; }
+        .badge-medium { background-color: #fff3cd; color: #856404; }
+        .badge-low { background-color: #f8d7da; color: #721c24; }
+        .cta-button { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 30px; margin: 20px 0; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
+        .footer { background-color: #f8f9fa; padding: 30px; text-align: center; color: #6c757d; font-size: 14px; border-top: 1px solid #e9ecef; }
+        .footer p { margin: 8px 0; }
+        .social-links { margin: 20px 0; }
+        .social-links a { color: #667eea; text-decoration: none; margin: 0 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 Your College Prediction Summary</h1>
+            <p>Based on KCET {{ rank_year|default('2024') }} Rankings</p>
+        </div>
+        
+        <div class="content">
+            <div class="greeting">
+                Hi {{ student_name|default('Student') }},
+            </div>
+            
+            <p>Thank you for using our KCET College Predictor! Based on your rank and preferences, we've analyzed the best college options for you.</p>
+            
+            <div class="info-box">
+                <h3>📊 Your Profile</h3>
+                <p><strong>KCET Rank:</strong> {{ rank|format_number }}</p>
+                <p><strong>Category:</strong> {{ category|upper }}</p>
+                <p><strong>Round:</strong> {{ round_number }}</p>
+                <p><strong>Preferred Location:</strong> {{ location|default('Any')|capitalize_words }}</p>
+                <p><strong>Analysis Date:</strong> {{ analysis_date|format_date }}</p>
+            </div>
+            
+            <div class="colleges-section">
+                <h2>🏛️ Top College Matches ({{ total_colleges|default(colleges|length) }} found)</h2>
+                
+                {% for college in colleges[:5] %}
+                <div class="college-card">
+                    <h3>
+                        {{ loop.index }}. {{ college.college_name }}
+                        {% if college.admission_chance == 'High' %}
+                        <span class="badge badge-high">High Chance</span>
+                        {% elif college.admission_chance == 'Medium' %}
+                        <span class="badge badge-medium">Medium Chance</span>
+                        {% else %}
+                        <span class="badge badge-low">Low Chance</span>
+                        {% endif %}
+                    </h3>
+                    <div class="college-detail">
+                        <span class="label">Branch:</span>
+                        <span class="value">{{ college.branch }}</span>
+                    </div>
+                    <div class="college-detail">
+                        <span class="label">Location:</span>
+                        <span class="value">{{ college.college_place }}</span>
+                    </div>
+                    <div class="college-detail">
+                        <span class="label">Closing Rank:</span>
+                        <span class="value">{{ college.closing_rank|format_number }}</span>
+                    </div>
+                    <div class="college-detail">
+                        <span class="label">College Type:</span>
+                        <span class="value">{{ college.college_type }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                {% if colleges|length > 5 %}
+                <p style="text-align: center; color: #6c757d; margin-top: 20px;">
+                    + {{ colleges|length - 5 }} more colleges available
+                </p>
+                {% endif %}
+            </div>
+            
+            <div style="text-align: center; margin: 40px 0;">
+                <a href="{{ chat_url|default('https://collegepathfinder-95zwvpx1r-chetan-rs-projects.vercel.app/ai-chat') }}" class="cta-button">
+                    💬 Continue the Chat
+                </a>
+            </div>
+            
+            <div class="info-box" style="border-left-color: #28a745;">
+                <h3>💡 Next Steps</h3>
+                <p>✓ Review all {{ total_colleges|default(colleges|length) }} college options in detail</p>
+                <p>✓ Compare facilities, placements, and campus life</p>
+                <p>✓ Prepare your documents for counseling</p>
+                <p>✓ Keep track of important admission dates</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>{{ app_name }}</strong></p>
+            <p>Helping students make informed college choices</p>
+            <div class="social-links">
+                <a href="#">Website</a> |
+                <a href="#">Support</a> |
+                <a href="#">Privacy Policy</a>
+            </div>
+            <p style="margin-top: 20px; font-size: 12px;">
+                © {{ current_year }} {{ app_name }}. All rights reserved.
+            </p>
+            <p style="font-size: 12px; color: #adb5bd;">
+                This is an automated email. Please do not reply to this message.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

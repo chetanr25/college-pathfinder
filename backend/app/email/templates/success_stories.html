@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Success Stories & Testimonials</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f5f7fa; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 40px 30px; text-align: center; color: white; }
+        .header .icon { font-size: 48px; margin-bottom: 15px; }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .content { padding: 40px 30px; }
+        .intro-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 12px; text-align: center; margin: 25px 0; }
+        .story-card { background: #ffffff; border: 2px solid #e9ecef; border-radius: 12px; padding: 25px; margin: 25px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.08); position: relative; }
+        .story-card::before { content: '"'; position: absolute; top: -10px; left: 20px; font-size: 60px; color: #667eea; opacity: 0.2; font-family: Georgia, serif; }
+        .student-info { display: flex; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #f1f3f5; }
+        .student-avatar { width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: bold; margin-right: 15px; }
+        .student-details { flex: 1; }
+        .student-name { color: #2c3e50; font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+        .student-college { color: #6c757d; font-size: 14px; }
+        .story-text { color: #495057; font-size: 15px; line-height: 1.8; margin-bottom: 15px; font-style: italic; }
+        .achievement-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
+        .tag { background-color: #e7f3ff; color: #3498db; padding: 6px 12px; border-radius: 15px; font-size: 12px; font-weight: 600; }
+        .stats-highlight { background-color: #d4edda; border-left: 4px solid #28a745; padding: 20px; border-radius: 4px; margin: 25px 0; }
+        .stats-highlight h4 { color: #155724; margin-bottom: 15px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .stat-item { text-align: center; }
+        .stat-number { font-size: 32px; font-weight: bold; color: #28a745; }
+        .stat-label { font-size: 12px; color: #155724; }
+        .motivational-quote { background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%); padding: 25px; border-radius: 12px; margin: 25px 0; text-align: center; }
+        .motivational-quote .quote-text { font-size: 18px; font-weight: 600; color: #2d3436; margin-bottom: 10px; font-style: italic; }
+        .motivational-quote .quote-author { font-size: 14px; color: #636e72; }
+        .cta-section { background-color: #f8f9fa; padding: 30px; border-radius: 12px; text-align: center; margin: 30px 0; }
+        .footer { background-color: #f8f9fa; padding: 30px; text-align: center; color: #6c757d; font-size: 14px; border-top: 1px solid #e9ecef; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">🏆</div>
+            <h1>Success Stories & Testimonials</h1>
+            <p>Real students, real success</p>
+        </div>
+        
+        <div class="content">
+            <p style="font-size: 16px; margin-bottom: 25px;">
+                Dear {{ student_name|default('Student') }},
+            </p>
+            <p style="font-size: 16px; margin-bottom: 25px; line-height: 1.8;">
+                Get inspired by students who successfully navigated KCET counseling using our platform. Their stories prove that with the right guidance and smart choices, anyone can achieve their dream college!
+            </p>
+            
+            <div class="intro-box">
+                <div style="font-size: 48px; margin-bottom: 15px;">🎓</div>
+                <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">Students Helped</div>
+                <div style="font-size: 42px; font-weight: bold;">{{ total_students_helped|default('10,000+') }}</div>
+                <div style="font-size: 14px; opacity: 0.9; margin-top: 15px;">Success Rate: <strong>{{ success_rate|default('94%') }}</strong></div>
+            </div>
+            
+            {% for story in success_stories|default([]) %}
+            <div class="story-card">
+                <div class="student-info">
+                    <div class="student-avatar">{{ story.initials|default('AB') }}</div>
+                    <div class="student-details">
+                        <div class="student-name">{{ story.name }}</div>
+                        <div class="student-college">{{ story.college }} • {{ story.branch }}</div>
+                    </div>
+                </div>
+                
+                <div class="story-text">
+                    {{ story.testimonial }}
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; background-color: #f8f9fa; border-radius: 6px; padding: 12px; font-size: 13px;">
+                    <span><strong>Rank:</strong> {{ story.rank|format_number }}</span>
+                    <span><strong>Round:</strong> {{ story.round }}</span>
+                    <span><strong>Year:</strong> {{ story.year }}</span>
+                </div>
+                
+                <div class="achievement-tags">
+                    {% for tag in story.tags|default([]) %}
+                    <span class="tag">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+            
+            <div class="stats-highlight">
+                <h4 style="text-align: center; margin-bottom: 20px;">📊 Our Impact</h4>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ colleges_covered|default('1000+') }}</div>
+                        <div class="stat-label">Colleges Covered</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">{{ predictions_made|default('50K+') }}</div>
+                        <div class="stat-label">Predictions Made</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">{{ ai_queries|default('100K+') }}</div>
+                        <div class="stat-label">AI Queries Handled</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="motivational-quote">
+                <div class="quote-text">
+                    "Your college doesn't define you, your efforts do. But choosing the right college certainly helps!"
+                </div>
+                <div class="quote-author">- KCET College Predictor Team</div>
+            </div>
+            
+            <div style="background-color: #e7f3ff; border-left: 4px solid #3498db; padding: 20px; border-radius: 4px; margin: 25px 0;">
+                <h4 style="color: #2c3e50; margin-bottom: 12px;">💪 What Made Them Successful?</h4>
+                <ul style="margin-left: 20px; color: #495057;">
+                    <li style="margin: 10px 0;"><strong>Early preparation:</strong> Started researching colleges 2-3 months before counseling</li>
+                    <li style="margin: 10px 0;"><strong>Smart choices:</strong> Mixed safe, target, and reach colleges in their list</li>
+                    <li style="margin: 10px 0;"><strong>Used AI guidance:</strong> Leveraged our chatbot for instant doubt clarification</li>
+                    <li style="margin: 10px 0;"><strong>Kept backup options:</strong> Participated in all counseling rounds</li>
+                    <li style="margin: 10px 0;"><strong>Research-driven:</strong> Looked beyond branch hype and evaluated overall college quality</li>
+                </ul>
+            </div>
+            
+            <div class="cta-section">
+                <h3 style="color: #2c3e50; margin-bottom: 15px;">🌟 You Could Be Our Next Success Story!</h3>
+                <p style="color: #6c757d; margin-bottom: 25px;">Join thousands of students who found their dream colleges with our AI-powered predictions</p>
+                <a href="{{ chat_url|default('https://collegepathfinder-95zwvpx1r-chetan-rs-projects.vercel.app/ai-chat') }}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 30px; font-weight: 600;">
+                    💬 Continue the Chat
+                </a>
+            </div>
+            
+            <p style="text-align: center; color: #6c757d; margin-top: 40px; font-size: 15px; line-height: 1.8;">
+                <em>Remember: Every successful person started exactly where you are now. Your determination + our guidance = Success! 🚀</em>
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>{{ app_name }}</strong></p>
+            <p>Transforming dreams into reality, one student at a time</p>
+            <p style="margin-top: 20px; font-size: 12px;">
+                © {{ current_year }} {{ app_name }}. All rights reserved.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
