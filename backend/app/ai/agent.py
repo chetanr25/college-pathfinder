@@ -8,6 +8,7 @@ import json
 import asyncio
 from typing import List, Dict, Any, Optional, AsyncGenerator, Callable
 import google.generativeai as genai
+from google.protobuf.json_format import MessageToDict
 
 from app.ai.prompts import SYSTEM_PROMPT, TOOL_CALL_MESSAGES
 from app.ai.tools import TOOL_FUNCTIONS, execute_tool
@@ -18,6 +19,50 @@ from app.ai.session_manager import Message, ChatSession
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
+
+
+def convert_proto_to_dict(obj):
+    """
+    Recursively convert Protobuf objects to Python primitives
+    
+    Args:
+        obj: Any object (Protobuf, dict, list, or primitive)
+        
+    Returns:
+        Python primitive (dict, list, str, int, float, bool, None)
+    """
+    if obj is None:
+        return None
+    
+    # Handle Protobuf MapComposite and RepeatedComposite
+    if hasattr(obj, '__class__') and 'proto.marshal' in str(type(obj)):
+        # Convert to dict using dict() for MapComposite
+        if hasattr(obj, 'items'):
+            return {k: convert_proto_to_dict(v) for k, v in obj.items()}
+        # Convert to list for RepeatedComposite
+        elif hasattr(obj, '__iter__'):
+            return [convert_proto_to_dict(item) for item in obj]
+        else:
+            return obj
+    
+    # Handle regular dict
+    elif isinstance(obj, dict):
+        return {k: convert_proto_to_dict(v) for k, v in obj.items()}
+    
+    # Handle regular list
+    elif isinstance(obj, (list, tuple)):
+        return [convert_proto_to_dict(item) for item in obj]
+    
+    # Handle primitives
+    elif isinstance(obj, (str, int, float, bool)):
+        return obj
+    
+    # Handle unknown types - try to convert to string
+    else:
+        try:
+            return str(obj)
+        except:
+            return None
 
 
 class AIAgent:
@@ -128,7 +173,9 @@ class AIAgent:
             iteration += 1
             
             tool_name = function_call.name
-            parameters = dict(function_call.args)
+            # Convert Protobuf objects to Python primitives
+            raw_parameters = dict(function_call.args)
+            parameters = convert_proto_to_dict(raw_parameters)
             print(f"Agent: executing tool {tool_name} with params {parameters}")
             
             print(f"\n🔧 TOOL CALL: {tool_name}")
@@ -148,7 +195,7 @@ class AIAgent:
             if emit_tool_call:
                 await emit_tool_call(tool_name, parameters, "started")
 
-            result = execute_tool(tool_name, parameters)
+            result = execute_tool(tool_name, parameters, session.session_id)
             last_tool_result = result
             last_tool_name = tool_name
 
@@ -186,7 +233,7 @@ class AIAgent:
                 # Add timeout to prevent hanging
                 response = await asyncio.wait_for(
                     chat.send_message_async(function_response),
-                    timeout=30.0  # 30 second timeout
+                    timeout=120.0  # 30 second timeout
                 )
                 print("✅ Received response from Gemini")
             except asyncio.TimeoutError:
@@ -311,7 +358,7 @@ class AIAgent:
             parameters = dict(function_call.args)
 
             # Execute tool
-            result = execute_tool(tool_name, parameters)
+            result = execute_tool(tool_name, parameters, session.session_id)
             last_tool_result = result
             last_tool_name = tool_name
 

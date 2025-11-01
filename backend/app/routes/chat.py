@@ -114,10 +114,29 @@ async def websocket_chat(websocket: WebSocket, session_id: str):
                 async def emit_tool_call(tool_name: str, parameters: dict, status: str):
                     """Emit tool call status"""
                     try:
+                        # Sanitize parameters - remove large/complex data
+                        sanitized_params = {}
+                        for key, value in parameters.items():
+                            # Skip large data structures (HTML templates, long lists)
+                            if isinstance(value, (str, int, float, bool, type(None))):
+                                # Truncate long strings (HTML templates)
+                                if isinstance(value, str) and len(value) > 100:
+                                    sanitized_params[key] = value[:100] + "..."
+                                else:
+                                    sanitized_params[key] = value
+                            elif isinstance(value, list):
+                                # Show count instead of full list
+                                sanitized_params[key] = f"[{len(value)} items]"
+                            elif isinstance(value, dict):
+                                # Show dict summary
+                                sanitized_params[key] = f"{{dict with {len(value)} keys}}"
+                            else:
+                                sanitized_params[key] = str(type(value).__name__)
+                        
                         await websocket.send_json({
                             "type": "tool_call",
                             "tool_name": tool_name,
-                            "parameters": parameters,
+                            "parameters": sanitized_params,
                             "status": status
                         })
                     except Exception as e:

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detailed College Analysis Report</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f5f7fa; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); padding: 40px 30px; color: white; }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .header .subtitle { font-size: 14px; opacity: 0.9; }
+        .content { padding: 40px 30px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 25px 0; }
+        .stat-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; text-align: center; }
+        .stat-box .number { font-size: 32px; font-weight: bold; margin-bottom: 5px; }
+        .stat-box .label { font-size: 12px; opacity: 0.9; }
+        .section { margin: 35px 0; }
+        .section-title { color: #2c3e50; font-size: 20px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 3px solid #3498db; }
+        .college-full-card { background: #ffffff; border: 2px solid #e9ecef; border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.07); }
+        .college-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px; }
+        .college-name { color: #2c3e50; font-size: 20px; font-weight: 600; flex: 1; }
+        .probability { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; }
+        .info-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f1f3f5; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: #6c757d; font-size: 14px; }
+        .info-value { color: #333; font-weight: 600; font-size: 14px; }
+        .highlights { background-color: #e7f3ff; border-left: 4px solid #3498db; padding: 20px; border-radius: 4px; margin: 20px 0; }
+        .highlights h4 { color: #2c3e50; margin-bottom: 12px; }
+        .highlights ul { margin-left: 20px; }
+        .highlights li { margin: 8px 0; color: #495057; font-size: 14px; }
+        .comparison-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .comparison-table th { background-color: #f8f9fa; padding: 12px; text-align: left; font-size: 13px; color: #495057; border-bottom: 2px solid #dee2e6; }
+        .comparison-table td { padding: 12px; border-bottom: 1px solid #e9ecef; font-size: 13px; }
+        .footer { background-color: #f8f9fa; padding: 30px; text-align: center; color: #6c757d; font-size: 14px; border-top: 1px solid #e9ecef; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Detailed College Analysis Report</h1>
+            <p class="subtitle">Comprehensive breakdown of your college matches</p>
+            <p class="subtitle">Generated on {{ generation_date|format_date }}</p>
+        </div>
+        
+        <div class="content">
+            <h2 style="color: #2c3e50; margin-bottom: 20px;">Hello {{ student_name|default('Student') }},</h2>
+            <p style="margin-bottom: 25px;">Here's your comprehensive college analysis report based on your KCET rank <strong>{{ rank|format_number }}</strong> in the <strong>{{ category|upper }}</strong> category.</p>
+            
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="number">{{ total_matches }}</div>
+                    <div class="label">Total Matches</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number">{{ high_chance_count }}</div>
+                    <div class="label">High Chance</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number">{{ branches_count }}</div>
+                    <div class="label">Branches</div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3 class="section-title">🏆 Top Recommended Colleges</h3>
+                
+                {% for college in colleges %}
+                <div class="college-full-card">
+                    <div class="college-header">
+                        <div class="college-name">{{ college.college_name }}</div>
+                        <div class="probability">{{ college.admission_probability }}%</div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Branch:</span>
+                        <span class="info-value">{{ college.branch }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Location:</span>
+                        <span class="info-value">{{ college.college_place }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">College Type:</span>
+                        <span class="info-value">{{ college.college_type }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Closing Rank ({{ category|upper }}):</span>
+                        <span class="info-value">{{ college.closing_rank|format_number }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Your Rank:</span>
+                        <span class="info-value">{{ rank|format_number }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Rank Difference:</span>
+                        <span class="info-value" style="color: #28a745;">{{ college.rank_difference|format_number }} better</span>
+                    </div>
+                    
+                    {% if college.highlights %}
+                    <div class="highlights">
+                        <h4>✨ Key Highlights</h4>
+                        <ul>
+                            {% for highlight in college.highlights %}
+                            <li>{{ highlight }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="section">
+                <h3 class="section-title">📊 Branch-wise Distribution</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Branch</th>
+                            <th>Colleges</th>
+                            <th>Best Rank</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for branch_data in branch_distribution %}
+                        <tr>
+                            <td><strong>{{ branch_data.branch }}</strong></td>
+                            <td>{{ branch_data.count }} options</td>
+                            <td>{{ branch_data.best_rank|format_number }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+                        <div style="text-align: center; margin: 40px 0; padding: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px;">
+                <h3 style="color: white; margin-bottom: 15px;">� Continue Your Analysis</h3>
+                <p style="color: rgba(255,255,255,0.9); margin-bottom: 20px;">Have questions? Chat with our AI counselor</p>
+                <a href="{{ chat_url|default('https://collegepathfinder-95zwvpx1r-chetan-rs-projects.vercel.app/ai-chat') }}" style="display: inline-block; background-color: white; color: #f5576c; padding: 12px 30px; text-decoration: none; border-radius: 25px; font-weight: 600;">Continue the Chat</a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>{{ app_name }}</strong></p>
+            <p>© {{ current_year }} {{ app_name }}. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

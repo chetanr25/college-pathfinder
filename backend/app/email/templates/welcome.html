@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to KCET College Predictor</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f5f7fa; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 50px 30px; text-align: center; color: white; }
+        .header h1 { font-size: 32px; margin-bottom: 15px; }
+        .emoji { font-size: 48px; margin-bottom: 20px; }
+        .content { padding: 40px 30px; }
+        .welcome-text { font-size: 18px; margin-bottom: 25px; line-height: 1.8; }
+        .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 30px 0; }
+        .feature-box { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 25px; border-radius: 12px; text-align: center; }
+        .feature-box .icon { font-size: 36px; margin-bottom: 10px; }
+        .feature-box h3 { font-size: 16px; color: #333; margin-bottom: 8px; }
+        .feature-box p { font-size: 13px; color: #6c757d; }
+        .cta-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin: 30px 0; }
+        .cta-button { display: inline-block; background-color: white; color: #667eea; padding: 15px 40px; text-decoration: none; border-radius: 30px; margin: 20px 0; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .tips-section { background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 20px; border-radius: 4px; margin: 25px 0; }
+        .tips-section h3 { color: #856404; margin-bottom: 15px; }
+        .tips-section ul { margin-left: 20px; }
+        .tips-section li { margin: 8px 0; color: #856404; }
+        .footer { background-color: #f8f9fa; padding: 30px; text-align: center; color: #6c757d; font-size: 14px; border-top: 1px solid #e9ecef; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="emoji">🎉</div>
+            <h1>Welcome to {{ app_name }}!</h1>
+            <p>Your journey to the perfect college starts here</p>
+        </div>
+        
+        <div class="content">
+            <div class="welcome-text">
+                <p>Dear {{ student_name|default('Student') }},</p>
+                <br>
+                <p>Welcome aboard! We're thrilled to help you navigate your college admission journey. Our AI-powered predictor uses advanced algorithms and historical data to provide you with accurate college predictions based on your KCET rank.</p>
+            </div>
+            
+            <div class="feature-grid">
+                <div class="feature-box">
+                    <div class="icon">🎯</div>
+                    <h3>Accurate Predictions</h3>
+                    <p>AI-powered analysis of 1000+ colleges</p>
+                </div>
+                <div class="feature-box">
+                    <div class="icon">📊</div>
+                    <h3>Real-time Data</h3>
+                    <p>Updated with latest cutoff trends</p>
+                </div>
+                <div class="feature-box">
+                    <div class="icon">🤖</div>
+                    <h3>AI Assistant</h3>
+                    <p>24/7 chatbot for instant help</p>
+                </div>
+                <div class="feature-box">
+                    <div class="icon">📈</div>
+                    <h3>Smart Filters</h3>
+                    <p>Find colleges by location, branch & more</p>
+                </div>
+            </div>
+            
+            <div class="cta-section">
+                <h2 style="margin-bottom: 15px;">Ready to Find Your Dream College?</h2>
+                <p style="margin-bottom: 20px;">Start exploring thousands of possibilities tailored just for you!</p>
+                            <div style="text-align: center; margin: 40px 0;">
+                <a href="{{ chat_url|default('https://collegepathfinder-95zwvpx1r-chetan-rs-projects.vercel.app/ai-chat') }}" class="cta-button">
+                    💬 Start Chatting
+                </a>
+            </div>
+            </div>
+            
+            <div class="tips-section">
+                <h3>💡 Getting Started Tips:</h3>
+                <ul>
+                    <li>Enter your accurate KCET rank and category</li>
+                    <li>Use filters to narrow down colleges by location and branch</li>
+                    <li>Chat with our AI assistant for personalized guidance</li>
+                    <li>Compare multiple colleges side by side</li>
+                    <li>Save your favorite colleges for quick access</li>
+                    <li>Check cutoff trends to make informed decisions</li>
+                </ul>
+            </div>
+            
+            <p style="margin-top: 30px; text-align: center; color: #6c757d;">
+                Need help? Our support team is here for you 24/7!
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>{{ app_name }}</strong></p>
+            <p>Making college admissions simple and stress-free</p>
+            <p style="margin-top: 20px;">
+                <a href="#" style="color: #667eea; text-decoration: none; margin: 0 10px;">Help Center</a> |
+                <a href="#" style="color: #667eea; text-decoration: none; margin: 0 10px;">Contact Us</a>
+            </p>
+            <p style="margin-top: 20px; font-size: 12px;">
+                © {{ current_year }} {{ app_name }}. All rights reserved.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
