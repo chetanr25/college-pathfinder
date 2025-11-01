@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KCET Cutoff Trends Analysis</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f5f7fa; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #fc466b 0%, #3f5efb 100%); padding: 40px 30px; text-align: center; color: white; }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .content { padding: 40px 30px; }
+        .trend-card { background: linear-gradient(135deg, #ffffff, #f8f9fa); border: 2px solid #e9ecef; border-radius: 12px; padding: 25px; margin: 20px 0; box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
+        .trend-header { color: #2c3e50; font-size: 20px; font-weight: 600; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #667eea; }
+        .year-comparison { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
+        .year-box { background-color: #ffffff; border: 2px solid #e9ecef; padding: 20px; border-radius: 8px; text-align: center; }
+        .year-label { font-size: 12px; color: #6c757d; margin-bottom: 8px; }
+        .year-value { font-size: 24px; font-weight: bold; color: #667eea; }
+        .trend-indicator { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-top: 8px; }
+        .trend-up { background-color: #f8d7da; color: #721c24; }
+        .trend-down { background-color: #d4edda; color: #155724; }
+        .trend-stable { background-color: #fff3cd; color: #856404; }
+        .insights-section { background-color: #e7f3ff; border-left: 4px solid #3498db; padding: 20px; border-radius: 4px; margin: 20px 0; }
+        .insights-section h4 { color: #2c3e50; margin-bottom: 12px; }
+        .insights-section ul { margin-left: 20px; }
+        .insights-section li { margin: 8px 0; color: #495057; font-size: 14px; }
+        .prediction-box { background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%); padding: 25px; border-radius: 12px; margin: 25px 0; }
+        .prediction-box h3 { color: #2d3436; margin-bottom: 15px; }
+        .prediction-box p { color: #2d3436; font-size: 14px; line-height: 1.8; }
+        .chart-section { background-color: #f8f9fa; padding: 30px; border-radius: 8px; margin: 25px 0; text-align: center; }
+        .chart-placeholder { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 250px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: 600; margin: 20px 0; }
+        .college-trend { background-color: #ffffff; border-left: 3px solid #667eea; padding: 15px; margin: 10px 0; border-radius: 4px; }
+        .college-trend-name { color: #2c3e50; font-weight: 600; margin-bottom: 8px; }
+        .college-trend-data { display: flex; justify-content: space-between; font-size: 14px; }
+        .footer { background-color: #f8f9fa; padding: 30px; text-align: center; color: #6c757d; font-size: 14px; border-top: 1px solid #e9ecef; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📈 KCET Cutoff Trends Analysis</h1>
+            <p>Historical data and future predictions</p>
+        </div>
+        
+        <div class="content">
+            <p style="font-size: 16px; margin-bottom: 25px;">
+                Hi {{ student_name|default('Student') }},
+            </p>
+            <p style="font-size: 16px; margin-bottom: 25px; line-height: 1.8;">
+                Understanding cutoff trends can help you make better decisions. Here's a comprehensive analysis of KCET cutoff trends over the past years for your rank range and preferred branches.
+            </p>
+            
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 12px; text-align: center; margin: 30px 0;">
+                <div style="font-size: 14px; margin-bottom: 8px; opacity: 0.9;">Your KCET Rank</div>
+                <div style="font-size: 42px; font-weight: bold;">{{ rank|format_number }}</div>
+                <div style="font-size: 14px; margin-top: 8px; opacity: 0.9;">{{ category|upper }} Category</div>
+            </div>
+            
+            <div class="trend-card">
+                <div class="trend-header">Overall Cutoff Trends (Last 3 Years)</div>
+                
+                <div class="year-comparison">
+                    <div class="year-box">
+                        <div class="year-label">{{ year_1|default('2022') }}</div>
+                        <div class="year-value">{{ cutoff_year_1|format_number }}</div>
+                        <div class="trend-indicator trend-stable">Baseline</div>
+                    </div>
+                    <div class="year-box">
+                        <div class="year-label">{{ year_2|default('2023') }}</div>
+                        <div class="year-value">{{ cutoff_year_2|format_number }}</div>
+                        <div class="trend-indicator {{ trend_year_2|default('trend-up') }}">
+                            {% if trend_year_2 == 'trend-up' %}↑ Increased{% elif trend_year_2 == 'trend-down' %}↓ Decreased{% else %}→ Stable{% endif %}
+                        </div>
+                    </div>
+                    <div class="year-box">
+                        <div class="year-label">{{ year_3|default('2024') }}</div>
+                        <div class="year-value">{{ cutoff_year_3|format_number }}</div>
+                        <div class="trend-indicator {{ trend_year_3|default('trend-down') }}">
+                            {% if trend_year_3 == 'trend-up' %}↑ Increased{% elif trend_year_3 == 'trend-down' %}↓ Decreased{% else %}→ Stable{% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="insights-section">
+                    <h4>🔍 Key Observations</h4>
+                    <ul>
+                        <li>Average cutoff change: <strong>{{ avg_change|default('±2,500 ranks') }}</strong> per year</li>
+                        <li>Most competitive branches: Computer Science, Information Science, AI/ML</li>
+                        <li>Emerging trends: Data Science and Cybersecurity gaining popularity</li>
+                        <li>Stable branches: Mechanical, Civil, EEE showing consistent cutoffs</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="trend-card">
+                <div class="trend-header">Branch-wise Cutoff Analysis</div>
+                
+                {% for branch_trend in branch_trends|default([]) %}
+                <div class="college-trend">
+                    <div class="college-trend-name">{{ branch_trend.branch }}</div>
+                    <div class="college-trend-data">
+                        <span style="color: #6c757d;">2022: <strong>{{ branch_trend.year_2022|format_number }}</strong></span>
+                        <span style="color: #6c757d;">2023: <strong>{{ branch_trend.year_2023|format_number }}</strong></span>
+                        <span style="color: #6c757d;">2024: <strong>{{ branch_trend.year_2024|format_number }}</strong></span>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 13px; color: #28a745;">
+                        Trend: {{ branch_trend.trend_description }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="chart-section">
+                <h3 style="color: #2c3e50; margin-bottom: 20px;">📊 Visual Trend Analysis</h3>
+                <div class="chart-placeholder">
+                    Cutoff Trends Graph<br>
+                    <span style="font-size: 14px; opacity: 0.8;">(2022 - 2024)</span>
+                </div>
+                <p style="color: #6c757d; font-size: 13px;">
+                    * Graph shows comparative analysis across years for top branches
+                </p>
+            </div>
+            
+            <div class="prediction-box">
+                <h3>🔮 2025 Cutoff Predictions</h3>
+                <p>Based on historical data and current trends, here's what we predict for KCET 2025:</p>
+                <ul style="margin: 15px 0 0 20px; color: #2d3436;">
+                    <li style="margin: 8px 0;"><strong>CS/IS branches:</strong> Expected to rise by 2,000-3,000 ranks due to increasing demand</li>
+                    <li style="margin: 8px 0;"><strong>AI/ML/DS branches:</strong> Moderate increase of 1,500-2,500 ranks</li>
+                    <li style="margin: 8px 0;"><strong>Core branches:</strong> Likely to remain stable or decrease slightly</li>
+                    <li style="margin: 8px 0;"><strong>Your chances:</strong> {{ prediction_message|default('Strong chances in 15+ colleges based on current trends') }}</li>
+                </ul>
+            </div>
+            
+            <div style="background-color: #d4edda; border-left: 4px solid #28a745; padding: 20px; border-radius: 4px; margin: 25px 0;">
+                <h4 style="color: #155724; margin-bottom: 10px;">💡 How to Use This Information</h4>
+                <ul style="margin-left: 20px; color: #155724;">
+                    <li style="margin: 8px 0;">Don't rely solely on previous year cutoffs</li>
+                    <li style="margin: 8px 0;">Apply for colleges 3,000-5,000 ranks above your rank</li>
+                    <li style="margin: 8px 0;">Monitor seat matrix changes for 2025</li>
+                    <li style="margin: 8px 0;">Consider colleges with consistent cutoff patterns</li>
+                </ul>
+            </div>
+            
+            <div style="text-align: center; margin: 40px 0;">
+                <a href="{{ chat_url|default('https://collegepathfinder-95zwvpx1r-chetan-rs-projects.vercel.app/ai-chat') }}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 30px; font-weight: 600;">
+                    💬 Continue the Chat
+                </a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>{{ app_name }}</strong></p>
+            <p>© {{ current_year }} All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

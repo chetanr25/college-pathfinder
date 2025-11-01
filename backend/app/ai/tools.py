@@ -5,6 +5,14 @@ Defines all available tools (API functions) that the AI can call
 """
 from typing import Dict, List, Any, Callable, Optional
 from app.services import CollegeService
+from app.ai.email_tools import (
+    send_prediction_summary_email,
+    send_detailed_analysis_email,
+    send_comparison_email,
+    send_branch_analysis_email,
+    send_admission_tips_email,
+    send_cutoff_trends_email
+)
 
 
 # Tool execution functions - these are the actual callable functions
@@ -210,7 +218,14 @@ TOOL_FUNCTIONS = [
     match_branch_names,
     analyze_rank_prospects,
     compare_colleges,
-    get_branch_popularity
+    get_branch_popularity,
+    # Email tools
+    send_prediction_summary_email,
+    send_detailed_analysis_email,
+    send_comparison_email,
+    send_branch_analysis_email,
+    send_admission_tips_email,
+    send_cutoff_trends_email
 ]
 
 
@@ -227,17 +242,25 @@ TOOL_EXECUTORS: Dict[str, Callable] = {
     "analyze_rank_prospects": analyze_rank_prospects,
     "compare_colleges": compare_colleges,
     "get_branch_popularity": get_branch_popularity,
+    # Email tools
+    "send_prediction_summary_email": send_prediction_summary_email,
+    "send_detailed_analysis_email": send_detailed_analysis_email,
+    "send_comparison_email": send_comparison_email,
+    "send_branch_analysis_email": send_branch_analysis_email,
+    "send_admission_tips_email": send_admission_tips_email,
+    "send_cutoff_trends_email": send_cutoff_trends_email,
 }
 
 
 
-def execute_tool(tool_name: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
+def execute_tool(tool_name: str, parameters: Dict[str, Any], session_id: str = None) -> Dict[str, Any]:
     """
     Execute a tool by name with given parameters
     
     Args:
         tool_name: Name of the tool to execute
         parameters: Parameters to pass to the tool
+        session_id: Current chat session ID (injected for email tools)
         
     Returns:
         Dictionary with success status, data/error, and summary
@@ -251,6 +274,10 @@ def execute_tool(tool_name: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
         }
     
     try:
+        # Inject session_id for email tools
+        if tool_name.startswith('send_') and tool_name.endswith('_email') and session_id:
+            parameters['session_id'] = session_id
+        
         result = executor(**parameters)
         return {
             "success": True,

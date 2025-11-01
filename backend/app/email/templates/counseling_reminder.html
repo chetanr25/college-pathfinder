@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KCET Counseling Reminder</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f5f7fa; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); padding: 40px 30px; text-align: center; color: white; }
+        .header .icon { font-size: 48px; margin-bottom: 15px; }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .urgent-banner { background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 20px; margin: 0; text-align: center; }
+        .urgent-banner strong { color: #856404; font-size: 18px; }
+        .content { padding: 40px 30px; }
+        .date-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin: 30px 0; }
+        .date-box .label { font-size: 14px; margin-bottom: 10px; opacity: 0.9; }
+        .date-box .date { font-size: 32px; font-weight: bold; margin-bottom: 5px; }
+        .date-box .time { font-size: 16px; opacity: 0.9; }
+        .countdown { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 30px 0; }
+        .countdown-item { background-color: #f8f9fa; border: 2px solid #e9ecef; padding: 20px; border-radius: 8px; text-align: center; }
+        .countdown-item .number { font-size: 28px; font-weight: bold; color: #667eea; margin-bottom: 5px; }
+        .countdown-item .label { font-size: 12px; color: #6c757d; }
+        .checklist { background-color: #e7f3ff; padding: 25px; border-radius: 8px; margin: 25px 0; }
+        .checklist h3 { color: #2c3e50; margin-bottom: 15px; }
+        .checklist-item { padding: 12px 0; border-bottom: 1px solid #d1e7ff; display: flex; align-items: center; }
+        .checklist-item:last-child { border-bottom: none; }
+        .checklist-item .checkbox { width: 20px; height: 20px; border: 2px solid #667eea; border-radius: 4px; margin-right: 15px; flex-shrink: 0; }
+        .important-dates { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 25px 0; }
+        .date-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e9ecef; }
+        .date-item:last-child { border-bottom: none; }
+        .cta-button { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; margin: 20px 0; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
+        .footer { background-color: #f8f9fa; padding: 30px; text-align: center; color: #6c757d; font-size: 14px; border-top: 1px solid #e9ecef; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">⏰</div>
+            <h1>KCET Counseling Reminder</h1>
+            <p>Don't miss your chance!</p>
+        </div>
+        
+        <div class="urgent-banner">
+            <strong>⚠️ URGENT: Counseling round {{ round_number }} is approaching!</strong>
+        </div>
+        
+        <div class="content">
+            <p style="font-size: 16px; margin-bottom: 25px;">
+                Dear {{ student_name|default('Student') }},
+            </p>
+            <p style="font-size: 16px; margin-bottom: 25px; line-height: 1.8;">
+                This is a friendly reminder that the KCET Round {{ round_number }} counseling is scheduled soon. Make sure you're prepared with all the required documents and information.
+            </p>
+            
+            <div class="date-box">
+                <div class="label">Counseling Date</div>
+                <div class="date">{{ counseling_date|format_date }}</div>
+                <div class="time">{{ counseling_time|default('9:00 AM onwards') }}</div>
+            </div>
+            
+            {% if days_remaining %}
+            <div class="countdown">
+                <div class="countdown-item">
+                    <div class="number">{{ days_remaining }}</div>
+                    <div class="label">Days</div>
+                </div>
+                <div class="countdown-item">
+                    <div class="number">{{ hours_remaining|default('0') }}</div>
+                    <div class="label">Hours</div>
+                </div>
+                <div class="countdown-item">
+                    <div class="number">{{ minutes_remaining|default('0') }}</div>
+                    <div class="label">Minutes</div>
+                </div>
+                <div class="countdown-item">
+                    <div class="number">{{ seconds_remaining|default('0') }}</div>
+                    <div class="label">Seconds</div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="checklist">
+                <h3>📋 Documents Checklist</h3>
+                <div class="checklist-item">
+                    <div class="checkbox"></div>
+                    <div>KCET Admit Card & Hall Ticket</div>
+                </div>
+                <div class="checklist-item">
+                    <div class="checkbox"></div>
+                    <div>10th & 12th Standard Marks Cards</div>
+                </div>
+                <div class="checklist-item">
+                    <div class="checkbox"></div>
+                    <div>Transfer Certificate (TC)</div>
+                </div>
+                <div class="checklist-item">
+                    <div class="checkbox"></div>
+                    <div>Caste Certificate (if applicable)</div>
+                </div>
+                <div class="checklist-item">
+                    <div class="checkbox"></div>
+                    <div>Income Certificate</div>
+                </div>
+                <div class="checklist-item">
+                    <div class="checkbox"></div>
+                    <div>Aadhar Card & Passport Size Photos</div>
+                </div>
+                <div class="checklist-item">
+                    <div class="checkbox"></div>
+                    <div>Domicile Certificate</div>
+                </div>
+            </div>
+            
+            <div class="important-dates">
+                <h3 style="color: #2c3e50; margin-bottom: 15px;">📅 Important Dates</h3>
+                <div class="date-item">
+                    <span style="color: #6c757d;">Option Entry Opens:</span>
+                    <strong>{{ option_entry_start|format_date }}</strong>
+                </div>
+                <div class="date-item">
+                    <span style="color: #6c757d;">Option Entry Closes:</span>
+                    <strong>{{ option_entry_end|format_date }}</strong>
+                </div>
+                <div class="date-item">
+                    <span style="color: #6c757d;">Seat Allotment Result:</span>
+                    <strong>{{ seat_allotment_date|format_date }}</strong>
+                </div>
+                <div class="date-item">
+                    <span style="color: #6c757d;">Document Verification:</span>
+                    <strong>{{ verification_date|format_date }}</strong>
+                </div>
+            </div>
+            
+            <div style="background-color: #d4edda; border-left: 4px solid #28a745; padding: 20px; border-radius: 4px; margin: 25px 0;">
+                <h3 style="color: #155724; margin-bottom: 10px;">💡 Pro Tips</h3>
+                <ul style="margin-left: 20px; color: #155724;">
+                    <li style="margin: 8px 0;">Arrive at the counseling center at least 30 minutes early</li>
+                    <li style="margin: 8px 0;">Keep all original documents and 3 sets of photocopies</li>
+                    <li style="margin: 8px 0;">Review your college preferences one last time</li>
+                    <li style="margin: 8px 0;">Have your choice list ready from our predictions</li>
+                </ul>
+            </div>
+            
+            <div style="text-align: center; margin: 40px 0;">
+                <a href="{{ chat_url|default('https://collegepathfinder-95zwvpx1r-chetan-rs-projects.vercel.app/ai-chat') }}" class="cta-button">
+                    💬 Continue the Chat
+                </a>
+            </div>
+            
+            <p style="text-align: center; color: #6c757d; margin-top: 30px;">
+                Good luck with your counseling! 🍀
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>{{ app_name }}</strong></p>
+            <p>© {{ current_year }} All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

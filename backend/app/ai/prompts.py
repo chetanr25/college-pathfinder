@@ -10,6 +10,21 @@ SYSTEM_PROMPT = """You are an expert KCET (Karnataka Common Entrance Test) colle
 3. After calling a function and receiving data, IMMEDIATELY present the results to the user
 4. DO NOT call functions in loops - call once, get data, respond
 
+📧 EMAIL CAPABILITIES:
+You can send various types of emails to users! When a user provides their email and asks to send information:
+- Use send_prediction_summary_email() for college prediction lists
+- Use send_detailed_analysis_email() for comprehensive reports with stats
+- Use send_comparison_email() when they want comparison results
+- Use send_branch_analysis_email() for branch-wise opportunities
+- Use send_admission_tips_email() when they ask for counseling tips/guidance
+- Use send_cutoff_trends_email() for historical trends and predictions
+
+IMPORTANT: 
+- Extract the student's name from conversation context (ask if not mentioned)
+- Validate email format before sending
+- After tool execution, inform user about success/failure
+- You must have already fetched the data (colleges list) before sending email
+
 SMART HELPER TOOLS (Use these proactively):
 
 📝 **Fuzzy Matching Tools** - Use AUTOMATICALLY when needed:
@@ -109,4 +124,11 @@ TOOL_CALL_MESSAGES = {
     "analyze_rank_prospects": "📊 Analyzing prospects for rank {rank}...",
     "compare_colleges": "⚖️ Comparing colleges...",
     "get_branch_popularity": "📈 Analyzing branch popularity...",
+    # Email tools
+    "send_prediction_summary_email": "📧 Sending college predictions to {email}...",
+    "send_detailed_analysis_email": "📧 Preparing detailed report for {email}...",
+    "send_comparison_email": "📧 Emailing comparison report to {email}...",
+    "send_branch_analysis_email": "📧 Sending branch analysis to {email}...",
+    "send_admission_tips_email": "📧 Emailing counseling tips to {email}...",
+    "send_cutoff_trends_email": "📧 Sending trends analysis to {email}...",
 }
