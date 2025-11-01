@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Branch-wise Analysis Report</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f5f7fa; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); padding: 40px 30px; text-align: center; color: #2d3436; }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .content { padding: 40px 30px; }
+        .branch-card { background: linear-gradient(to right, #ffffff, #f8f9fa); border: 2px solid #e9ecef; border-radius: 12px; padding: 25px; margin: 20px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .branch-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #667eea; }
+        .branch-name { color: #2c3e50; font-size: 20px; font-weight: 600; }
+        .branch-count { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; }
+        .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin: 20px 0; }
+        .stat-box { background-color: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #e9ecef; }
+        .stat-number { font-size: 24px; font-weight: bold; color: #667eea; margin-bottom: 5px; }
+        .stat-label { font-size: 12px; color: #6c757d; }
+        .college-list { margin: 15px 0; }
+        .college-item { background-color: #ffffff; padding: 12px; margin: 8px 0; border-left: 3px solid #667eea; border-radius: 4px; font-size: 14px; }
+        .college-item strong { color: #2c3e50; }
+        .college-item .rank { color: #28a745; font-weight: 600; float: right; }
+        .insight-box { background-color: #d4edda; border-left: 4px solid #28a745; padding: 20px; border-radius: 4px; margin: 25px 0; }
+        .insight-box h4 { color: #155724; margin-bottom: 10px; }
+        .insight-box p { color: #155724; font-size: 14px; line-height: 1.8; }
+        .chart-placeholder { background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); height: 200px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: 600; margin: 25px 0; }
+        .footer { background-color: #f8f9fa; padding: 30px; text-align: center; color: #6c757d; font-size: 14px; border-top: 1px solid #e9ecef; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Branch-wise Analysis</h1>
+            <p>Comprehensive breakdown by engineering branches</p>
+        </div>
+        
+        <div class="content">
+            <p style="font-size: 16px; margin-bottom: 25px;">
+                Hi {{ student_name|default('Student') }},
+            </p>
+            <p style="font-size: 16px; margin-bottom: 25px; line-height: 1.8;">
+                We've analyzed college availability across different engineering branches based on your rank <strong>{{ rank|format_number }}</strong>. Here's what we found:
+            </p>
+            
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 12px; text-align: center; margin: 30px 0;">
+                <div style="font-size: 14px; margin-bottom: 10px; opacity: 0.9;">Total Branches Available</div>
+                <div style="font-size: 42px; font-weight: bold; margin-bottom: 5px;">{{ branches|length }}</div>
+                <div style="font-size: 14px; opacity: 0.9;">Engineering Branches</div>
+            </div>
+            
+            {% for branch in branches %}
+            <div class="branch-card">
+                <div class="branch-header">
+                    <div class="branch-name">{{ branch.name }}</div>
+                    <div class="branch-count">{{ branch.college_count }} Colleges</div>
+                </div>
+                
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="stat-number">{{ branch.high_chance }}</div>
+                        <div class="stat-label">High Chance</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">{{ branch.best_rank|format_number }}</div>
+                        <div class="stat-label">Best Rank</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">{{ branch.avg_rank|format_number }}</div>
+                        <div class="stat-label">Avg Rank</div>
+                    </div>
+                </div>
+                
+                {% if branch.top_colleges %}
+                <div class="college-list">
+                    <strong style="color: #2c3e50; font-size: 15px; display: block; margin-bottom: 10px;">🏆 Top Colleges:</strong>
+                    {% for college in branch.top_colleges[:3] %}
+                    <div class="college-item">
+                        <strong>{{ college.name }}</strong>
+                        <span class="rank">Rank: {{ college.closing_rank|format_number }}</span>
+                        <div style="clear: both; color: #6c757d; font-size: 12px; margin-top: 5px;">
+                            {{ college.location }} • {{ college.type }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                {% if branch.insights %}
+                <div class="insight-box">
+                    <h4>💡 Key Insights</h4>
+                    <p>{{ branch.insights }}</p>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+            <div style="background-color: #e7f3ff; border-left: 4px solid #3498db; padding: 20px; border-radius: 4px; margin: 30px 0;">
+                <h3 style="color: #2c3e50; margin-bottom: 15px;">🎯 Recommendations Based on Analysis</h3>
+                <ul style="margin-left: 20px; color: #495057;">
+                    <li style="margin: 10px 0;">{{ recommendation_1|default('Computer Science and Information Science have the most competitive cutoffs') }}</li>
+                    <li style="margin: 10px 0;">{{ recommendation_2|default('Consider allied branches like AI/ML and Data Science for similar opportunities') }}</li>
+                    <li style="margin: 10px 0;">{{ recommendation_3|default('Mechanical and Civil Engineering offer more seat availability') }}</li>
+                    <li style="margin: 10px 0;">{{ recommendation_4|default('Explore emerging fields like Robotics and IoT Engineering') }}</li>
+                </ul>
+            </div>
+            
+            <div class="chart-placeholder">
+                📈 Branch-wise Distribution Chart
+            </div>
+            
+            <div style="text-align: center; margin: 40px 0;">
+                <a href="{{ chat_url|default('https://collegepathfinder-95zwvpx1r-chetan-rs-projects.vercel.app/ai-chat') }}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 30px; font-weight: 600;">
+                    💬 Continue the Chat
+                </a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>{{ app_name }}</strong></p>
+            <p>© {{ current_year }} All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
