@@ -270,6 +270,29 @@ class CollegeService:
         }
     
     @staticmethod
+    def get_all_colleges() -> List[Dict]:
+        """
+        Get all unique colleges with their codes and names
+        
+        Returns:
+            List of dictionaries with college_code and college_name
+        """
+        sql_query = """
+        SELECT DISTINCT college_code, college_name
+        FROM kcet_2024
+        ORDER BY college_code
+        """
+        colleges = execute_query(sql_query, ())
+        
+        return [
+            {
+                "college_code": college["college_code"],
+                "college_name": college["college_name"]
+            }
+            for college in colleges
+        ]
+    
+    @staticmethod
     def search_college_by_name(query: str, limit: int = 10) -> List[Dict]:
         """
         Search for colleges by name using fuzzy matching

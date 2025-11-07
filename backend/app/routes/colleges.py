@@ -121,6 +121,18 @@ async def search_colleges(
     return {"colleges": colleges, "total_count": len(colleges)}
 
 
+@router.get("/all")
+async def get_all_colleges():
+    """
+    Get all colleges with their codes and names
+    
+    Returns a list of all unique colleges in the database.
+    Useful for college code lookup and autocomplete features.
+    """
+    colleges = CollegeService.get_all_colleges()
+    return {"colleges": colleges, "total_count": len(colleges)}
+
+
 @router.get("/{college_code}/branches", response_model=CollegeBranches)
 async def get_college_branches(
     college_code: str = Path(..., description="College code")

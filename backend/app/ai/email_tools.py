@@ -10,15 +10,276 @@ import re
 
 from app.email.service import email_service
 from app.email.templates_manager import template_manager
+from app.ai.session_manager import ChatSession
 
 
 # Base URL for frontend
-FRONTEND_BASE_URL = "https://collegepathfinder-95zwvpx1r-chetan-rs-projects.vercel.app"
+FRONTEND_BASE_URL = "http://collegepathfinder.vercel.app"
+
+# Thread-safe session context (set by execute_tool before calling email functions)
+_current_session: Optional[ChatSession] = None
+
+def _set_session_context(session: Optional[ChatSession]) -> None:
+    """Set the current session context for email functions"""
+    global _current_session
+    _current_session = session
+
+def _get_session_context() -> Optional[ChatSession]:
+    """Get the current session context"""
+    return _current_session
 
 
 def _get_chat_url(session_id: str) -> str:
     """Generate chat URL with session ID"""
     return f"{FRONTEND_BASE_URL}/ai-chat?session={session_id}"
+
+
+def _extract_name_from_email(email: str) -> str:
+    """Extract name from email address"""
+    # Get part before @
+    local_part = email.split('@')[0]
+    
+    # Remove numbers and special chars
+    name = re.sub(r'[0-9._-]', ' ', local_part)
+    
+    # Capitalize first letter of each word
+    name = ' '.join(word.capitalize() for word in name.split() if word)
+    
+    return name if name else "Student"
+
+
+def _analyze_conversation_history(session: ChatSession) -> Dict[str, Any]:
+    """Analyze entire conversation to extract key information"""
+    analysis = {
+        'rank': None,
+        'category': 'GM',
+        'colleges': [],
+        'branches_discussed': [],
+        'conversation_summary': []
+    }
+    
+    # Analyze messages
+    for msg in session.messages:
+        content = msg.content.lower()
+        
+        # Extract rank
+        if 'rank' in content:
+            rank_match = re.search(r'\b(\d{1,6})\b', content)
+            if rank_match and not analysis['rank']:
+                analysis['rank'] = int(rank_match.group(1))
+        
+        # Extract category
+        categories = ['gm', 'sc', 'st', '2a', '2b', '3a', '3b', 'obc']
+        for cat in categories:
+            if cat in content:
+                analysis['category'] = cat.upper()
+                break
+        
+        # Track discussion points
+        if msg.role == 'user':
+            if len(content) > 20:  # Meaningful message
+                analysis['conversation_summary'].append(content[:100])
+    
+    # Limit summary to 5 points
+    analysis['conversation_summary'] = analysis['conversation_summary'][:5]
+    
+    return analysis
+
+
+def send_comprehensive_report_email(
+    email: str,
+    session_id: str,
+    student_name: Optional[str] = None,
+    rank: Optional[int] = None,
+    category: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Send comprehensive KCET analysis report with REAL DATA from tools.
+    
+    This function:
+    1. Analyzes conversation history to understand what user wants
+    2. Executes actual search tools to get college data
+    3. Gathers top 30 colleges from Round 1 & Round 2
+    4. Sends formatted email with proper table structure
+    
+    Args:
+        email: Student's email address
+        session_id: Current chat session ID
+        student_name: Student's name (auto-extracted from email if not provided)
+        rank: Student's rank (auto-extracted from conversation if not provided)
+        category: Student's category (defaults to GM)
+        
+    Returns:
+        Dict with success status and message
+        
+    Note:
+        Session object will be injected by execute_tool() if available
+    """
+    from app.services import CollegeService
+    
+    # Validate email
+    if not _validate_email(email):
+        return {
+            "success": False,
+            "error": "Invalid email format",
+            "message": "Please provide a valid email address."
+        }
+    
+    # Extract name from email if not provided
+    if not student_name:
+        student_name = _extract_name_from_email(email)
+    
+    # Analyze conversation history if session available in context
+    conversation_data = {}
+    session = _get_session_context()
+    if session:
+        conversation_data = _analyze_conversation_history(session)
+        if not rank:
+            rank = conversation_data.get('rank')
+        if not category:
+            category = conversation_data.get('category', 'GM')
+    
+    # Default values
+    rank = rank or 50000
+    category = category or 'GM'
+    
+    # Create conversation summary
+    conversation_summary = " ".join(conversation_data.get('conversation_summary', []))
+    if not conversation_summary:
+        conversation_summary = f"Analysis for rank {rank} in {category} category"
+    
+    # EXECUTE ACTUAL TOOLS TO GET REAL DATA
+    round1_colleges = []
+    round2_colleges = []
+    stats = {
+        'total_colleges': 0,
+        'round1_colleges': 0,
+        'round2_colleges': 0,
+        'branches_count': 0
+    }
+    
+    try:
+        # Get Round 1 colleges (top 15) - NOTE: CollegeService doesn't accept 'category' param
+        print(f"[EMAIL DEBUG] Fetching Round 1 colleges for rank {rank}")
+        try:
+            colleges_r1_raw = CollegeService.get_colleges_by_rank(
+                rank=rank,
+                round=1,
+                limit=15,
+                sort_order="asc"
+            )
+            print(f"[EMAIL DEBUG] Round 1 fetch successful: {len(colleges_r1_raw) if colleges_r1_raw else 0} colleges")
+        except Exception as e1:
+            print(f"[EMAIL DEBUG] Round 1 fetch failed: {e1}")
+            colleges_r1_raw = []
+        
+        if colleges_r1_raw and len(colleges_r1_raw) > 0:
+            for college in colleges_r1_raw:
+                # Calculate admission chance
+                cutoff = college.get('cutoff_rank', rank)
+                if rank <= cutoff:
+                    admission_chance = 'High'
+                elif rank <= cutoff * 1.1:
+                    admission_chance = 'Medium'
+                else:
+                    admission_chance = 'Low'
+                
+                college['admission_chance'] = admission_chance
+            
+            round1_colleges = colleges_r1_raw
+            stats['round1_colleges'] = len(round1_colleges)
+            print(f"[EMAIL DEBUG] Round 1 colleges prepared: {stats['round1_colleges']}")
+        else:
+            print(f"[EMAIL DEBUG] No Round 1 colleges found")
+        
+        # Get Round 2 colleges (top 15)
+        print(f"[EMAIL DEBUG] Fetching Round 2 colleges for rank {rank}")
+        try:
+            colleges_r2_raw = CollegeService.get_colleges_by_rank(
+                rank=rank,
+                round=2,
+                limit=15,
+                sort_order="asc"
+            )
+            print(f"[EMAIL DEBUG] Round 2 fetch successful: {len(colleges_r2_raw) if colleges_r2_raw else 0} colleges")
+        except Exception as e2:
+            print(f"[EMAIL DEBUG] Round 2 fetch failed: {e2}")
+            colleges_r2_raw = []
+        
+        if colleges_r2_raw and len(colleges_r2_raw) > 0:
+            for college in colleges_r2_raw:
+                # Calculate admission chance
+                cutoff = college.get('cutoff_rank', rank)
+                if rank <= cutoff:
+                    admission_chance = 'High'
+                elif rank <= cutoff * 1.1:
+                    admission_chance = 'Medium'
+                else:
+                    admission_chance = 'Low'
+                
+                college['admission_chance'] = admission_chance
+            
+            round2_colleges = colleges_r2_raw
+            stats['round2_colleges'] = len(round2_colleges)
+            print(f"[EMAIL DEBUG] Round 2 colleges prepared: {stats['round2_colleges']}")
+        else:
+            print(f"[EMAIL DEBUG] No Round 2 colleges found")
+        
+        # Calculate total stats
+        stats['total_colleges'] = stats['round1_colleges'] + stats['round2_colleges']
+        all_branches = set()
+        for college in round1_colleges + round2_colleges:
+            all_branches.add(college.get('branch_name', ''))
+        stats['branches_count'] = len(all_branches)
+        
+        print(f"[EMAIL DEBUG] Final stats: {stats}")
+        print(f"[EMAIL DEBUG] Round1 count: {len(round1_colleges)}, Round2 count: {len(round2_colleges)}")
+        
+    except Exception as e:
+        # Log error but continue with empty data
+        print(f"[EMAIL ERROR] Error fetching college data: {e}")
+        import traceback
+        traceback.print_exc()
+    
+    # Prepare context for template
+    context = {
+        'student_name': student_name,
+        'rank': rank,
+        'category': category,
+        'analysis_date': datetime.now(),
+        'chat_url': _get_chat_url(session_id),
+        'conversation_summary': conversation_summary,
+        'stats': stats,
+        'round1_colleges': round1_colleges,
+        'round2_colleges': round2_colleges,
+    }
+    
+    try:
+        html_content = template_manager.render_template('comprehensive_report_v2.html', context)
+        
+        success = email_service.send_email(
+            to_email=email,
+            subject=f"🎓 Your KCET College Report - Rank {rank}",
+            html_content=html_content
+        )
+        
+        if success:
+            return {
+                "success": True,
+                "message": f"✅ Comprehensive analysis report sent to {email}! Check your inbox for detailed insights including college matches, branch analysis, trends, and personalized recommendations."
+            }
+        else:
+            return {
+                "success": False,
+                "error": "Email sending failed",
+                "message": "Failed to send email. Please check your email address and try again."
+            }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "message": f"Error sending email: {str(e)}"
+        }
 
 
 def send_prediction_summary_email(

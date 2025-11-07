@@ -3,9 +3,9 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   School, 
   Category, 
-  Search, 
+  // Search, 
   Home as HomeIcon,
-  TrendingUp,
+ TrendingUp,
   SmartToy
 } from '@mui/icons-material';
 import theme from '../theme';
@@ -19,8 +19,8 @@ const Navbar: React.FC = () => {
     { path: '/', label: 'Home', icon: <HomeIcon /> },
     { path: '/colleges', label: 'Colleges', icon: <School /> },
     { path: '/branches', label: 'Branches', icon: <Category /> },
-    { path: '/search', label: 'Search', icon: <Search /> },
-    { path: '/predictor', label: 'Predictor', icon: <TrendingUp /> },
+    // { path: '/search', label: 'Search', icon: <Search /> },
+   { path: '/predictor', label: 'Predictor', icon: <TrendingUp /> },
     { path: '/ai-chat', label: 'AI Counselor', icon: <SmartToy /> },
   ];
 
