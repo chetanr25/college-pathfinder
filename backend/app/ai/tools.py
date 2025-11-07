@@ -6,6 +6,7 @@ Defines all available tools (API functions) that the AI can call
 from typing import Dict, List, Any, Callable, Optional
 from app.services import CollegeService
 from app.ai.email_tools import (
+    send_comprehensive_report_email,  # PRIMARY EMAIL FUNCTION
     send_prediction_summary_email,
     send_detailed_analysis_email,
     send_comparison_email,
@@ -219,7 +220,8 @@ TOOL_FUNCTIONS = [
     analyze_rank_prospects,
     compare_colleges,
     get_branch_popularity,
-    # Email tools
+    # Email tools (comprehensive is PRIMARY)
+    send_comprehensive_report_email,
     send_prediction_summary_email,
     send_detailed_analysis_email,
     send_comparison_email,
@@ -243,6 +245,7 @@ TOOL_EXECUTORS: Dict[str, Callable] = {
     "compare_colleges": compare_colleges,
     "get_branch_popularity": get_branch_popularity,
     # Email tools
+    "send_comprehensive_report_email": send_comprehensive_report_email,
     "send_prediction_summary_email": send_prediction_summary_email,
     "send_detailed_analysis_email": send_detailed_analysis_email,
     "send_comparison_email": send_comparison_email,
@@ -253,7 +256,7 @@ TOOL_EXECUTORS: Dict[str, Callable] = {
 
 
 
-def execute_tool(tool_name: str, parameters: Dict[str, Any], session_id: str = None) -> Dict[str, Any]:
+def execute_tool(tool_name: str, parameters: Dict[str, Any], session_id: str = None, session=None) -> Dict[str, Any]:
     """
     Execute a tool by name with given parameters
     
@@ -261,6 +264,7 @@ def execute_tool(tool_name: str, parameters: Dict[str, Any], session_id: str = N
         tool_name: Name of the tool to execute
         parameters: Parameters to pass to the tool
         session_id: Current chat session ID (injected for email tools)
+        session: Chat session object (for comprehensive email analysis)
         
     Returns:
         Dictionary with success status, data/error, and summary
@@ -277,8 +281,19 @@ def execute_tool(tool_name: str, parameters: Dict[str, Any], session_id: str = N
         # Inject session_id for email tools
         if tool_name.startswith('send_') and tool_name.endswith('_email') and session_id:
             parameters['session_id'] = session_id
+            
+            # Set session context for comprehensive email (uses global context pattern)
+            if tool_name == 'send_comprehensive_report_email' and session:
+                from app.ai.email_tools import _set_session_context
+                _set_session_context(session)
         
         result = executor(**parameters)
+        
+        # Clear session context after execution
+        if tool_name == 'send_comprehensive_report_email':
+            from app.ai.email_tools import _set_session_context
+            _set_session_context(None)
+        
         return {
             "success": True,
             "data": result,

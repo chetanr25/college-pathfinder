@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your KCET College Report</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            padding: 20px; 
+        }
+        .container { 
+            max-width: 900px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 20px; 
+            overflow: hidden; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3); 
+        }
+        
+        /* Header */
+        .header { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            padding: 40px; 
+            text-align: center; 
+            color: white; 
+        }
+        .header h1 { font-size: 32px; margin-bottom: 10px; }
+        .header p { font-size: 16px; opacity: 0.9; }
+        
+        /* Content */
+        .content { padding: 40px; }
+        
+        /* Profile Section */
+        .profile-section { 
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); 
+            padding: 30px; 
+            border-radius: 15px; 
+            margin-bottom: 30px; 
+        }
+        .profile-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 20px; 
+            margin-top: 20px; 
+        }
+        .profile-item { text-align: center; }
+        .profile-label { 
+            font-size: 12px; 
+            color: #666; 
+            text-transform: uppercase; 
+            margin-bottom: 5px; 
+        }
+        .profile-value { 
+            font-size: 28px; 
+            font-weight: bold; 
+            color: #2c3e50; 
+        }
+        
+        /* Summary Box */
+        .summary-box { 
+            background: #fff3cd; 
+            border-left: 4px solid #ffc107; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 30px; 
+        }
+        .summary-box h3 { 
+            color: #856404; 
+            margin-bottom: 10px; 
+        }
+        .summary-box p { 
+            color: #856404; 
+            line-height: 1.6; 
+        }
+        
+        /* Section Headers */
+        .section { margin-bottom: 40px; }
+        .section-header { 
+            display: flex; 
+            align-items: center; 
+            margin-bottom: 20px; 
+            padding-bottom: 15px; 
+            border-bottom: 3px solid #667eea; 
+        }
+        .section-number { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-weight: bold; 
+            font-size: 18px; 
+            margin-right: 15px; 
+            flex-shrink: 0;
+        }
+        .section-title { 
+            font-size: 24px; 
+            color: #2c3e50; 
+            font-weight: 600; 
+        }
+        
+        /* College Table */
+        .college-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 20px; 
+            background: white; 
+            border-radius: 10px; 
+            overflow: hidden; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        .college-table thead { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+        }
+        .college-table th { 
+            padding: 15px; 
+            text-align: left; 
+            font-weight: 600; 
+            font-size: 14px; 
+        }
+        .college-table td { 
+            padding: 12px 15px; 
+            border-bottom: 1px solid #f0f0f0; 
+            color: #2c3e50; 
+        }
+        .college-table tr:hover { 
+            background: #f8f9fa; 
+        }
+        .college-table tr:last-child td { 
+            border-bottom: none; 
+        }
+        
+        /* College Name Column */
+        .college-name-cell { 
+            font-weight: 600; 
+            color: #667eea; 
+        }
+        
+        /* Branch Column */
+        .branch-cell { 
+            font-size: 13px; 
+            color: #666; 
+        }
+        
+        /* Admission Chance Badges */
+        .chance-badge { 
+            padding: 5px 12px; 
+            border-radius: 15px; 
+            font-size: 11px; 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            display: inline-block; 
+        }
+        .chance-high { 
+            background: #d4edda; 
+            color: #155724; 
+        }
+        .chance-medium { 
+            background: #fff3cd; 
+            color: #856404; 
+        }
+        .chance-low { 
+            background: #f8d7da; 
+            color: #721c24; 
+        }
+        
+        /* Round Separator */
+        .round-separator { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            padding: 15px 20px; 
+            border-radius: 10px; 
+            margin: 30px 0 20px 0; 
+            font-size: 18px; 
+            font-weight: 600; 
+        }
+        
+        /* Stats Grid */
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+            gap: 15px; 
+            margin-bottom: 30px; 
+        }
+        .stat-card { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            text-align: center; 
+        }
+        .stat-number { 
+            font-size: 36px; 
+            font-weight: bold; 
+            margin-bottom: 5px; 
+        }
+        .stat-label { 
+            font-size: 12px; 
+            opacity: 0.9; 
+            text-transform: uppercase; 
+        }
+        
+        /* Tips Section */
+        .tips-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 20px; 
+            margin-top: 20px; 
+        }
+        .tip-card { 
+            background: white; 
+            border-left: 4px solid #667eea; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+        }
+        .tip-icon { 
+            font-size: 36px; 
+            margin-bottom: 10px; 
+            text-align: center;
+            display: block;
+        }
+        .tip-title { 
+            font-size: 16px; 
+            font-weight: 600; 
+            color: #2c3e50; 
+            margin-bottom: 8px; 
+            text-align: center;
+        }
+        .tip-text { 
+            font-size: 14px; 
+            color: #666; 
+            line-height: 1.6; 
+        }
+        
+        /* CTA Section */
+        .cta-section { 
+            text-align: center; 
+            padding: 40px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            border-radius: 15px; 
+            margin: 30px 0; 
+        }
+        .cta-section h3 { 
+            color: white; 
+            font-size: 24px; 
+            margin-bottom: 15px; 
+        }
+        .cta-section p { 
+            color: rgba(255,255,255,0.9); 
+            margin-bottom: 25px; 
+        }
+        .cta-button { 
+            display: inline-block; 
+            background: white; 
+            color: #667eea; 
+            padding: 15px 40px; 
+            text-decoration: none; 
+            border-radius: 30px; 
+            font-weight: 600; 
+            font-size: 18px; 
+            transition: all 0.3s; 
+        }
+        .cta-button:hover { 
+            transform: scale(1.05); 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+        }
+        
+        /* Footer */
+        .footer { 
+            text-align: center; 
+            padding: 30px; 
+            background: #f8f9fa; 
+            color: #666; 
+            font-size: 14px; 
+        }
+        
+        /* No Data Message */
+        .no-data { 
+            text-align: center; 
+            padding: 40px; 
+            color: #999; 
+            font-style: italic; 
+        }
+        
+        /* Responsive */
+        @media (max-width: 600px) {
+            .header h1 { font-size: 24px; }
+            .section-title { font-size: 20px; }
+            .college-table { font-size: 12px; }
+            .college-table th, .college-table td { padding: 8px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .profile-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎓 Your KCET College Analysis</h1>
+            <p>Personalized College Matches Based on Your Rank</p>
+        </div>
+
+        <div class="content">
+            <!-- Profile Section -->
+            <div class="profile-section">
+                <h2 style="color: #2c3e50; margin-bottom: 5px;">👤 Your Profile</h2>
+                <div class="profile-grid">
+                    <div class="profile-item">
+                        <div class="profile-label">Student Name</div>
+                        <div class="profile-value">{{ student_name }}</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">KCET Rank</div>
+                        <div class="profile-value">{{ rank|format_number }}</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">Category</div>
+                        <div class="profile-value">{{ category }}</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">Report Date</div>
+                        <div class="profile-value" style="font-size: 18px;">{{ analysis_date.strftime('%d %b %Y') }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Box -->
+            {% if conversation_summary %}
+            <div class="summary-box">
+                <h3>📝 Analysis Summary</h3>
+                <p>{{ conversation_summary }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Statistics -->
+            {% if stats %}
+            <div class="stats-grid">
+                {% if stats.total_colleges %}
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.total_colleges }}</div>
+                    <div class="stat-label">Total Matches</div>
+                </div>
+                {% endif %}
+                {% if stats.round1_colleges %}
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.round1_colleges }}</div>
+                    <div class="stat-label">Round 1</div>
+                </div>
+                {% endif %}
+                {% if stats.round2_colleges %}
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.round2_colleges }}</div>
+                    <div class="stat-label">Round 2</div>
+                </div>
+                {% endif %}
+                {% if stats.branches_count %}
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.branches_count }}</div>
+                    <div class="stat-label">Branches</div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Round 1 Colleges -->
+            {% if round1_colleges %}
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">1</div>
+                    <div class="section-title">Round 1 College Matches</div>
+                </div>
+                
+                <table class="college-table">
+                    <thead>
+                        <tr>
+                            <th>College Name</th>
+                            <th>Branch</th>
+                            <th>Cutoff Rank</th>
+                            <th>Admission Chance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for college in round1_colleges %}
+                        <tr>
+                            <td class="college-name-cell">{{ college.college_name }}</td>
+                            <td class="branch-cell">{{ college.branch_name }}</td>
+                            <td>{{ college.cutoff_rank|format_number }}</td>
+                            <td>
+                                {% if college.admission_chance == 'High' %}
+                                    <span class="chance-badge chance-high">✅ High</span>
+                                {% elif college.admission_chance == 'Medium' %}
+                                    <span class="chance-badge chance-medium">⚠️ Medium</span>
+                                {% else %}
+                                    <span class="chance-badge chance-low">🎯 Reach</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            <!-- Round 2 Colleges -->
+            {% if round2_colleges %}
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">2</div>
+                    <div class="section-title">Round 2 College Matches</div>
+                </div>
+                
+                <table class="college-table">
+                    <thead>
+                        <tr>
+                            <th>College Name</th>
+                            <th>Branch</th>
+                            <th>Cutoff Rank</th>
+                            <th>Admission Chance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for college in round2_colleges %}
+                        <tr>
+                            <td class="college-name-cell">{{ college.college_name }}</td>
+                            <td class="branch-cell">{{ college.branch_name }}</td>
+                            <td>{{ college.cutoff_rank|format_number }}</td>
+                            <td>
+                                {% if college.admission_chance == 'High' %}
+                                    <span class="chance-badge chance-high">✅ High</span>
+                                {% elif college.admission_chance == 'Medium' %}
+                                    <span class="chance-badge chance-medium">⚠️ Medium</span>
+                                {% else %}
+                                    <span class="chance-badge chance-low">🎯 Reach</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            <!-- Additional Colleges (if provided) -->
+            {% if additional_colleges %}
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">3</div>
+                    <div class="section-title">Additional College Options</div>
+                </div>
+                
+                <table class="college-table">
+                    <thead>
+                        <tr>
+                            <th>College Name</th>
+                            <th>Branch</th>
+                            <th>Round</th>
+                            <th>Cutoff Rank</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for college in additional_colleges %}
+                        <tr>
+                            <td class="college-name-cell">{{ college.college_name }}</td>
+                            <td class="branch-cell">{{ college.branch_name }}</td>
+                            <td>{{ college.round_number }}</td>
+                            <td>{{ college.cutoff_rank|format_number }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            <!-- Expert Tips -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">{{ (round1_colleges or round2_colleges or additional_colleges) and '4' or '1' }}</div>
+                    <div class="section-title">💡 Expert Tips</div>
+                </div>
+                
+                <div class="tips-grid">
+                    <div class="tip-card">
+                        <span class="tip-icon">📋</span>
+                        <div class="tip-title">Fill Maximum Options</div>
+                        <p class="tip-text">Fill all 100+ options in KEA counseling. More options = higher chance of admission.</p>
+                    </div>
+                    
+                    <div class="tip-card">
+                        <span class="tip-icon">🎯</span>
+                        <div class="tip-title">Preference Matters</div>
+                        <p class="tip-text">List colleges in order of your TRUE preference. You'll get your highest ranked choice that accepts you.</p>
+                    </div>
+                    
+                    <div class="tip-card">
+                        <span class="tip-icon">🔄</span>
+                        <div class="tip-title">Include All Rounds</div>
+                        <p class="tip-text">Add colleges from Round 1, 2, and 3. Cutoffs vary by round - maximize your chances!</p>
+                    </div>
+                    
+                    <div class="tip-card">
+                        <span class="tip-icon">🌟</span>
+                        <div class="tip-title">Consider Multiple Branches</div>
+                        <p class="tip-text">Same college, different branches can have very different cutoffs. Be flexible!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA Section -->
+            <div class="cta-section">
+                <h3>💬 Continue the Conversation</h3>
+                <p>Have questions? Want to explore more colleges? Compare options?</p>
+                <a href="{{ chat_url }}" class="cta-button">Continue Chat →</a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>🤖 Generated by KCET AI Counselor</p>
+            <p style="margin-top: 10px; font-size: 12px;">
+                This analysis is based on KCET 2024 data. Actual admissions depend on various factors.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
