@@ -195,7 +195,7 @@ class AIAgent:
             if emit_tool_call:
                 await emit_tool_call(tool_name, parameters, "started")
 
-            result = execute_tool(tool_name, parameters, session.session_id)
+            result = execute_tool(tool_name, parameters, session.session_id, session)
             last_tool_result = result
             last_tool_name = tool_name
 
@@ -358,7 +358,7 @@ class AIAgent:
             parameters = dict(function_call.args)
 
             # Execute tool
-            result = execute_tool(tool_name, parameters, session.session_id)
+            result = execute_tool(tool_name, parameters, session.session_id, session)
             last_tool_result = result
             last_tool_name = tool_name
 

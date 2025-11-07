@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Complete KCET Analysis Report</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center; color: white; }
+        .header h1 { font-size: 32px; margin-bottom: 10px; }
+        .header p { font-size: 16px; opacity: 0.9; }
+        .badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; margin: 10px 5px; font-size: 14px; }
+        .content { padding: 40px; }
+        .section { margin-bottom: 40px; }
+        .section-header { display: flex; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 3px solid #667eea; }
+        .section-number { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; margin-right: 15px; }
+        .section-title { font-size: 24px; color: #2c3e50; font-weight: 600; }
+        .profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .profile-card { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 20px; border-radius: 12px; text-align: center; }
+        .profile-label { font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px; }
+        .profile-value { font-size: 24px; font-weight: bold; color: #2c3e50; }
+        .conversation-summary { background: #fff3cd; border-left: 4px solid #ffc107; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .summary-item { display: flex; align-items: start; margin-bottom: 10px; }
+        .summary-icon { font-size: 20px; margin-right: 10px; }
+        .college-card { background: white; border: 2px solid #e0e0e0; border-radius: 12px; padding: 20px; margin-bottom: 15px; transition: all 0.3s; }
+        .college-card:hover { box-shadow: 0 5px 15px rgba(0,0,0,0.1); transform: translateY(-2px); }
+        .college-name { font-size: 18px; font-weight: 600; color: #2c3e50; margin-bottom: 8px; }
+        .college-branch { color: #667eea; font-weight: 500; margin-bottom: 10px; }
+        .college-details { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .detail-badge { background: #f0f0f0; padding: 6px 12px; border-radius: 15px; font-size: 12px; }
+        .chance-high { background: #d4edda; color: #155724; padding: 8px 16px; border-radius: 20px; font-weight: 600; display: inline-block; }
+        .chance-medium { background: #fff3cd; color: #856404; padding: 8px 16px; border-radius: 20px; font-weight: 600; display: inline-block; }
+        .chance-low { background: #f8d7da; color: #721c24; padding: 8px 16px; border-radius: 20px; font-weight: 600; display: inline-block; }
+        .round-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .round-tab { flex: 1; background: #f0f0f0; padding: 15px; border-radius: 10px; text-align: center; cursor: pointer; transition: all 0.3s; }
+        .round-tab.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; text-align: center; }
+        .stat-number { font-size: 32px; font-weight: bold; margin-bottom: 5px; }
+        .stat-label { font-size: 12px; opacity: 0.9; }
+        .branch-card { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; }
+        .branch-name { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
+        .branch-stats { display: flex; justify-content: space-between; align-items: center; }
+        .comparison-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .comparison-card { background: white; border: 2px solid #667eea; border-radius: 12px; padding: 20px; }
+        .comparison-winner { border-color: #28a745; border-width: 3px; position: relative; }
+        .winner-badge { position: absolute; top: -15px; right: 20px; background: #28a745; color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .trend-chart { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); padding: 25px; border-radius: 12px; margin-bottom: 20px; }
+        .trend-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .trend-year { font-weight: 600; color: #2c3e50; }
+        .trend-value { font-size: 24px; font-weight: bold; color: #2c3e50; }
+        .trend-indicator { font-size: 20px; }
+        .recommendation-box { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); padding: 25px; border-radius: 12px; margin-bottom: 15px; }
+        .recommendation-title { font-size: 20px; font-weight: 600; color: #2c3e50; margin-bottom: 15px; display: flex; align-items: center; }
+        .recommendation-list { list-style: none; }
+        .recommendation-list li { padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.1); display: flex; align-items: start; }
+        .recommendation-list li:last-child { border-bottom: none; }
+        .recommendation-number { background: #667eea; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; flex-shrink: 0; }
+        .timeline { background: #f8f9fa; padding: 25px; border-radius: 12px; }
+        .timeline-item { display: flex; align-items: start; margin-bottom: 20px; padding-left: 20px; border-left: 3px solid #667eea; }
+        .timeline-date { background: #667eea; color: white; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: 600; margin-bottom: 8px; display: inline-block; }
+        .timeline-content { font-size: 14px; color: #2c3e50; }
+        .tips-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .tip-card { background: white; border-left: 4px solid #667eea; padding: 20px; border-radius: 8px; }
+        .tip-icon { font-size: 32px; margin-bottom: 10px; }
+        .tip-title { font-size: 16px; font-weight: 600; color: #2c3e50; margin-bottom: 8px; }
+        .tip-text { font-size: 14px; color: #666; line-height: 1.6; }
+        .cta-section { text-align: center; padding: 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; margin: 30px 0; }
+        .cta-section h3 { color: white; font-size: 24px; margin-bottom: 15px; }
+        .cta-section p { color: rgba(255,255,255,0.9); margin-bottom: 25px; }
+        .cta-button { display: inline-block; background: white; color: #667eea; padding: 15px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 18px; transition: all 0.3s; }
+        .cta-button:hover { transform: scale(1.05); box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .footer { text-align: center; padding: 30px; background: #f8f9fa; color: #666; font-size: 14px; }
+        .no-data { text-align: center; padding: 40px; color: #999; font-style: italic; }
+        @media (max-width: 600px) {
+            .header h1 { font-size: 24px; }
+            .section-title { font-size: 20px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .comparison-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎓 Your Complete KCET Analysis Report</h1>
+            <p>Comprehensive College Guidance & Insights</p>
+            <div>
+                <span class="badge">📊 Data-Driven</span>
+                <span class="badge">🤖 AI-Powered</span>
+                <span class="badge">✅ Personalized</span>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Section 1: Your Profile -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">1</div>
+                    <div class="section-title">Your Profile</div>
+                </div>
+                <div class="profile-grid">
+                    <div class="profile-card">
+                        <div class="profile-label">Name</div>
+                        <div class="profile-value">{{ student_name }}</div>
+                    </div>
+                    <div class="profile-card">
+                        <div class="profile-label">KCET Rank</div>
+                        <div class="profile-value">{{ rank|format_number }}</div>
+                    </div>
+                    <div class="profile-card">
+                        <div class="profile-label">Category</div>
+                        <div class="profile-value">{{ category }}</div>
+                    </div>
+                    <div class="profile-card">
+                        <div class="profile-label">Report Date</div>
+                        <div class="profile-value">{{ analysis_date|format_date('%b %d') }}</div>
+                    </div>
+                </div>
+
+                {% if conversation_summary %}
+                <div class="conversation-summary">
+                    <h4 style="margin-bottom: 15px; color: #856404;">📝 Conversation Summary</h4>
+                    {% for item in conversation_summary %}
+                    <div class="summary-item">
+                        <span class="summary-icon">•</span>
+                        <span>{{ item }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Section 2: College Matches (All Rounds) -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">2</div>
+                    <div class="section-title">College Matches Across Rounds</div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ total_colleges|default(0) }}</div>
+                        <div class="stat-label">Total Matches</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ high_chance_colleges|default(0) }}</div>
+                        <div class="stat-label">High Chance</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ total_branches|default(0) }}</div>
+                        <div class="stat-label">Branches Available</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ rounds_analyzed|default(1) }}</div>
+                        <div class="stat-label">Rounds Analyzed</div>
+                    </div>
+                </div>
+
+                {% if colleges_by_round %}
+                    {% for round_num, round_colleges in colleges_by_round.items() %}
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: #667eea; margin-bottom: 15px;">🔵 Round {{ round_num }}</h3>
+                        
+                        {% if round_colleges %}
+                            {% for college in round_colleges[:10] %}
+                            <div class="college-card">
+                                <div class="college-name">{{ college.college_name }}</div>
+                                <div class="college-branch">{{ college.branch_name }}</div>
+                                <div class="college-details">
+                                    <span class="detail-badge">📍 {{ college.location|default('Karnataka') }}</span>
+                                    <span class="detail-badge">🎯 Cutoff: {{ college.cutoff_rank|format_number }}</span>
+                                    <span class="detail-badge">📊 Round {{ college.round_number }}</span>
+                                    {% if college.admission_chance %}
+                                        {% if college.admission_chance == 'High' %}
+                                            <span class="chance-high">✅ High Chance</span>
+                                        {% elif college.admission_chance == 'Medium' %}
+                                            <span class="chance-medium">⚠️ Medium Chance</span>
+                                        {% else %}
+                                            <span class="chance-low">❌ Low Chance</span>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                            {% if round_colleges|length > 10 %}
+                            <p style="text-align: center; color: #666; margin-top: 15px;">
+                                + {{ round_colleges|length - 10 }} more colleges in Round {{ round_num }}
+                            </p>
+                            {% endif %}
+                        {% else %}
+                            <div class="no-data">No colleges found for Round {{ round_num }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% elif all_colleges %}
+                    {% for college in all_colleges[:15] %}
+                    <div class="college-card">
+                        <div class="college-name">{{ college.college_name }}</div>
+                        <div class="college-branch">{{ college.branch_name }}</div>
+                        <div class="college-details">
+                            <span class="detail-badge">📍 {{ college.location|default('Karnataka') }}</span>
+                            <span class="detail-badge">🎯 Cutoff: {{ college.cutoff_rank|format_number }}</span>
+                            <span class="detail-badge">📊 Round {{ college.round_number|default(1) }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-data">No college matches found for your rank</div>
+                {% endif %}
+            </div>
+
+            <!-- Section 3: Branch-wise Analysis -->
+            {% if branch_analysis %}
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">3</div>
+                    <div class="section-title">Branch-wise Analysis</div>
+                </div>
+
+                {% for branch in branch_analysis %}
+                <div class="branch-card">
+                    <div class="branch-name">{{ branch.branch_name }}</div>
+                    <div class="branch-stats">
+                        <span>🏫 {{ branch.college_count }} Colleges</span>
+                        <span>📊 Cutoff: {{ branch.avg_cutoff|format_number }}</span>
+                        <span>{{ branch.competitiveness }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Section 4: Top Recommendations -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">4</div>
+                    <div class="section-title">Personalized Recommendations</div>
+                </div>
+
+                <div class="recommendation-box">
+                    <div class="recommendation-title">
+                        <span style="font-size: 24px; margin-right: 10px;">🎯</span>
+                        Top Colleges to Target
+                    </div>
+                    <ul class="recommendation-list">
+                        {% if top_recommendations %}
+                            {% for rec in top_recommendations %}
+                            <li>
+                                <span class="recommendation-number">{{ loop.index }}</span>
+                                <div>
+                                    <strong>{{ rec.college_name }}</strong> - {{ rec.branch_name }}<br>
+                                    <small style="color: #666;">{{ rec.reason|default('Good match for your rank') }}</small>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        {% else %}
+                            <li>
+                                <span class="recommendation-number">1</span>
+                                <div>Focus on colleges with cutoffs near your rank for better chances</div>
+                            </li>
+                            <li>
+                                <span class="recommendation-number">2</span>
+                                <div>Consider multiple branches to increase your options</div>
+                            </li>
+                            <li>
+                                <span class="recommendation-number">3</span>
+                                <div>Monitor cutoffs across all counseling rounds</div>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+                {% if counseling_strategy %}
+                <div style="background: #e7f3ff; border-left: 4px solid #2196f3; padding: 20px; border-radius: 8px;">
+                    <h4 style="color: #1976d2; margin-bottom: 10px;">💡 Option Entry Strategy</h4>
+                    <p style="color: #333; line-height: 1.6;">{{ counseling_strategy }}</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Section 5: Historical Trends -->
+            {% if cutoff_trends %}
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">5</div>
+                    <div class="section-title">Historical Cutoff Trends</div>
+                </div>
+
+                <div class="trend-chart">
+                    {% for trend in cutoff_trends %}
+                    <div class="trend-row">
+                        <span class="trend-year">{{ trend.year }}</span>
+                        <span class="trend-value">{{ trend.cutoff|format_number }}</span>
+                        <span class="trend-indicator">
+                            {% if trend.trend == 'up' %}📈{% elif trend.trend == 'down' %}📉{% else %}➡️{% endif %}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if trend_prediction %}
+                <div style="background: #fff; padding: 20px; border-radius: 8px; margin-top: 15px;">
+                    <h4 style="color: #667eea; margin-bottom: 10px;">🔮 2025 Prediction</h4>
+                    <p style="color: #333;">{{ trend_prediction }}</p>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Section 6: Important Timeline -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">6</div>
+                    <div class="section-title">Counseling Timeline</div>
+                </div>
+
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div>
+                            <span class="timeline-date">Round 1</span>
+                            <div class="timeline-content">
+                                <strong>Option Entry & Seat Allotment</strong><br>
+                                Check official KEA website for exact dates
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div>
+                            <span class="timeline-date">Round 2</span>
+                            <div class="timeline-content">
+                                <strong>Second Round Counseling</strong><br>
+                                Cutoffs may vary based on seat availability
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div>
+                            <span class="timeline-date">Round 3</span>
+                            <div class="timeline-content">
+                                <strong>Final Round</strong><br>
+                                Last chance for seat allotment
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 7: Expert Tips -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">7</div>
+                    <div class="section-title">Expert Tips</div>
+                </div>
+
+                <div class="tips-grid">
+                    <div class="tip-card">
+                        <div class="tip-icon">📋</div>
+                        <div class="tip-title">Document Preparation</div>
+                        <div class="tip-text">Keep all original documents ready: marks cards, certificates, caste certificate (if applicable)</div>
+                    </div>
+                    <div class="tip-card">
+                        <div class="tip-icon">🎯</div>
+                        <div class="tip-title">Option Entry</div>
+                        <div class="tip-text">Fill maximum options (100+) in order of preference to maximize chances</div>
+                    </div>
+                    <div class="tip-card">
+                        <div class="tip-icon">🏫</div>
+                        <div class="tip-title">Campus Visits</div>
+                        <div class="tip-text">Visit shortlisted colleges to check infrastructure and placement records</div>
+                    </div>
+                    <div class="tip-card">
+                        <div class="tip-icon">⚠️</div>
+                        <div class="tip-title">Avoid Mistakes</div>
+                        <div class="tip-text">Don't skip rounds, verify details carefully, pay fees on time</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA Section -->
+            <div class="cta-section">
+                <h3>💬 Have More Questions?</h3>
+                <p>Continue your conversation with our AI counselor for personalized guidance</p>
+                <a href="{{ chat_url|default('http://collegepathfinder.vercel.app/ai-chat') }}" class="cta-button">
+                    Continue the Chat
+                </a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>KCET College Predictor</strong> - Powered by AI</p>
+            <p style="margin-top: 10px; font-size: 12px;">
+                This report is AI-generated based on historical data. Always verify with official KEA website.
+            </p>
+            <p style="margin-top: 10px; color: #999; font-size: 11px;">
+                Report generated on {{ analysis_date|format_date('%B %d, %Y at %I:%M %p') }}
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -21,8 +21,8 @@ const App: React.FC = () => {
           <Route path="/branches" element={<Branches />} />
           <Route path="/college/:collegeCode" element={<CollegeDetails />} />
           <Route path="/branch/:branchName" element={<BranchDetails />} />
-          <Route path="/predictor" element={<RankPredictor />} />
-          <Route path="/search" element={<RankPredictor />} />
+        <Route path="/predictor" element={<RankPredictor />} />
+          {/* <Route path="/search" element={<RankPredictor />} /> */}
           <Route path="/ai-chat" element={<AIChat />} />
         </Routes>
       </div>

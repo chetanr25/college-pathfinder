@@ -4,7 +4,7 @@
 
 // Convert HTTP/HTTPS URL to WS/WSS
 const getWebSocketUrl = () => {
-  const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8005';
   return apiUrl.replace(/^http/, 'ws');
 };
 
@@ -176,7 +176,7 @@ export class ChatService {
 }
 
 // REST API for session management
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8005';
 
 export const chatApi = {
   /**
