@@ -6,7 +6,7 @@ Handles conversation with Gemini 2.0 Flash model using function calling
 import os
 import json
 import asyncio
-from typing import List, Dict, Any, Optional, AsyncGenerator, Callable
+from typing import List, Dict, Any, Optional, AsyncGenerator, Callable, Union
 import google.generativeai as genai
 from google.protobuf.json_format import MessageToDict
 
@@ -82,7 +82,75 @@ class AIAgent:
             system_instruction=SYSTEM_PROMPT
         )
     
-    def _build_conversation_history(self, session: ChatSession, limit: int = 10) -> List[Dict]:
+    def _truncate_tool_response(self, data: Any, tool_name: str) -> Any:
+        """
+        Truncate large tool responses to prevent Gemini MALFORMED_FUNCTION_CALL errors.
+        
+        Args:
+            data: Tool response data
+            tool_name: Name of the tool that was called
+            
+        Returns:
+            Truncated data suitable for Gemini
+        """
+        # For compare_colleges, remove the full branches list (too large)
+        if tool_name == "compare_colleges" and isinstance(data, dict):
+            if "comparison" in data:
+                for college in data["comparison"]:
+                    if "branches" in college:
+                        # Keep only branch count and names (not full cutoff data)
+                        branches = college["branches"]
+                        college["branches"] = [
+                            {"branch_name": b.get("branch_name", "Unknown")} 
+                            for b in branches[:10]  # Limit to 10 branches
+                        ]
+                        college["branches_truncated"] = len(branches) > 10
+            return data
+        
+        # For large lists of colleges, truncate to top 15
+        if isinstance(data, list) and len(data) > 15:
+            # Keep only essential fields
+            truncated = []
+            for item in data[:15]:
+                if isinstance(item, dict):
+                    truncated.append({
+                        k: v for k, v in item.items() 
+                        if k in ["college_name", "college_code", "branch_name", "cutoff_rank", 
+                                 "round", "admission_chance", "best_cutoff", "avg_cutoff", 
+                                 "worst_cutoff", "total_branches", "best_branch", "worst_branch"]
+                    })
+                else:
+                    truncated.append(item)
+            return truncated
+        
+        # For other dict responses, limit string lengths
+        if isinstance(data, dict):
+            return self._truncate_dict(data)
+        
+        return data
+    
+    def _truncate_dict(self, d: dict, max_depth: int = 3, current_depth: int = 0) -> dict:
+        """Recursively truncate dictionary to prevent overly large responses"""
+        if current_depth >= max_depth:
+            return {"_truncated": True}
+        
+        result = {}
+        for k, v in d.items():
+            if isinstance(v, dict):
+                result[k] = self._truncate_dict(v, max_depth, current_depth + 1)
+            elif isinstance(v, list):
+                if len(v) > 10:
+                    result[k] = v[:10]
+                    result[f"{k}_count"] = len(v)
+                else:
+                    result[k] = v
+            elif isinstance(v, str) and len(v) > 500:
+                result[k] = v[:500] + "..."
+            else:
+                result[k] = v
+        return result
+
+    def _build_conversation_history(self, session: ChatSession, limit: int = 5) -> List[Dict]:
         """
         Build conversation history for Gemini
         
@@ -211,10 +279,13 @@ class AIAgent:
             
             # Send tool result back to Gemini
             # IMPORTANT: FunctionResponse.response must be a dict, not a list
-            # Wrap the result properly
+            # Wrap the result properly and TRUNCATE large responses to prevent Gemini issues
             if result.get("success"):
-                # Wrap data in a dict with 'result' key
-                tool_response_data = {"result": result.get("data", [])}
+                data = result.get("data", [])
+                
+                # Truncate large responses to prevent MALFORMED_FUNCTION_CALL errors
+                truncated_data = self._truncate_tool_response(data, tool_name)
+                tool_response_data = {"result": truncated_data}
             else:
                 # Send error in a dict
                 tool_response_data = {"error": result.get("error", "Unknown error")}
@@ -233,18 +304,38 @@ class AIAgent:
                 # Add timeout to prevent hanging
                 response = await asyncio.wait_for(
                     chat.send_message_async(function_response),
-                    timeout=120.0  # 30 second timeout
+                    timeout=60.0  # 60 second timeout
                 )
                 print("✅ Received response from Gemini")
+                
+                # Check for MALFORMED_FUNCTION_CALL or other errors
+                if response.candidates and len(response.candidates) > 0:
+                    candidate = response.candidates[0]
+                    if hasattr(candidate, 'finish_reason'):
+                        finish_reason = str(candidate.finish_reason)
+                        if 'MALFORMED' in finish_reason or 'ERROR' in finish_reason:
+                            print(f"⚠️ Gemini returned error finish_reason: {finish_reason}")
+                            # Use synthesized response instead
+                            final_text = self._synthesize_from_tool(tool_name, result)
+                            yield final_text
+                            return
+                            
             except asyncio.TimeoutError:
                 print("❌ Timeout waiting for Gemini response")
-                # Break out and return what we have
-                final_text = "I found the colleges, but encountered a timeout processing the response. Please try asking again."
+                # Use synthesized response from the tool result
+                if result.get("success"):
+                    final_text = self._synthesize_from_tool(tool_name, result)
+                else:
+                    final_text = "I found the data but encountered a timeout. Please try asking again."
                 yield final_text
                 return
             except Exception as e:
                 print(f"❌ Error getting response from Gemini: {e}")
-                final_text = "I encountered an error after fetching the data. Please try asking again."
+                # Try to synthesize a response from the last tool result
+                if result.get("success"):
+                    final_text = self._synthesize_from_tool(tool_name, result)
+                else:
+                    final_text = "I encountered an error after fetching the data. Please try asking again."
                 yield final_text
                 return
         
@@ -279,6 +370,33 @@ class AIAgent:
         a compact user-facing summary.
         """
         data = result.get("data")
+        
+        # Handle email tools - they return success/message directly
+        if tool_name.startswith("send_") and tool_name.endswith("_email"):
+            if isinstance(data, dict):
+                if data.get("success"):
+                    return data.get("message", "Email sent successfully!")
+                else:
+                    return data.get("message", "Failed to send email. Please try again.")
+            return result.get("summary", "Email operation completed.")
+        
+        # Handle compare_colleges
+        if tool_name == "compare_colleges" and isinstance(data, dict):
+            comparison = data.get("comparison", [])
+            if comparison:
+                lines = ["Here's the comparison:\n"]
+                for college in comparison:
+                    name = college.get("college_name", "Unknown")
+                    code = college.get("college_code", "")
+                    best = college.get("best_cutoff", "N/A")
+                    avg = college.get("avg_cutoff", "N/A")
+                    branches = college.get("total_branches", 0)
+                    lines.append(f"**{name}** ({code})")
+                    lines.append(f"  - Best Cutoff: {best}")
+                    lines.append(f"  - Avg Cutoff: {avg}")
+                    lines.append(f"  - Total Branches: {branches}\n")
+                return "\n".join(lines)
+        
         if data is None:
             return result.get("summary", "No results available.")
 
@@ -303,17 +421,21 @@ class AIAgent:
                 if cutoff:
                     parts.append(f"Cutoff: {cutoff}")
                 lines.append(" ".join(parts))
-            header = f"Here are the top {limit} results from {tool_name}:\n\n"
+            header = f"Here are the top {limit} results:\n\n"
             return header + "\n".join(lines)
 
         # If data is a dict with branches or trends
         if isinstance(data, dict):
-            try:
-                return json.dumps(data, indent=2, ensure_ascii=False)
-            except Exception:
-                return str(data)
+            # Don't dump large JSON, create a summary
+            summary_parts = []
+            for key, value in list(data.items())[:5]:
+                if isinstance(value, (str, int, float)):
+                    summary_parts.append(f"{key}: {value}")
+            if summary_parts:
+                return "Results:\n" + "\n".join(summary_parts)
+            return result.get("summary", "Data retrieved successfully.")
 
-        return str(data)
+        return str(data)[:500]
     
     def process_message_sync(
         self,

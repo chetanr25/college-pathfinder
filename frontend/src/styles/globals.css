@@ -94,11 +94,11 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* Animations */
+/* Cinematic Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -106,8 +106,115 @@ button:disabled {
   }
 }
 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+  }
+  25% {
+    transform: translateY(-20px) translateX(10px);
+  }
+  50% {
+    transform: translateY(-10px) translateX(-10px);
+  }
+  75% {
+    transform: translateY(-30px) translateX(5px);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(79, 70, 229, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(79, 70, 229, 0.6);
+  }
+}
+
 .fade-in {
-  animation: fadeIn 0.3s ease-in-out;
+  animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scale-in {
+  animation: scaleIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slide-in-right {
+  animation: slideInRight 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Input styles */
@@ -120,11 +227,51 @@ textarea:focus {
 
 /* Button hover effects */
 button:not(:disabled):hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
 button:not(:disabled):active {
   transform: translateY(0);
+}
+
+/* Custom Button Animations */
+.custom-button:hover::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: shimmer 2s infinite;
+}
+
+/* Card Hover Effects */
+.custom-card:hover {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Input Focus Effects */
+.custom-input:focus {
+  transform: scale(1.01);
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+/* Glassmorphism effect */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* Responsive breakpoints */
@@ -138,10 +285,170 @@ button:not(:disabled):active {
   html {
     font-size: 14px;
   }
+  
+  /* Mobile-friendly card grids */
+  .grid {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 @media (max-width: 480px) {
   html {
     font-size: 13px;
   }
+  
+  /* Stack navigation on very small screens */
+  nav {
+    padding: 0.5rem 1rem;
+  }
+}
+
+/* Smooth scrolling for internal links */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Improve text rendering */
+body {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Print styles */
+@media print {
+  nav, footer, button {
+    display: none;
+  }
+}
+
+/* Chat-specific styles */
+.chat-sidebar {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (max-width: 768px) {
+  .chat-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 1200;
+  }
+}
+
+/* Smooth scrollbar for chat */
+.chat-messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Session hover effects */
+.session-item {
+  position: relative;
+  overflow: hidden;
+}
+
+.session-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.session-item:hover::before {
+  left: 100%;
+}
+
+/* Fade in animation for new messages */
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chat-message {
+  animation: messageSlideIn 0.4s ease-out;
+}
+
+/* Thinking indicator pulse */
+@keyframes thinkingPulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.thinking-dot {
+  animation: thinkingPulse 1.5s ease-in-out infinite;
+}
+
+/* Home page specific animations and effects */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+/* Button hover effects */
+button:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 20px 60px rgba(102, 126, 234, 0.5) !important;
+}
+
+button:active {
+  transform: translateY(-2px) !important;
+}
+
+/* Feature card hover effects */
+.largeFeatureCard:hover {
+  transform: translateY(-8px);
+  border-color: rgba(102, 126, 234, 0.5) !important;
+}
+
+.largeFeatureCard:hover .featureCardGlow {
+  opacity: 1 !important;
+}
+
+.largeFeatureCard:hover .featureCardAction {
+  color: #a78bfa !important;
+  gap: 16px !important;
+}
+
+/* Why card hover */
+.whyCard:hover {
+  background: rgba(255,255,255,0.08) !important;
+  transform: translateY(-8px);
+  border-color: rgba(102, 126, 234, 0.3) !important;
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+  scroll-behavior: smooth;
 }

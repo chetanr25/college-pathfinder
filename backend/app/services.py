@@ -564,20 +564,33 @@ class CollegeService:
             # Extract key metrics
             branches = college_info["branches"]
             cutoffs = []
+            branch_cutoffs = []  # Store (cutoff, branch_name) pairs
             
             for branch in branches:
                 cutoff_key = f"round{round}"
                 cutoff = branch["cutoff_ranks"].get(cutoff_key, 0)
                 if cutoff > 0:
                     cutoffs.append(cutoff)
+                    branch_cutoffs.append((cutoff, branch["branch_name"]))
+            
+            # Find best and worst branches
+            best_branch = None
+            worst_branch = None
+            if branch_cutoffs:
+                best_entry = min(branch_cutoffs, key=lambda x: x[0])
+                worst_entry = max(branch_cutoffs, key=lambda x: x[0])
+                best_branch = best_entry[1]
+                worst_branch = worst_entry[1]
             
             comparison_data.append({
                 "college_code": college_code,
                 "college_name": college_info["college_name"],
                 "total_branches": len(branches),
                 "best_cutoff": min(cutoffs) if cutoffs else 0,
+                "best_branch": best_branch,  # Branch with best (lowest) cutoff
                 "avg_cutoff": builtin_round(sum(cutoffs) / len(cutoffs)) if cutoffs else 0,
                 "worst_cutoff": max(cutoffs) if cutoffs else 0,
+                "worst_branch": worst_branch,  # Branch with worst (highest) cutoff
                 "branches": branches  # Full branch list
             })
         

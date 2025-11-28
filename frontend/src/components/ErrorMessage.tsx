@@ -1,40 +1,39 @@
 import React from 'react';
-import { Error as ErrorIcon } from '@mui/icons-material';
+import { Error as ErrorIcon, Refresh } from '@mui/icons-material';
+import { Card, Button, Container } from './ui';
 import theme from '../theme';
 
 interface ErrorMessageProps {
   message: string;
   onRetry?: () => void;
+  fullScreen?: boolean;
 }
 
-const ErrorMessage: React.FC<ErrorMessageProps> = ({ message, onRetry }) => {
-  return (
-    <div style={styles.container}>
-      <div style={styles.iconWrapper}>
-        <ErrorIcon style={styles.icon} />
-      </div>
-      <h3 style={styles.title}>Oops! Something went wrong</h3>
-      <p style={styles.message}>{message}</p>
-      {onRetry && (
-        <button style={styles.retryButton} onClick={onRetry}>
-          Try Again
-        </button>
-      )}
-    </div>
-  );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
+const ErrorMessage: React.FC<ErrorMessageProps> = ({
+  message,
+  onRetry,
+  fullScreen = false,
+}) => {
+  const containerStyles: React.CSSProperties = {
     display: 'flex',
-    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
+    ...(fullScreen
+      ? {
+          minHeight: '100vh',
+          background: theme.colors.background.default,
+        }
+      : {
     padding: theme.spacing[8],
-    textAlign: 'center' as const,
-    gap: theme.spacing[3],
-  },
-  iconWrapper: {
+        }),
+  };
+
+  return (
+    <div style={containerStyles}>
+      <Container maxWidth="md">
+        <Card variant="elevated" padding={8} style={{ textAlign: 'center' }}>
+          <div
+            style={{
     width: '80px',
     height: '80px',
     borderRadius: theme.borderRadius.full,
@@ -42,37 +41,51 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: theme.spacing[2],
-  },
-  icon: {
-    fontSize: '2.5rem',
-    color: theme.colors.error.main,
-  },
-  title: {
+              margin: '0 auto',
+              marginBottom: theme.spacing[4],
+            }}
+          >
+            <ErrorIcon style={{ fontSize: '2.5rem', color: theme.colors.error.main }} />
+          </div>
+          
+          <h2
+            style={{
     margin: 0,
     fontSize: theme.typography.fontSize['2xl'],
     fontWeight: theme.typography.fontWeight.bold,
     color: theme.colors.text.primary,
-  },
-  message: {
+              marginBottom: theme.spacing[3],
+            }}
+          >
+            Oops! Something went wrong
+          </h2>
+          
+          <p
+            style={{
     margin: 0,
     fontSize: theme.typography.fontSize.base,
     color: theme.colors.text.secondary,
-    maxWidth: '500px',
-  },
-  retryButton: {
-    marginTop: theme.spacing[2],
-    padding: `${theme.spacing[3]} ${theme.spacing[6]}`,
-    background: theme.colors.primary.gradient,
-    color: theme.colors.text.inverse,
-    border: 'none',
-    borderRadius: theme.borderRadius.md,
-    fontSize: theme.typography.fontSize.base,
-    fontWeight: theme.typography.fontWeight.semibold,
-    cursor: 'pointer',
-    transition: theme.transitions.base,
-    boxShadow: theme.shadows.md,
-  },
+              lineHeight: theme.typography.lineHeight.relaxed,
+              marginBottom: theme.spacing[6],
+            }}
+          >
+            {message}
+          </p>
+          
+          {onRetry && (
+            <Button
+              variant="primary"
+              size="lg"
+              icon={<Refresh />}
+              onClick={onRetry}
+            >
+              Try Again
+            </Button>
+          )}
+        </Card>
+      </Container>
+    </div>
+  );
 };
 
 export default ErrorMessage;

@@ -3,64 +3,79 @@ import { CircularProgress } from '@mui/material';
 import theme from '../theme';
 
 interface LoadingSpinnerProps {
-  size?: number;
   fullScreen?: boolean;
   message?: string;
+  size?: number;
 }
 
 const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
-  size = 60,
   fullScreen = false,
   message = 'Loading...',
+  size = 60,
 }) => {
-  if (fullScreen) {
-    return (
-      <div style={styles.fullScreen}>
-        <CircularProgress size={size} style={styles.spinner} />
-        <p style={styles.message}>{message}</p>
-      </div>
-    );
-  }
+  const containerStyles: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing[4],
+    ...(fullScreen
+      ? {
+          minHeight: '100vh',
+          background: theme.colors.background.mesh,
+        }
+      : {
+          padding: theme.spacing[12],
+        }),
+  };
+
+  const spinnerWrapperStyles: React.CSSProperties = {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: size + 40,
+    height: size + 40,
+  };
+
+  const glowStyles: React.CSSProperties = {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    borderRadius: '50%',
+    background: theme.colors.primary.gradient,
+    opacity: 0.2,
+    filter: 'blur(20px)',
+    animation: 'pulse 2s ease-in-out infinite',
+  };
+
+  const messageStyles: React.CSSProperties = {
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.medium,
+    color: theme.colors.text.primary,
+    textAlign: 'center',
+  };
 
   return (
-    <div style={styles.container}>
-      <CircularProgress size={size} style={styles.spinner} />
-      <p style={styles.message}>{message}</p>
+    <div style={containerStyles}>
+      <div style={spinnerWrapperStyles}>
+        <div style={glowStyles} />
+        <CircularProgress
+          size={size}
+          thickness={4}
+          sx={{
+            position: 'relative',
+            zIndex: 1,
+            '& .MuiCircularProgress-circle': {
+              strokeLinecap: 'round',
+            },
+            color: theme.colors.primary.main,
+          }}
+        />
+      </div>
+      {message && <p style={messageStyles}>{message}</p>}
     </div>
   );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  fullScreen: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: theme.colors.background.default,
-    zIndex: theme.zIndex.modal,
-  },
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: theme.spacing[8],
-    gap: theme.spacing[4],
-  },
-  spinner: {
-    color: theme.colors.primary.main,
-  },
-  message: {
-    margin: 0,
-    fontSize: theme.typography.fontSize.base,
-    color: theme.colors.text.secondary,
-    fontWeight: theme.typography.fontWeight.medium,
-  },
 };
 
 export default LoadingSpinner;

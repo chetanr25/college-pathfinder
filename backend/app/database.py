@@ -21,9 +21,20 @@ def get_db_connection() -> Generator[sqlite3.Connection, None, None]:
     Raises:
         DatabaseError: If database connection or operation fails
     """
+    import os
+    from pathlib import Path
+    
+    # Get absolute path to database
+    db_path = settings.DATABASE_URL
+    
+    # If the path doesn't exist, try to find it relative to this file
+    if not os.path.exists(db_path):
+        backend_dir = Path(__file__).parent.parent
+        db_path = str(backend_dir / "data" / "kcet_2024.db")
+    
     conn = None
     try:
-        conn = sqlite3.connect(settings.DATABASE_URL)
+        conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row  # This enables column access by name
         yield conn
     except sqlite3.Error as e:

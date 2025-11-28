@@ -282,15 +282,15 @@ def execute_tool(tool_name: str, parameters: Dict[str, Any], session_id: str = N
         if tool_name.startswith('send_') and tool_name.endswith('_email') and session_id:
             parameters['session_id'] = session_id
             
-            # Set session context for comprehensive email (uses global context pattern)
-            if tool_name == 'send_comprehensive_report_email' and session:
+            # Set session context for all email tools (for user email access)
+            if session:
                 from app.ai.email_tools import _set_session_context
                 _set_session_context(session)
         
         result = executor(**parameters)
         
         # Clear session context after execution
-        if tool_name == 'send_comprehensive_report_email':
+        if tool_name.startswith('send_') and tool_name.endswith('_email'):
             from app.ai.email_tools import _set_session_context
             _set_session_context(None)
         
