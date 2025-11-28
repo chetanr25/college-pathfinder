@@ -1,17 +1,19 @@
 """
-Chat routes for AI counselor
+Chat routes for AI counselor with Supabase integration
 
-Includes WebSocket endpoint for real-time chat and REST endpoints for session management
+Includes WebSocket endpoint for real-time chat and REST endpoints for session management.
+All sessions are now stored in Supabase with user-specific access (RLS).
 """
 import json
 import os
-from typing import List
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException
+from typing import List, Optional
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException, Query
 from fastapi.responses import JSONResponse
 
-from app.ai.session_manager import session_manager, Message
+from app.ai.supabase_session_manager import session_manager, Message, ChatSession
 from app.ai.agent import agent
 from app.ai.prompts import WELCOME_MESSAGE, ERROR_MESSAGE
+from app.auth.service import auth_service
 
 
 router = APIRouter(
@@ -20,84 +22,154 @@ router = APIRouter(
 )
 
 
+def extract_user_from_token(token: str) -> Optional[dict]:
+    """Extract user info from JWT token (supports Supabase tokens)"""
+    if not token:
+        return None
+    
+    # Try Supabase token first (most common case)
+    user = auth_service.verify_supabase_token(token)
+    if user:
+        return user
+    
+    # Fall back to our own JWT
+    payload = auth_service.verify_token(token)
+    if payload:
+        return {
+            'id': payload.get('sub'),
+            'email': payload.get('email')
+        }
+    return None
+
+
 # WebSocket connection manager
 class ConnectionManager:
     """Manages WebSocket connections"""
     
     def __init__(self):
         self.active_connections: dict[str, WebSocket] = {}
+        self.session_users: dict[str, str] = {}  # session_id -> user_id
     
-    async def connect(self, websocket: WebSocket, session_id: str):
+    async def connect(self, websocket: WebSocket, session_id: str, user_id: str = None):
         """Accept and store WebSocket connection"""
         await websocket.accept()
         self.active_connections[session_id] = websocket
+        if user_id:
+            self.session_users[session_id] = user_id
     
     def disconnect(self, session_id: str):
         """Remove WebSocket connection"""
         if session_id in self.active_connections:
             del self.active_connections[session_id]
+        if session_id in self.session_users:
+            del self.session_users[session_id]
     
     async def send_message(self, session_id: str, message: dict):
         """Send message to specific session"""
         if session_id in self.active_connections:
             await self.active_connections[session_id].send_json(message)
+    
+    def get_user_id(self, session_id: str) -> Optional[str]:
+        """Get user ID for a session"""
+        return self.session_users.get(session_id)
 
 
 manager = ConnectionManager()
 
 
 @router.websocket("/ws/{session_id}")
-async def websocket_chat(websocket: WebSocket, session_id: str):
+async def websocket_chat(
+    websocket: WebSocket, 
+    session_id: str,
+    token: str = Query(default=None)
+):
     """
     WebSocket endpoint for real-time chat
     
+    Query params:
+    - token: JWT token for authentication (optional but recommended)
+    
     Messages from client:
-    - {"type": "chat_message", "message": "user message"}
+    - {"message": "user message"} or {"type": "chat_message", "message": "user message"}
     - {"type": "get_history"}
     
     Messages to client:
     - {"type": "thinking", "step": "...", "timestamp": "..."}
     - {"type": "tool_call", "tool_name": "...", "parameters": {...}, "status": "started|completed|failed"}
     - {"type": "response_chunk", "content": "...", "is_final": false}
-    - {"type": "response_complete", "message_id": "..."}
+    - {"type": "response_complete", "message_id": "...", "full_content": "..."}
     - {"type": "error", "message": "..."}
     """
-    await manager.connect(websocket, session_id)
+    # Extract user from token
+    user = extract_user_from_token(token) if token else None
+    user_id = user['id'] if user else None
+    user_email = user.get('email') if user else None
+    
+    await manager.connect(websocket, session_id, user_id)
+    
+    # Handle temp sessions (new sessions not yet saved)
+    is_temp_session = session_id.startswith('temp-')
     
     # Get or create session
-    session = session_manager.get_session(session_id)
+    session = None
+    if not is_temp_session:
+        session = session_manager.get_session(session_id, user_id)
+        if session and user_email:
+            session.user_email = user_email  # Set email for email features
+    
     if not session:
-        session = session_manager.create_session()
-        # Update session_id to match requested one
-        session.session_id = session_id
-        session_manager.update_session(session)
+        # Create a new in-memory session (will be persisted on first message)
+        session = ChatSession(session_id=session_id, user_id=user_id, user_email=user_email)
         
         # Send welcome message
-        welcome_msg = Message(role="assistant", content=WELCOME_MESSAGE)
-        session.add_message(welcome_msg)
-        session_manager.update_session(session)
-        
         await websocket.send_json({
             "type": "welcome",
             "message": WELCOME_MESSAGE,
             "session_id": session_id
+        })
+    else:
+        # Session exists, send connected message
+        await websocket.send_json({
+            "type": "connected",
+            "session_id": session_id,
+            "message_count": len(session.messages)
         })
     
     try:
         while True:
             # Receive message from client
             data = await websocket.receive_json()
-            msg_type = data.get("type")
             
-            if msg_type == "chat_message":
-                user_message = data.get("message", "").strip()
+            # Handle both {"message": "..."} and {"type": "chat_message", "message": "..."}
+            msg_type = data.get("type", "chat_message")
+            user_message = data.get("message", "").strip()
+            
+            if msg_type == "chat_message" or (user_message and msg_type != "get_history"):
                 if not user_message:
                     continue
                 
+                # Create real session in Supabase if this is first message and we have a user
+                if is_temp_session and user_id:
+                    # Create new session in Supabase
+                    real_session = session_manager.create_session(user_id, user_message[:40])
+                    # Update our local session reference
+                    session = real_session
+                    # Notify client of real session ID
+                    await websocket.send_json({
+                        "type": "session_created",
+                        "old_session_id": session_id,
+                        "new_session_id": session.session_id
+                    })
+                    session_id = session.session_id
+                    is_temp_session = False
+                
                 # Add user message to session
-                user_msg = Message(role="user", content=user_message)
+                user_msg = Message(role="user", content=user_message, session_id=session_id)
                 session.add_message(user_msg)
-                session_manager.update_session(session)
+                
+                # Save to Supabase asynchronously
+                if user_id and not is_temp_session:
+                    session_manager.add_message(session_id, user_msg, user_id)
                 
                 # Define callback functions for streaming
                 async def emit_thinking(step: str):
@@ -117,18 +189,14 @@ async def websocket_chat(websocket: WebSocket, session_id: str):
                         # Sanitize parameters - remove large/complex data
                         sanitized_params = {}
                         for key, value in parameters.items():
-                            # Skip large data structures (HTML templates, long lists)
                             if isinstance(value, (str, int, float, bool, type(None))):
-                                # Truncate long strings (HTML templates)
                                 if isinstance(value, str) and len(value) > 100:
                                     sanitized_params[key] = value[:100] + "..."
                                 else:
                                     sanitized_params[key] = value
                             elif isinstance(value, list):
-                                # Show count instead of full list
                                 sanitized_params[key] = f"[{len(value)} items]"
                             elif isinstance(value, dict):
-                                # Show dict summary
                                 sanitized_params[key] = f"{{dict with {len(value)} keys}}"
                             else:
                                 sanitized_params[key] = str(type(value).__name__)
@@ -159,13 +227,15 @@ async def websocket_chat(websocket: WebSocket, session_id: str):
                                 "is_final": False
                             })
                         except Exception as e:
-                            print(f"⚠️ Failed to send response chunk (client may have disconnected): {e}")
-                            # Continue processing even if client disconnected
+                            print(f"⚠️ Failed to send response chunk: {e}")
                     
                     # Add assistant response to session
-                    assistant_msg = Message(role="assistant", content=response_text)
+                    assistant_msg = Message(role="assistant", content=response_text, session_id=session_id)
                     session.add_message(assistant_msg)
-                    session_manager.update_session(session)
+                    
+                    # Save assistant message to Supabase asynchronously
+                    if user_id and not is_temp_session:
+                        session_manager.add_message(session_id, assistant_msg, user_id)
                     
                     # Send completion message
                     try:
@@ -207,14 +277,9 @@ async def websocket_chat(websocket: WebSocket, session_id: str):
 # REST endpoints for session management
 
 @router.post("/sessions", status_code=201)
-async def create_session():
+async def create_session(user_id: str = None, title: str = "New Chat"):
     """Create a new chat session"""
-    session = session_manager.create_session()
-    
-    # Add welcome message
-    welcome_msg = Message(role="assistant", content=WELCOME_MESSAGE)
-    session.add_message(welcome_msg)
-    session_manager.update_session(session)
+    session = session_manager.create_session(user_id, title)
     
     return {
         "session_id": session.session_id,
@@ -224,9 +289,9 @@ async def create_session():
 
 
 @router.get("/sessions/{session_id}")
-async def get_session(session_id: str):
+async def get_session(session_id: str, user_id: str = None):
     """Get full session with conversation history"""
-    session = session_manager.get_session(session_id)
+    session = session_manager.get_session(session_id, user_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
     
@@ -234,6 +299,8 @@ async def get_session(session_id: str):
         "session_id": session.session_id,
         "created_at": session.created_at.isoformat(),
         "updated_at": session.updated_at.isoformat(),
+        "title": session.title,
+        "preview": session.preview,
         "message_count": len(session.messages),
         "messages": [msg.to_dict() for msg in session.messages],
         "context": session.context,
@@ -242,9 +309,9 @@ async def get_session(session_id: str):
 
 
 @router.delete("/sessions/{session_id}")
-async def delete_session(session_id: str):
+async def delete_session(session_id: str, user_id: str = None):
     """Delete a session"""
-    success = session_manager.delete_session(session_id)
+    success = session_manager.delete_session(session_id, user_id)
     if not success:
         raise HTTPException(status_code=404, detail="Session not found")
     
@@ -252,11 +319,9 @@ async def delete_session(session_id: str):
 
 
 @router.get("/sessions/{session_id}/messages")
-async def get_messages(session_id: str, limit: int = None):
+async def get_messages(session_id: str, limit: int = None, user_id: str = None):
     """Get messages from a session"""
-    messages = session_manager.get_messages(session_id, limit)
-    if messages is None:
-        raise HTTPException(status_code=404, detail="Session not found")
+    messages = session_manager.get_messages(session_id, limit, user_id)
     
     return {
         "session_id": session_id,
@@ -266,10 +331,41 @@ async def get_messages(session_id: str, limit: int = None):
 
 
 @router.get("/sessions")
-async def list_sessions():
-    """List all session IDs"""
-    session_ids = session_manager.list_sessions()
+async def list_sessions(user_id: str = None):
+    """List all sessions for a user"""
+    sessions = session_manager.list_sessions(user_id)
+    
     return {
-        "count": len(session_ids),
-        "session_ids": session_ids
+        "count": len(sessions),
+        "sessions": sessions
+    }
+
+
+@router.patch("/sessions/{session_id}")
+async def update_session_metadata(session_id: str, title: str = None, user_id: str = None):
+    """Update session metadata (e.g., title)"""
+    session = session_manager.get_session(session_id, user_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    if title:
+        session.title = title
+        session_manager.update_session(session)
+    
+    return {
+        "session_id": session.session_id,
+        "title": session.title,
+        "message": "Session updated successfully"
+    }
+
+
+# Health check endpoint
+@router.get("/health")
+async def health_check():
+    """Check if Supabase connection is working"""
+    is_connected = session_manager.supabase is not None
+    return {
+        "status": "healthy" if is_connected else "degraded",
+        "supabase_connected": is_connected,
+        "message": "Supabase connected" if is_connected else "Using in-memory storage (Supabase not configured)"
     }

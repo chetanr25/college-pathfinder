@@ -5,6 +5,7 @@ import { collegeApi, type CollegeList } from '../services/api';
 import CollegeCardModern from '../components/CollegeCardModern';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
+import { Hero, Container, Section, Grid, Button, Card, Badge } from '../components/ui';
 import theme from '../theme';
 
 const BranchDetails: React.FC = () => {
@@ -42,34 +43,43 @@ const BranchDetails: React.FC = () => {
   }
 
   if (error) {
-    return <ErrorMessage message={error} onRetry={fetchColleges} />;
+    return <ErrorMessage message={error} onRetry={fetchColleges} fullScreen />;
   }
 
   const decodedBranchName = branchName ? decodeURIComponent(branchName) : '';
 
   return (
     <div style={styles.container}>
-      {/* Header */}
-      <section style={styles.header}>
-        <div style={styles.headerContent}>
-          <button style={styles.backButton} onClick={() => navigate('/branches')}>
-            <ArrowBack />
-            <span>Back to Branches</span>
-          </button>
-          
-          <div style={styles.iconWrapper}>
-            <Category style={styles.headerIcon} />
-          </div>
-          
-          <h1 style={styles.title}>{decodedBranchName}</h1>
-          <p style={styles.subtitle}>
-            {colleges.length} colleges offering this branch
-          </p>
-        </div>
-      </section>
+      {/* Hero Section */}
+      <Hero
+        icon={<Category />}
+        title={decodedBranchName}
+        subtitle={`${colleges.length} colleges offering this branch`}
+        size="md"
+        background={theme.colors.secondary.gradient}
+        actions={
+          <Button
+            variant="outline"
+            size="md"
+            icon={<ArrowBack />}
+            onClick={() => navigate('/branches')}
+            style={{ 
+              background: 'rgba(255, 255, 255, 0.2)', 
+              borderColor: 'rgba(255, 255, 255, 0.5)', 
+              color: '#fff' 
+            }}
+          >
+            Back to Branches
+          </Button>
+        }
+      />
 
       {/* Round Selector */}
-      <section style={styles.roundSection}>
+      <Section background="paper" padding="md">
+        <Container maxWidth="md">
+          <Card variant="elevated" padding={4}>
+            <div style={styles.roundSelectorWrapper}>
+              <label style={styles.roundLabel}>Select Counselling Round:</label>
         <div style={styles.roundSelector}>
           {[1, 2, 3].map((round) => (
             <button
@@ -84,30 +94,51 @@ const BranchDetails: React.FC = () => {
             </button>
           ))}
         </div>
-      </section>
+            </div>
+          </Card>
+        </Container>
+      </Section>
 
       {/* Colleges Grid */}
-      <section style={styles.collegesSection}>
+      <Section background="default" padding="lg">
+        <Container maxWidth="xl">
+          <div style={styles.resultsHeader}>
+            <h2 style={styles.resultsTitle}>
+              Colleges Offering {decodedBranchName}
+            </h2>
+            <Badge variant="primary" gradient size="lg">
+              Round {selectedRound}
+            </Badge>
+          </div>
+
         {colleges.length === 0 ? (
           <div style={styles.emptyState}>
             <School style={styles.emptyIcon} />
             <p style={styles.emptyText}>
               No colleges found offering {decodedBranchName} in Round {selectedRound}
             </p>
+              <p style={styles.emptyHint}>
+                Try selecting a different round
+              </p>
           </div>
         ) : (
-          <div style={styles.collegesGrid}>
-            {colleges.map((college) => (
+            <Grid columns="auto" minItemWidth="350px" gap={6}>
+              {colleges.map((college, index) => (
+                <div
+                  key={college.college_code}
+                  style={{ animation: `fadeInUp 0.6s ease-out ${index * 0.05}s both` }}
+                >
               <CollegeCardModern
-                key={college.college_code}
                 collegeCode={college.college_code}
                 collegeName={college.college_name}
                 cutoffRank={college.cutoff_rank}
               />
+                </div>
             ))}
-          </div>
+            </Grid>
         )}
-      </section>
+        </Container>
+      </Section>
     </div>
   );
 };
@@ -117,67 +148,15 @@ const styles: Record<string, React.CSSProperties> = {
     minHeight: '100vh',
     background: theme.colors.background.default,
   },
-  header: {
-    background: theme.colors.secondary.gradient,
-    padding: `${theme.spacing[12]} ${theme.spacing[6]}`,
-    marginBottom: theme.spacing[8],
-  },
-  headerContent: {
-    maxWidth: '1200px',
-    margin: '0 auto',
+  roundSelectorWrapper: {
     textAlign: 'center' as const,
   },
-  backButton: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: theme.spacing[2],
-    padding: `${theme.spacing[2]} ${theme.spacing[4]}`,
-    background: 'rgba(255, 255, 255, 0.2)',
-    backdropFilter: 'blur(10px)',
-    color: theme.colors.text.inverse,
-    border: 'none',
-    borderRadius: theme.borderRadius.md,
-    fontSize: theme.typography.fontSize.sm,
-    fontWeight: theme.typography.fontWeight.medium,
-    cursor: 'pointer',
-    transition: theme.transitions.base,
-    marginBottom: theme.spacing[6],
-  },
-  iconWrapper: {
-    width: '80px',
-    height: '80px',
-    borderRadius: theme.borderRadius.xl,
-    background: 'rgba(255, 255, 255, 0.2)',
-    backdropFilter: 'blur(10px)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: '0 auto',
-    marginBottom: theme.spacing[5],
-  },
-  headerIcon: {
-    fontSize: '2.5rem',
-    color: theme.colors.text.inverse,
-  },
-  title: {
-    margin: 0,
-    fontSize: theme.typography.fontSize['4xl'],
-    fontWeight: theme.typography.fontWeight.bold,
-    fontFamily: theme.typography.fontFamily.heading,
-    color: theme.colors.text.inverse,
+  roundLabel: {
+    display: 'block',
+    fontSize: theme.typography.fontSize.base,
+    fontWeight: theme.typography.fontWeight.semibold,
+    color: theme.colors.text.primary,
     marginBottom: theme.spacing[4],
-  },
-  subtitle: {
-    margin: 0,
-    fontSize: theme.typography.fontSize.lg,
-    color: theme.colors.text.inverse,
-    opacity: 0.9,
-  },
-  roundSection: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: `0 ${theme.spacing[6]}`,
-    marginBottom: theme.spacing[8],
   },
   roundSelector: {
     display: 'flex',
@@ -185,43 +164,59 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'center',
   },
   roundButton: {
+    flex: 1,
+    maxWidth: '150px',
     padding: `${theme.spacing[3]} ${theme.spacing[6]}`,
     background: theme.colors.background.paper,
     color: theme.colors.text.secondary,
     border: `2px solid ${theme.colors.border.light}`,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: theme.borderRadius.lg,
     fontSize: theme.typography.fontSize.base,
     fontWeight: theme.typography.fontWeight.medium,
     cursor: 'pointer',
     transition: theme.transitions.base,
   },
   roundButtonActive: {
-    background: theme.colors.primary.gradient,
+    background: theme.colors.secondary.gradient,
     color: theme.colors.text.inverse,
     borderColor: 'transparent',
     boxShadow: theme.shadows.glow,
+    transform: 'translateY(-2px)',
   },
-  collegesSection: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: `0 ${theme.spacing[6]} ${theme.spacing[12]}`,
+  resultsHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing[4],
+    marginBottom: theme.spacing[8],
+    flexWrap: 'wrap' as const,
   },
-  collegesGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-    gap: theme.spacing[6],
+  resultsTitle: {
+    margin: 0,
+    fontSize: theme.typography.fontSize['2xl'],
+    fontWeight: theme.typography.fontWeight.bold,
+    background: theme.colors.secondary.gradient,
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
   },
   emptyState: {
     textAlign: 'center' as const,
     padding: `${theme.spacing[16]} ${theme.spacing[4]}`,
   },
   emptyIcon: {
-    fontSize: '4rem',
+    fontSize: '5rem',
     color: theme.colors.neutral[300],
     marginBottom: theme.spacing[4],
   },
   emptyText: {
-    fontSize: theme.typography.fontSize.lg,
+    fontSize: theme.typography.fontSize.xl,
+    color: theme.colors.text.primary,
+    fontWeight: theme.typography.fontWeight.semibold,
+    marginBottom: theme.spacing[2],
+  },
+  emptyHint: {
+    fontSize: theme.typography.fontSize.base,
     color: theme.colors.text.secondary,
   },
 };

@@ -7,11 +7,28 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f5f7fa; }
-        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
-        .header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 40px 30px; text-align: center; color: white; }
+        .container { max-width: 700px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center; color: white; }
         .header h1 { font-size: 28px; margin-bottom: 10px; }
         .content { padding: 40px 30px; }
         .intro { font-size: 16px; margin-bottom: 30px; line-height: 1.8; }
+        
+        /* Comparison Table Styles */
+        .comparison-table { width: 100%; border-collapse: collapse; margin: 20px 0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .comparison-table th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 12px; font-size: 14px; font-weight: 600; text-align: left; }
+        .comparison-table td { padding: 12px; border-bottom: 1px solid #e9ecef; font-size: 14px; }
+        .comparison-table tr:nth-child(even) { background-color: #f8f9fa; }
+        .comparison-table tr:hover { background-color: #eef2ff; }
+        .metric-label { font-weight: 600; color: #374151; background-color: #f3f4f6; }
+        
+        /* Winner badge */
+        .winner-badge { background-color: #10b981; color: white; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-block; margin-left: 8px; }
+        .best-value { color: #059669; font-weight: 600; }
+        
+        /* Branch list styles */
+        .branch-item { background: #f3f4f6; padding: 8px 12px; border-radius: 6px; font-size: 13px; color: #374151; margin-bottom: 6px; border-left: 3px solid #667eea; }
+        
+        /* Old pairwise comparison styles (for backward compatibility) */
         .comparison-section { margin: 30px 0; }
         .comparison-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 20px; border-radius: 8px 8px 0 0; font-size: 18px; font-weight: 600; }
         .comparison-body { border: 2px solid #e9ecef; border-top: none; border-radius: 0 0 8px 8px; }
@@ -20,19 +37,25 @@
         .college-title { color: #2c3e50; font-size: 18px; font-weight: 600; margin-bottom: 15px; }
         .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .metric { background-color: #f8f9fa; padding: 12px; border-radius: 6px; }
-        .metric-label { font-size: 12px; color: #6c757d; margin-bottom: 4px; }
+        .metric-value-label { font-size: 12px; color: #6c757d; margin-bottom: 4px; }
         .metric-value { font-size: 16px; font-weight: 600; color: #333; }
-        .winner-badge { background-color: #28a745; color: white; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-left: 8px; }
         .vs-divider { text-align: center; padding: 20px; color: #6c757d; font-size: 18px; font-weight: 600; }
+        
         .recommendation-box { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; padding: 25px; border-radius: 12px; margin: 30px 0; }
         .recommendation-box h3 { margin-bottom: 15px; font-size: 20px; }
         .footer { background-color: #f8f9fa; padding: 30px; text-align: center; color: #6c757d; font-size: 14px; border-top: 1px solid #e9ecef; }
+        
+        /* Branch-wise cutoffs table */
+        .branch-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 13px; }
+        .branch-table th { background: #667eea; color: white; padding: 10px 8px; text-align: left; font-weight: 600; }
+        .branch-table td { padding: 10px 8px; border-bottom: 1px solid #e9ecef; }
+        .branch-table tr:nth-child(even) { background-color: #f8f9fa; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>⚖️ College Comparison Report</h1>
+            <h1>College Comparison Report</h1>
             <p>Side-by-side analysis of your top choices</p>
         </div>
         
@@ -43,33 +66,164 @@
                 <p>We've prepared a detailed comparison of your shortlisted colleges to help you make an informed decision. Here's how they stack up against each other:</p>
             </div>
             
+            {# New format: comparison data from compare_colleges() tool #}
+            {% if comparison and comparison|length > 0 %}
+            <h3 style="margin-bottom: 20px; color: #374151; font-size: 18px;">Comparison Overview (Round {{ round|default(1) }})</h3>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th style="background: #667eea; color: white; padding: 15px 12px;">Metric</th>
+                        {% for college in comparison %}
+                        <th style="background: #667eea; color: white; padding: 15px 12px;">{{ college.college_name|default('College ' ~ loop.index) }} ({{ college.college_code }})</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="font-weight: 600; background-color: #f3f4f6; padding: 12px;">Best Cutoff</td>
+                        {% set best_cutoff = namespace(value=999999) %}
+                        {% for college in comparison %}
+                            {% if college.best_cutoff and college.best_cutoff < best_cutoff.value %}
+                                {% set best_cutoff.value = college.best_cutoff %}
+                            {% endif %}
+                        {% endfor %}
+                        {% for college in comparison %}
+                        <td style="padding: 12px; {% if college.best_cutoff == best_cutoff.value %}color: #059669; font-weight: 600;{% endif %}">
+                            {{ college.best_cutoff|format_number if college.best_cutoff else 'N/A' }}{% if college.best_branch %} ({{ college.best_branch }}){% endif %}
+                            {% if college.best_cutoff == best_cutoff.value %}<span style="background-color: #10b981; color: white; padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; margin-left: 6px;">BEST</span>{% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr style="background-color: #f8f9fa;">
+                        <td style="font-weight: 600; background-color: #f3f4f6; padding: 12px;">Worst Cutoff</td>
+                        {% for college in comparison %}
+                        <td style="padding: 12px;">{{ college.worst_cutoff|format_number if college.worst_cutoff else 'N/A' }}{% if college.worst_branch %} ({{ college.worst_branch }}){% endif %}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 600; background-color: #f3f4f6; padding: 12px;">Avg Cutoff</td>
+                        {% for college in comparison %}
+                        <td style="padding: 12px;">{{ college.avg_cutoff|format_number if college.avg_cutoff else 'N/A' }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr style="background-color: #f8f9fa;">
+                        <td style="font-weight: 600; background-color: #f3f4f6; padding: 12px;">Total Branches</td>
+                        {% set most_branches = namespace(value=0) %}
+                        {% for college in comparison %}
+                            {% if college.total_branches and college.total_branches > most_branches.value %}
+                                {% set most_branches.value = college.total_branches %}
+                            {% endif %}
+                        {% endfor %}
+                        {% for college in comparison %}
+                        <td style="padding: 12px; {% if college.total_branches == most_branches.value and most_branches.value > 0 %}color: #059669; font-weight: 600;{% endif %}">
+                            {{ college.total_branches|default(0) }}
+                            {% if college.total_branches == most_branches.value and most_branches.value > 0 %}<span style="background-color: #10b981; color: white; padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; margin-left: 6px;">MOST</span>{% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+            
+            {# Branch-wise cutoffs table - like the frontend #}
+            {% set all_branches = [] %}
+            {% for college in comparison %}
+                {% if college.branches %}
+                    {% for branch in college.branches %}
+                        {% if branch.branch_name not in all_branches %}
+                            {% set _ = all_branches.append(branch.branch_name) %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+            
+            {% if all_branches|length > 0 %}
+            <h3 style="margin: 30px 0 15px 0; color: #374151; font-size: 18px;">Branch-wise Cutoffs (Round {{ round|default(1) }})</h3>
+            <table class="branch-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                <thead>
+                    <tr>
+                        <th style="background: #667eea; color: white; padding: 10px 8px; text-align: left;">Branch Name</th>
+                        {% for college in comparison %}
+                        <th style="background: #667eea; color: white; padding: 10px 8px; text-align: left;">{{ college.college_name|truncate(20, True) }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for branch_name in all_branches[:15] %}
+                    <tr {% if loop.index is even %}style="background-color: #f8f9fa;"{% endif %}>
+                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef; font-weight: 500;">{{ branch_name }}</td>
+                        {% for college in comparison %}
+                            {% set cutoff_found = namespace(value=None) %}
+                            {% if college.branches %}
+                                {% for branch in college.branches %}
+                                    {% if branch.branch_name == branch_name %}
+                                        {% set cutoff_found.value = branch.cutoff_ranks.round1 if branch.cutoff_ranks else None %}
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        <td style="padding: 10px 8px; border-bottom: 1px solid #e9ecef;">{{ cutoff_found.value|format_number if cutoff_found.value else '-' }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                    {% if all_branches|length > 15 %}
+                    <tr>
+                        <td colspan="{{ comparison|length + 1 }}" style="padding: 10px; text-align: center; color: #6b7280; font-size: 12px;">
+                            Showing 15 of {{ all_branches|length }} branches
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+            {% endif %}
+            
+            {# Show branches available - VERTICAL layout #}
+            {% for college in comparison %}
+            {% if college.branches and college.branches|length > 0 %}
+            <div style="margin: 25px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e5e7eb;">
+                <h4 style="margin-bottom: 15px; color: #374151; font-size: 16px;">{{ college.college_name }} - Available Branches</h4>
+                <div style="display: block;">
+                    {% for branch in college.branches[:12] %}
+                    <div style="background: #ffffff; padding: 8px 12px; border-radius: 6px; font-size: 13px; color: #374151; margin-bottom: 6px; border-left: 3px solid #667eea;">
+                        {{ branch.branch_name }}
+                    </div>
+                    {% endfor %}
+                    {% if college.branches|length > 12 %}
+                    <div style="color: #6b7280; font-size: 13px; padding: 8px 0;">+{{ college.branches|length - 12 }} more branches</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            
+            {# Old format: pairwise comparisons (for backward compatibility) #}
+            {% if comparisons and comparisons|length > 0 %}
             {% for comparison in comparisons %}
             <div class="comparison-section">
                 <div class="comparison-header">
-                    Comparison #{{ loop.index }}: {{ comparison.college_a.branch }}
+                    Comparison #{{ loop.index }}{% if comparison.college_a.branch %}: {{ comparison.college_a.branch }}{% endif %}
                 </div>
                 <div class="comparison-body">
                     <div class="college-compare-item">
                         <div class="college-title">
-                            🏛️ {{ comparison.college_a.college_name }}
+                            {{ comparison.college_a.college_name|default('College A') }}
                             {% if comparison.winner == 'a' %}<span class="winner-badge">BETTER CHOICE</span>{% endif %}
                         </div>
                         <div class="metrics-grid">
                             <div class="metric">
-                                <div class="metric-label">Admission Chance</div>
-                                <div class="metric-value" style="color: #28a745;">{{ comparison.college_a.admission_chance }}</div>
+                                <div class="metric-value-label">Admission Chance</div>
+                                <div class="metric-value" style="color: #28a745;">{{ comparison.college_a.admission_chance|default('N/A') }}</div>
                             </div>
                             <div class="metric">
-                                <div class="metric-label">Closing Rank</div>
-                                <div class="metric-value">{{ comparison.college_a.closing_rank|format_number }}</div>
+                                <div class="metric-value-label">Closing Rank</div>
+                                <div class="metric-value">{{ comparison.college_a.closing_rank|format_number if comparison.college_a.closing_rank else 'N/A' }}</div>
                             </div>
                             <div class="metric">
-                                <div class="metric-label">Location</div>
-                                <div class="metric-value">{{ comparison.college_a.location }}</div>
+                                <div class="metric-value-label">Location</div>
+                                <div class="metric-value">{{ comparison.college_a.location|default('N/A') }}</div>
                             </div>
                             <div class="metric">
-                                <div class="metric-label">College Type</div>
-                                <div class="metric-value">{{ comparison.college_a.college_type }}</div>
+                                <div class="metric-value-label">College Type</div>
+                                <div class="metric-value">{{ comparison.college_a.college_type|default('N/A') }}</div>
                             </div>
                         </div>
                     </div>
@@ -78,47 +232,51 @@
                     
                     <div class="college-compare-item">
                         <div class="college-title">
-                            🏛️ {{ comparison.college_b.college_name }}
+                            {{ comparison.college_b.college_name|default('College B') }}
                             {% if comparison.winner == 'b' %}<span class="winner-badge">BETTER CHOICE</span>{% endif %}
                         </div>
                         <div class="metrics-grid">
                             <div class="metric">
-                                <div class="metric-label">Admission Chance</div>
-                                <div class="metric-value" style="color: #28a745;">{{ comparison.college_b.admission_chance }}</div>
+                                <div class="metric-value-label">Admission Chance</div>
+                                <div class="metric-value" style="color: #28a745;">{{ comparison.college_b.admission_chance|default('N/A') }}</div>
                             </div>
                             <div class="metric">
-                                <div class="metric-label">Closing Rank</div>
-                                <div class="metric-value">{{ comparison.college_b.closing_rank|format_number }}</div>
+                                <div class="metric-value-label">Closing Rank</div>
+                                <div class="metric-value">{{ comparison.college_b.closing_rank|format_number if comparison.college_b.closing_rank else 'N/A' }}</div>
                             </div>
                             <div class="metric">
-                                <div class="metric-label">Location</div>
-                                <div class="metric-value">{{ comparison.college_b.location }}</div>
+                                <div class="metric-value-label">Location</div>
+                                <div class="metric-value">{{ comparison.college_b.location|default('N/A') }}</div>
                             </div>
                             <div class="metric">
-                                <div class="metric-label">College Type</div>
-                                <div class="metric-value">{{ comparison.college_b.college_type }}</div>
+                                <div class="metric-value-label">College Type</div>
+                                <div class="metric-value">{{ comparison.college_b.college_type|default('N/A') }}</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             {% endfor %}
+            {% endif %}
             
-            <div class="recommendation-box">
-                <h3>🎯 Our Recommendation</h3>
+            {% if recommendation_text %}
+            <div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; padding: 25px; border-radius: 12px; margin: 30px 0;">
+                <h3 style="margin-bottom: 15px; font-size: 20px;">Our Recommendation</h3>
                 <p style="font-size: 15px; line-height: 1.7;">{{ recommendation_text }}</p>
             </div>
+            {% endif %}
             
             <div style="text-align: center; margin: 40px 0;">
-                <a href="{{ chat_url|default('http://collegepathfinder.vercel.app/ai-chat') }}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 30px; font-weight: 600;">
-                    💬 Continue the Chat
+                <a href="{{ chat_url|default('http://collegepathfinder.vercel.app/ai-chat') }}" 
+                   style="display: inline-block; background-color: #667eea; color: #ffffff; padding: 15px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px;">
+                    Continue the Chat
                 </a>
             </div>
         </div>
         
         <div class="footer">
-            <p><strong>{{ app_name }}</strong></p>
-            <p>© {{ current_year }} All rights reserved.</p>
+            <p><strong>College Path Finder</strong></p>
+            <p>© {{ current_year|default(2024) }} All rights reserved.</p>
         </div>
     </div>
 </body>

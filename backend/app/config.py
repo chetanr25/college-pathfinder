@@ -2,22 +2,26 @@
 Configuration settings for the KCET College Predictor API
 """
 import os
+from pathlib import Path
 from typing import List
+
+# Get the backend directory (parent of app/)
+BACKEND_DIR = Path(__file__).parent.parent
 
 
 class Settings:
     """Application settings"""
     
     # API Information
-    APP_NAME: str = os.getenv("APP_NAME", "KCET College Predictor API")
+    APP_NAME: str = os.getenv("APP_NAME", "College Path Finder API")
     APP_DESCRIPTION: str = os.getenv(
         "APP_DESCRIPTION", 
         "API for predicting college admission chances based on KCET ranks"
     )
     APP_VERSION: str = os.getenv("APP_VERSION", "1.0.0")
     
-    # Database
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "data/kcet_2024.db")
+    # Database - use absolute path
+    DATABASE_URL: str = os.getenv("DATABASE_URL", str(BACKEND_DIR / "data" / "kcet_2024.db"))
     
     # CORS Settings
     CORS_ORIGINS: List[str] = ["*"]

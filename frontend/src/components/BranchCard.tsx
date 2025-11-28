@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Category, ArrowForward } from '@mui/icons-material';
-import theme, { cardStyles, hoverCardEffect } from '../theme';
+import { Card, IconBox } from './ui';
+import theme from '../theme';
 
 interface BranchCardProps {
   branchName: string;
@@ -34,23 +35,36 @@ const BranchCard: React.FC<BranchCardProps> = ({
     return gradients[hash % gradients.length];
   };
 
-  return (
-    <div
-      style={{
-        ...cardStyles,
-        ...styles.card,
-      }}
-      onClick={handleClick}
-    >
-      {/* Icon with dynamic gradient */}
-      <div style={{ ...styles.iconWrapper, background: getGradient(branchName) }}>
-        <Category style={styles.icon} />
-      </div>
+  const gradient = getGradient(branchName);
 
-      {/* Branch Info */}
+  return (
+    <Card
+      variant="elevated"
+      hoverable
+      glow
+      gradient={gradient}
+      onClick={handleClick}
+      padding={5}
+      style={{ 
+        display: 'flex', 
+        alignItems: 'center',
+        cursor: 'pointer',
+        minHeight: '100px'
+      }}
+    >
+      <IconBox size="md" gradient={gradient}>
+        <Category />
+      </IconBox>
+
       <div style={styles.content}>
-        <h3 style={styles.branchName} title={branchName}>{branchName}</h3>
-        {description && <p style={styles.description} title={description}>{description}</p>}
+        <h3 style={styles.branchName} title={branchName}>
+          {branchName}
+        </h3>
+        {description && (
+          <p style={styles.description} title={description}>
+            {description}
+          </p>
+        )}
         {collegeCount !== undefined && (
           <p style={styles.collegeCount}>
             {collegeCount} {collegeCount === 1 ? 'college' : 'colleges'} available
@@ -58,45 +72,21 @@ const BranchCard: React.FC<BranchCardProps> = ({
         )}
       </div>
 
-      {/* Arrow Icon */}
       <div style={styles.arrowWrapper}>
         <ArrowForward style={styles.arrow} />
       </div>
-    </div>
+    </Card>
   );
 };
 
 const styles: Record<string, React.CSSProperties> = {
-  card: {
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing[4],
-    padding: theme.spacing[5],
-    minWidth: 0, // Important for text truncation in flex items
-    ...hoverCardEffect,
-  },
-  iconWrapper: {
-    width: '56px',
-    height: '56px',
-    borderRadius: theme.borderRadius.lg,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    boxShadow: theme.shadows.md,
-  },
-  icon: {
-    fontSize: '1.75rem',
-    color: theme.colors.text.inverse,
-  },
   content: {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
     gap: theme.spacing[1],
-    minWidth: 0, // Important for text truncation in flex items
-    overflow: 'hidden', // Ensure content doesn't overflow
+    minWidth: 0,
+    marginLeft: theme.spacing[4],
   },
   branchName: {
     margin: 0,
@@ -134,6 +124,7 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: theme.borderRadius.full,
     background: theme.colors.neutral[100],
     transition: theme.transitions.base,
+    flexShrink: 0,
   },
   arrow: {
     fontSize: '1.25rem',

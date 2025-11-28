@@ -1,249 +1,259 @@
 /**
- * Chat Service - WebSocket connection for AI chat
+ * Chat Service - Supabase Integration
+ * Handles all chat session and message operations
  */
-
-// Convert HTTP/HTTPS URL to WS/WSS
-const getWebSocketUrl = () => {
-  const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8005';
-  return apiUrl.replace(/^http/, 'ws');
-};
-
-const WS_BASE_URL = getWebSocketUrl();
+import { supabase } from '../lib/supabase';
 
 export interface ChatMessage {
-  message_id: string;
-  role: 'user' | 'assistant' | 'system' | 'thinking';
+  id?: string;
+  session_id: string;
+  role: 'user' | 'assistant';
   content: string;
-  timestamp: string;
-  metadata?: any;
+  created_at?: string;
 }
 
-export interface ThinkingStep {
-  step: string;
-  timestamp: string;
+export interface ChatSession {
+  id: string;
+  user_id: string;
+  title: string;
+  preview?: string;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface ToolCall {
-  tool_name: string;
-  parameters: Record<string, any>;
-  status: 'started' | 'completed' | 'failed';
-}
-
-export type MessageHandler = (type: string, data: any) => void;
-
-export class ChatService {
-  private ws: WebSocket | null = null;
-  private sessionId: string;
-  private messageHandlers: Set<MessageHandler> = new Set();
-  private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
-
-  constructor(sessionId: string) {
-    this.sessionId = sessionId;
-  }
-
-  /**
-   * Connect to WebSocket
-   */
-  connect(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      try {
-        // Build WebSocket URL dynamically to ensure correct session ID
-        const wsUrl = `${WS_BASE_URL}/chat/ws/${this.sessionId}`;
-        console.log('🔌 Connecting to WebSocket:', wsUrl);
-        console.log('📌 Session ID:', this.sessionId);
-        console.log('🌐 WS Base URL:', WS_BASE_URL);
-        
-        this.ws = new WebSocket(wsUrl);
-
-        this.ws.onopen = () => {
-          console.log('WebSocket connected');
-          this.reconnectAttempts = 0;
-          resolve();
-        };
-
-        this.ws.onmessage = (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            console.log('WebSocket received:', data); // Debug log
-            this.handleMessage(data);
-          } catch (error) {
-            console.error('Error parsing message:', error);
-          }
-        };
-
-        this.ws.onerror = (error) => {
-          console.error('❌ WebSocket error:', error);
-          console.error('❌ WebSocket URL was:', wsUrl);
-          console.error('❌ Session ID:', this.sessionId);
-          console.error('❌ WS Base URL:', WS_BASE_URL);
-          console.error('❌ ReadyState:', this.ws?.readyState);
-          reject(error);
-        };
-
-        this.ws.onclose = (event) => {
-          console.log('🔌 WebSocket closed');
-          console.log('Close code:', event.code);
-          console.log('Close reason:', event.reason);
-          console.log('Was clean:', event.wasClean);
-          this.handleReconnect();
-        };
-      } catch (error) {
-        reject(error);
-      }
-    });
-  }
-
-  /**
-   * Handle reconnection
-   */
-  private handleReconnect() {
-    if (this.reconnectAttempts < this.maxReconnectAttempts) {
-      this.reconnectAttempts++;
-      console.log(`Reconnecting... Attempt ${this.reconnectAttempts}`);
-      setTimeout(() => {
-        this.connect();
-      }, 1000 * this.reconnectAttempts);
-    }
-  }
-
-  /**
-   * Disconnect from WebSocket
-   */
-  disconnect() {
-    if (this.ws) {
-      this.ws.close();
-      this.ws = null;
-    }
-  }
-
-  /**
-   * Send chat message
-   */
-  sendMessage(message: string) {
-    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-      throw new Error('WebSocket is not connected');
-    }
-
-    this.ws.send(
-      JSON.stringify({
-        type: 'chat_message',
-        message: message,
-      })
-    );
-  }
-
-  /**
-   * Get conversation history
-   */
-  getHistory() {
-    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-      throw new Error('WebSocket is not connected');
-    }
-
-    this.ws.send(
-      JSON.stringify({
-        type: 'get_history',
-      })
-    );
-  }
-
-  /**
-   * Subscribe to messages
-   */
-  onMessage(handler: MessageHandler) {
-    this.messageHandlers.add(handler);
-    return () => {
-      this.messageHandlers.delete(handler);
-    };
-  }
-
-  /**
-   * Handle incoming messages
-   */
-  private handleMessage(data: any) {
-    this.messageHandlers.forEach((handler) => {
-      handler(data.type, data);
-    });
-  }
-
-  /**
-   * Check if connected
-   */
-  isConnected(): boolean {
-    return this.ws !== null && this.ws.readyState === WebSocket.OPEN;
-  }
-}
-
-// REST API for session management
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8005';
 
-export const chatApi = {
+class ChatService {
   /**
    * Create a new chat session
    */
-  async createSession(): Promise<{ session_id: string; created_at: string }> {
-    const response = await fetch(`${API_BASE_URL}/chat/sessions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+  async createSession(userId: string, title: string = 'New Chat'): Promise<ChatSession | null> {
+      try {
+      const { data, error } = await supabase
+        .from('chat_sessions')
+        .insert({
+          user_id: userId,
+          title,
+          preview: '',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
 
-    if (!response.ok) {
-      throw new Error('Failed to create session');
+      if (error) {
+        console.error('Error creating session:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error creating session:', error);
+      return null;
     }
-
-    return response.json();
-  },
+  }
 
   /**
-   * Get session with full history
+   * Get all chat sessions for a user
    */
-  async getSession(sessionId: string): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/chat/sessions/${sessionId}`);
+  async getSessions(userId: string): Promise<ChatSession[]> {
+    try {
+      const { data, error } = await supabase
+        .from('chat_sessions')
+        .select('*')
+        .eq('user_id', userId)
+        .order('updated_at', { ascending: false });
 
-    if (!response.ok) {
-      throw new Error('Failed to get session');
+      if (error) {
+        console.error('Error fetching sessions:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching sessions:', error);
+      return [];
     }
-
-    return response.json();
-  },
+  }
 
   /**
-   * Delete a session
+   * Get a specific session by ID
    */
-  async deleteSession(sessionId: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/chat/sessions/${sessionId}`, {
-      method: 'DELETE',
-    });
+  async getSession(sessionId: string): Promise<ChatSession | null> {
+    try {
+      const { data, error } = await supabase
+        .from('chat_sessions')
+        .select('*')
+        .eq('id', sessionId)
+        .single();
 
-    if (!response.ok) {
-      throw new Error('Failed to delete session');
+      if (error) {
+        console.error('Error fetching session:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error fetching session:', error);
+      return null;
     }
-  },
+  }
 
   /**
-   * Get messages from a session
+   * Update session title and preview
    */
-  async getMessages(sessionId: string, limit?: number): Promise<ChatMessage[]> {
-    const url = new URL(`${API_BASE_URL}/chat/sessions/${sessionId}/messages`);
-    if (limit) {
-      url.searchParams.append('limit', limit.toString());
+  async updateSession(sessionId: string, updates: { title?: string; preview?: string }): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('chat_sessions')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString(),
+      })
+        .eq('id', sessionId);
+
+      if (error) {
+        console.error('Error updating session:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error updating session:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Delete a chat session and its messages
+   */
+  async deleteSession(sessionId: string): Promise<boolean> {
+    try {
+      // First delete all messages in the session
+      await supabase
+        .from('chat_messages')
+        .delete()
+        .eq('session_id', sessionId);
+
+      // Then delete the session
+      const { error } = await supabase
+        .from('chat_sessions')
+        .delete()
+        .eq('id', sessionId);
+
+      if (error) {
+        console.error('Error deleting session:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error deleting session:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Get messages for a session
+   */
+  async getMessages(sessionId: string): Promise<ChatMessage[]> {
+    try {
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching messages:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Save a message to a session
+   */
+  async saveMessage(sessionId: string, role: 'user' | 'assistant', content: string): Promise<ChatMessage | null> {
+    try {
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .insert({
+          session_id: sessionId,
+          role,
+          content,
+          created_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error saving message:', error);
+        return null;
+      }
+
+      // Update session preview and timestamp
+      const preview = role === 'user' ? content.substring(0, 100) : undefined;
+      if (preview) {
+        await this.updateSession(sessionId, { preview });
+      } else {
+        await this.updateSession(sessionId, {});
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error saving message:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Generate session title from first message
+   */
+  async generateTitle(sessionId: string, firstMessage: string): Promise<void> {
+    // Create a short title from the first message
+    const title = firstMessage.length > 40 
+      ? firstMessage.substring(0, 40) + '...'
+      : firstMessage;
+    
+    await this.updateSession(sessionId, { title, preview: firstMessage.substring(0, 100) });
     }
 
-    const response = await fetch(url.toString(), {
-      headers: {
-        'ngrok-skip-browser-warning': 'true',
-      },
-    });
+  /**
+   * Get WebSocket URL for chat
+   */
+  getWebSocketUrl(sessionId: string, accessToken: string): string {
+    const wsBase = API_BASE_URL.replace('http', 'ws');
+    return `${wsBase}/ws/chat/${sessionId}?token=${accessToken}`;
+  }
 
-    if (!response.ok) {
-      throw new Error(`Failed to get messages: ${response.status} ${response.statusText}`);
+  /**
+   * Check if a session has messages
+   */
+  async hasMessages(sessionId: string): Promise<boolean> {
+    try {
+      const { count, error } = await supabase
+        .from('chat_messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('session_id', sessionId);
+
+      if (error) {
+        console.error('Error checking messages:', error);
+        return false;
     }
 
-    const data = await response.json();
-    console.log('📦 Raw messages data from backend:', data);
-    return data.messages || [];
-  },
-};
+      return (count || 0) > 0;
+    } catch (error) {
+      console.error('Error checking messages:', error);
+      return false;
+    }
+  }
+}
+
+export const chatService = new ChatService();
+export default chatService;

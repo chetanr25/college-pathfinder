@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { School, TrendingUp, LocationOn } from '@mui/icons-material';
-import theme, { cardStyles, hoverCardEffect } from '../theme';
+import { School, TrendingUp, Category, ArrowForward } from '@mui/icons-material';
+import { Card, IconBox, Badge } from './ui';
+import theme from '../theme';
 
 interface CollegeCardProps {
   collegeCode: string;
@@ -27,36 +28,45 @@ const CollegeCardModern: React.FC<CollegeCardProps> = ({
   };
 
   return (
-    <div
-      style={{
-        ...cardStyles,
-        ...styles.card,
-        ...(compact ? styles.cardCompact : {}),
-      }}
+    <Card
+      variant="elevated"
+      hoverable
+      glow
+      gradient={theme.colors.primary.gradient}
       onClick={handleClick}
+      padding={compact ? 4 : 6}
+      style={{ 
+        display: 'flex', 
+        flexDirection: 'column',
+        cursor: 'pointer',
+        height: '100%'
+      }}
     >
-      {/* College Icon */}
-      <div style={styles.iconWrapper}>
-        <School style={styles.icon} />
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: theme.spacing[4] }}>
+        <IconBox size="md" gradient={theme.colors.primary.gradient}>
+          <School />
+        </IconBox>
+        
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h3 style={styles.collegeName} title={collegeName}>
+            {collegeName}
+          </h3>
+          <p style={styles.collegeCode}>Code: {collegeCode}</p>
+        </div>
       </div>
-
-      {/* College Info */}
-      <div style={styles.content}>
-        <h3 style={styles.collegeName} title={collegeName}>{collegeName}</h3>
-        <p style={styles.collegeCode} title={`Code: ${collegeCode}`}>Code: {collegeCode}</p>
 
         {/* Stats */}
         <div style={styles.stats}>
           {branchCount !== undefined && (
-            <div style={styles.stat}>
-              <LocationOn style={styles.statIcon} />
-              <span>{branchCount} Branches</span>
+          <div style={styles.statItem}>
+            <Category style={styles.statIcon} />
+            <span style={styles.statText}>{branchCount} Branches</span>
             </div>
           )}
           {cutoffRank && (
-            <div style={styles.stat}>
+          <div style={styles.statItem}>
               <TrendingUp style={styles.statIcon} />
-              <span>Cutoff: {cutoffRank.toLocaleString()}</span>
+            <span style={styles.statText}>Cutoff: {cutoffRank.toLocaleString()}</span>
             </div>
           )}
         </div>
@@ -65,64 +75,30 @@ const CollegeCardModern: React.FC<CollegeCardProps> = ({
         {branches.length > 0 && !compact && (
           <div style={styles.branchTags}>
             {branches.slice(0, 3).map((branch, idx) => (
-              <span key={idx} style={styles.branchTag} title={branch}>
-                {branch}
-              </span>
+            <Badge key={idx} variant="primary" size="sm" gradient>
+              {branch.length > 25 ? `${branch.slice(0, 25)}...` : branch}
+            </Badge>
             ))}
             {branches.length > 3 && (
-              <span style={styles.branchTagMore}>
+            <Badge variant="info" size="sm">
                 +{branches.length - 3} more
-              </span>
+            </Badge>
             )}
           </div>
         )}
-      </div>
 
-      {/* View Details Button */}
+      {/* View Details */}
       <div style={styles.footer}>
-        <button style={styles.viewButton}>
-          View Details
-        </button>
+        <div style={styles.viewDetails}>
+          <span>View Details</span>
+          <ArrowForward style={{ fontSize: '1rem' }} />
+        </div>
       </div>
-    </div>
+    </Card>
   );
 };
 
 const styles: Record<string, React.CSSProperties> = {
-  card: {
-    cursor: 'pointer',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing[4],
-    padding: theme.spacing[6],
-    minWidth: 0, // Important for text truncation in flex items
-    ...hoverCardEffect,
-  },
-  cardCompact: {
-    padding: theme.spacing[4],
-    gap: theme.spacing[3],
-  },
-  iconWrapper: {
-    width: '64px',
-    height: '64px',
-    borderRadius: theme.borderRadius.lg,
-    background: theme.colors.primary.gradient,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: theme.shadows.glow,
-  },
-  icon: {
-    fontSize: '2rem',
-    color: theme.colors.text.inverse,
-  },
-  content: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing[2],
-    minWidth: 0, // Important for text truncation in flex items
-  },
   collegeName: {
     margin: 0,
     fontSize: theme.typography.fontSize.xl,
@@ -134,76 +110,58 @@ const styles: Record<string, React.CSSProperties> = {
     display: '-webkit-box',
     WebkitLineClamp: 2,
     WebkitBoxOrient: 'vertical',
-    lineHeight: '1.4',
+    lineHeight: 1.3,
+    marginBottom: theme.spacing[1],
   },
   collegeCode: {
     margin: 0,
-    fontSize: theme.typography.fontSize.sm,
+    fontSize: theme.typography.fontSize.xs,
     color: theme.colors.text.secondary,
     fontFamily: theme.typography.fontFamily.mono,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap' as const,
+    fontWeight: theme.typography.fontWeight.medium,
   },
   stats: {
     display: 'flex',
-    gap: theme.spacing[4],
-    marginTop: theme.spacing[2],
+    flexDirection: 'column' as const,
+    gap: theme.spacing[2],
+    marginTop: theme.spacing[4],
+    paddingTop: theme.spacing[4],
+    borderTop: `1px solid ${theme.colors.border.light}`,
   },
-  stat: {
+  statItem: {
     display: 'flex',
     alignItems: 'center',
-    gap: theme.spacing[1],
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.text.secondary,
+    gap: theme.spacing[2],
   },
   statIcon: {
-    fontSize: '1rem',
+    fontSize: '1.25rem',
     color: theme.colors.primary.main,
+  },
+  statText: {
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.text.secondary,
+    fontWeight: theme.typography.fontWeight.medium,
   },
   branchTags: {
     display: 'flex',
     flexWrap: 'wrap' as const,
     gap: theme.spacing[2],
-    marginTop: theme.spacing[2],
-  },
-  branchTag: {
-    padding: `${theme.spacing[1]} ${theme.spacing[3]}`,
-    background: theme.colors.primary.gradient,
-    color: theme.colors.text.inverse,
-    borderRadius: theme.borderRadius.full,
-    fontSize: theme.typography.fontSize.xs,
-    fontWeight: theme.typography.fontWeight.medium,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap' as const,
-    maxWidth: '150px',
-  },
-  branchTagMore: {
-    padding: `${theme.spacing[1]} ${theme.spacing[3]}`,
-    background: theme.colors.neutral[200],
-    color: theme.colors.text.secondary,
-    borderRadius: theme.borderRadius.full,
-    fontSize: theme.typography.fontSize.xs,
-    fontWeight: theme.typography.fontWeight.medium,
+    marginTop: theme.spacing[4],
   },
   footer: {
-    borderTop: `1px solid ${theme.colors.border.light}`,
-    paddingTop: theme.spacing[4],
     marginTop: 'auto',
+    paddingTop: theme.spacing[4],
+    borderTop: `1px solid ${theme.colors.border.light}`,
   },
-  viewButton: {
-    width: '100%',
-    padding: `${theme.spacing[3]} ${theme.spacing[4]}`,
-    background: theme.colors.primary.gradient,
-    color: theme.colors.text.inverse,
-    border: 'none',
-    borderRadius: theme.borderRadius.md,
+  viewDetails: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing[2],
+    color: theme.colors.primary.main,
     fontSize: theme.typography.fontSize.sm,
     fontWeight: theme.typography.fontWeight.semibold,
-    cursor: 'pointer',
     transition: theme.transitions.base,
-    boxShadow: theme.shadows.sm,
   },
 };
 

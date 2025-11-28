@@ -87,8 +87,8 @@ def _analyze_conversation_history(session: ChatSession) -> Dict[str, Any]:
 
 
 def send_comprehensive_report_email(
-    email: str,
-    session_id: str,
+    email: Optional[str] = None,
+    session_id: str = "",
     student_name: Optional[str] = None,
     rank: Optional[int] = None,
     category: Optional[str] = None
@@ -97,13 +97,14 @@ def send_comprehensive_report_email(
     Send comprehensive KCET analysis report with REAL DATA from tools.
     
     This function:
-    1. Analyzes conversation history to understand what user wants
-    2. Executes actual search tools to get college data
-    3. Gathers top 30 colleges from Round 1 & Round 2
-    4. Sends formatted email with proper table structure
+    1. Uses authenticated user's email if none provided
+    2. Analyzes conversation history to understand what user wants
+    3. Executes actual search tools to get college data
+    4. Gathers top 30 colleges from Round 1 & Round 2
+    5. Sends formatted email with proper table structure
     
     Args:
-        email: Student's email address
+        email: Student's email address (optional - uses authenticated email if not provided)
         session_id: Current chat session ID
         student_name: Student's name (auto-extracted from email if not provided)
         rank: Student's rank (auto-extracted from conversation if not provided)
@@ -116,6 +117,21 @@ def send_comprehensive_report_email(
         Session object will be injected by execute_tool() if available
     """
     from app.services import CollegeService
+    
+    # Try to get email from session context if not provided
+    session = _get_session_context()
+    
+    if not email and session:
+        # Try to extract email from session user data
+        if hasattr(session, 'user_email') and session.user_email:
+            email = session.user_email
+    
+    if not email:
+        return {
+            "success": False,
+            "error": "No email provided",
+            "message": "Please provide an email address. Say 'email me' to use your account email, or provide a specific address like 'send to friend@email.com'"
+        }
     
     # Validate email
     if not _validate_email(email):
@@ -441,11 +457,13 @@ def send_detailed_analysis_email(
 
 
 def send_comparison_email(
-    email: str,
-    student_name: str,
-    comparisons: List[Dict[str, Any]],
-    recommendation: str,
-    session_id: str
+    email: Optional[str] = None,
+    student_name: Optional[str] = None,
+    comparisons: Optional[List[Dict[str, Any]]] = None,
+    recommendation: Optional[str] = None,
+    session_id: str = "",
+    comparison_data: Optional[Dict[str, Any]] = None,
+    round: int = 1
 ) -> Dict[str, Any]:
     """
     Send college comparison report via email.
@@ -454,34 +472,64 @@ def send_comparison_email(
     Example: "Email me the comparison", "Send comparison to my email"
     
     Args:
-        email: Student's email address
-        student_name: Student's name
-        comparisons: List of comparison dicts with college_a, college_b, winner
+        email: Student's email address (optional - uses authenticated email if not provided)
+        student_name: Student's name (optional - extracted from email)
+        comparisons: List of comparison dicts with college_a, college_b, winner (old format)
         recommendation: AI's recommendation text
         session_id: Current chat session ID
+        comparison_data: Direct output from compare_colleges() tool (new format)
+        round: Counselling round number
         
     Returns:
         Dict with success status and message
     """
+    # Try to get email from session context if not provided
+    session = _get_session_context()
+    
+    if not email and session:
+        # Try to extract email from session user data
+        if hasattr(session, 'user_email') and session.user_email:
+            email = session.user_email
+    
+    if not email:
+        return {
+            "success": False,
+            "message": "Please provide an email address. Example: send_comparison_email(email='you@email.com', ...)"
+        }
+    
     if not _validate_email(email):
         return {
             "success": False,
             "message": "Invalid email address format."
         }
     
+    # Extract name from email if not provided
+    if not student_name:
+        student_name = _extract_name_from_email(email)
+    
+    # Build context - support both old and new formats
     context = {
         'student_name': student_name,
-        'comparisons': comparisons,
-        'recommendation_text': recommendation,
-        'chat_url': _get_chat_url(session_id)
+        'recommendation_text': recommendation or "Based on the comparison, consider factors like cutoff ranks, available branches, and your preferences to make the best choice.",
+        'chat_url': _get_chat_url(session_id),
+        'round': round
     }
+    
+    # Handle new format from compare_colleges() tool
+    if comparison_data:
+        context['comparison'] = comparison_data.get('comparison', [])
+        context['round'] = comparison_data.get('round', round)
+    
+    # Handle old format with pairwise comparisons
+    if comparisons:
+        context['comparisons'] = comparisons
     
     try:
         html_content = template_manager.render_comparison_report(context)
         
         success = email_service.send_email(
             to_email=email,
-            subject="⚖️ College Comparison Report",
+            subject="College Comparison Report - College Path Finder",
             html_content=html_content
         )
         

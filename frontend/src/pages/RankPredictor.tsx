@@ -5,6 +5,7 @@ import { collegeApi, branchApi, type CollegeList } from '../services/api';
 import CollegeCardModern from '../components/CollegeCardModern';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
+import { Hero, Container, Section, Grid, Card, Input, Button, Badge } from '../components/ui';
 import theme from '../theme';
 
 const RankPredictor: React.FC = () => {
@@ -19,7 +20,6 @@ const RankPredictor: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [hasSearched, setHasSearched] = useState(false);
 
-  // Load branches on component mount
   useEffect(() => {
     const fetchBranches = async () => {
       try {
@@ -56,7 +56,6 @@ const RankPredictor: React.FC = () => {
       setError('');
       setHasSearched(true);
       
-      // If branches are selected, use search endpoint, otherwise use by-rank endpoint
       if (selectedBranches.length > 0) {
         const data = await collegeApi.searchColleges({
           min_rank: rankNum,
@@ -79,51 +78,44 @@ const RankPredictor: React.FC = () => {
 
   return (
     <div style={styles.container}>
-      {/* Header */}
-      <section style={styles.header}>
-        <div style={styles.headerContent}>
-          <div style={styles.iconWrapper}>
-            <TrendingUp style={styles.headerIcon} />
-          </div>
-          <h1 style={styles.title}>KCET Rank Predictor</h1>
-          <p style={styles.subtitle}>
-            Enter your KCET rank to find colleges you can get admitted to
-          </p>
-        </div>
-      </section>
+      {/* Hero Section */}
+      <Hero
+        icon={<TrendingUp />}
+        title="KCET Rank Predictor"
+        subtitle="Enter your KCET rank to find colleges you can get admitted to"
+        size="md"
+        background="linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 90%)"
+      />
 
       {/* Search Form */}
-      <section style={styles.searchSection}>
-        <form onSubmit={handleSearch} style={styles.form}>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Your KCET Rank</label>
-            <input
+      <Section background="default" padding="lg">
+        <Container maxWidth="md">
+          <Card variant="elevated" padding={8} style={{ boxShadow: theme.shadows.xl }}>
+            <form onSubmit={handleSearch}>
+              <div style={styles.formGrid}>
+                <Input
               type="number"
+                  label="Your KCET Rank"
               placeholder="e.g., 5000"
               value={rank}
               onChange={(e) => setRank(e.target.value)}
-              style={styles.input}
+                  required
               min="1"
-              required
             />
-          </div>
 
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Number of Colleges</label>
-            <input
+                <Input
               type="number"
+                  label="Number of Colleges"
               placeholder="e.g., 10"
               value={limit}
               onChange={(e) => setLimit(e.target.value)}
-              style={styles.input}
+                  hint="Show top 1-500 colleges (default: 10)"
+                  required
               min="1"
               max="500"
-              required
             />
-            <small style={styles.hint}>Show top 1-500 colleges (default: 10)</small>
-          </div>
 
-          <div style={styles.inputGroup}>
+                <div>
             <label style={styles.label}>Filter by Branches (Optional)</label>
             <Autocomplete
               multiple
@@ -138,7 +130,7 @@ const RankPredictor: React.FC = () => {
                   variant="outlined"
                   sx={{
                     '& .MuiOutlinedInput-root': {
-                      borderRadius: '8px',
+                            borderRadius: '12px',
                       backgroundColor: '#fff',
                       '& fieldset': {
                         borderColor: theme.colors.border.light,
@@ -167,11 +159,6 @@ const RankPredictor: React.FC = () => {
                   />
                 ))
               }
-              sx={{
-                '& .MuiAutocomplete-tag': {
-                  margin: '2px',
-                },
-              }}
             />
             <small style={styles.hint}>
               {selectedBranches.length > 0 
@@ -180,7 +167,7 @@ const RankPredictor: React.FC = () => {
             </small>
           </div>
 
-          <div style={styles.inputGroup}>
+                <div>
             <label style={styles.label}>Counselling Round</label>
             <div style={styles.roundSelector}>
               {[1, 2, 3].map((round) => (
@@ -199,23 +186,29 @@ const RankPredictor: React.FC = () => {
             </div>
           </div>
 
-          <button type="submit" style={styles.submitButton} disabled={loading}>
+                <Button type="submit" variant="primary" size="lg" fullWidth disabled={loading}>
             {loading ? 'Searching...' : 'Find Colleges'}
-          </button>
+                </Button>
+              </div>
         </form>
-      </section>
+          </Card>
+        </Container>
+      </Section>
 
       {/* Results */}
       {loading && <LoadingSpinner message="Finding colleges for your rank..." />}
       
       {error && !loading && (
-        <div style={styles.errorSection}>
+        <Section background="default" padding="md">
+          <Container maxWidth="lg">
           <ErrorMessage message={error} />
-        </div>
+          </Container>
+        </Section>
       )}
 
       {!loading && !error && hasSearched && (
-        <section style={styles.resultsSection}>
+        <Section background="paper" padding="lg">
+          <Container maxWidth="xl">
           <div style={styles.resultsHeader}>
             <h2 style={styles.resultsTitle}>
               {colleges.length} {colleges.length === 1 ? 'College' : 'Colleges'} Found
@@ -223,9 +216,9 @@ const RankPredictor: React.FC = () => {
             <p style={styles.resultsSubtitle}>
               Based on rank {parseInt(rank).toLocaleString()} in Round {selectedRound}
               {selectedBranches.length > 0 && (
-                <span style={styles.filterBadge}>
-                  {' • '}Filtered by {selectedBranches.length} branch{selectedBranches.length > 1 ? 'es' : ''}
-                </span>
+                  <Badge variant="primary" gradient style={{ marginLeft: theme.spacing[3] }}>
+                    Filtered by {selectedBranches.length} branch{selectedBranches.length > 1 ? 'es' : ''}
+                  </Badge>
               )}
             </p>
           </div>
@@ -241,25 +234,32 @@ const RankPredictor: React.FC = () => {
               </p>
             </div>
           ) : (
-            <div style={styles.collegesGrid}>
-              {colleges.map((college) => (
+              <Grid columns="auto" minItemWidth="350px" gap={6}>
+                {colleges.map((college, index) => (
+                  <div
+                    key={`${college.college_code}-${college.branch_name}`}
+                    style={{ animation: `fadeInUp 0.6s ease-out ${index * 0.05}s both` }}
+                  >
                 <CollegeCardModern
-                  key={`${college.college_code}-${college.branch_name}`}
                   collegeCode={college.college_code}
                   collegeName={college.college_name}
                   branches={college.branch_name ? [college.branch_name] : []}
                   cutoffRank={college.cutoff_rank}
                 />
+                  </div>
               ))}
-            </div>
+              </Grid>
           )}
-        </section>
+          </Container>
+        </Section>
       )}
 
       {/* Info Section */}
       {!hasSearched && (
-        <section style={styles.infoSection}>
-          <div style={styles.infoCard}>
+        <Section background="mesh" padding="xl">
+          <Container maxWidth="lg">
+            <Grid columns={2} gap={6}>
+              <Card variant="glass">
             <h3 style={styles.infoTitle}>How it works</h3>
             <ol style={styles.infoList}>
               <li>Enter your KCET rank</li>
@@ -267,9 +267,9 @@ const RankPredictor: React.FC = () => {
               <li>Get a list of colleges where you have a chance of admission</li>
               <li>View detailed cutoff information for each college</li>
             </ol>
-          </div>
+              </Card>
 
-          <div style={styles.infoCard}>
+              <Card variant="glass">
             <h3 style={styles.infoTitle}>Tips</h3>
             <ul style={styles.infoList}>
               <li>Check all three rounds for better options</li>
@@ -277,8 +277,10 @@ const RankPredictor: React.FC = () => {
               <li>Compare cutoffs across different branches</li>
               <li>Keep your preferences ready before counselling</li>
             </ul>
-          </div>
-        </section>
+              </Card>
+            </Grid>
+          </Container>
+        </Section>
       )}
     </div>
   );
@@ -289,60 +291,10 @@ const styles: Record<string, React.CSSProperties> = {
     minHeight: '100vh',
     background: theme.colors.background.default,
   },
-  header: {
-    background: 'linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 90%)',
-    padding: `${theme.spacing[12]} ${theme.spacing[6]}`,
-    marginBottom: theme.spacing[8],
-  },
-  headerContent: {
-    maxWidth: '800px',
-    margin: '0 auto',
-    textAlign: 'center' as const,
-  },
-  iconWrapper: {
-    width: '80px',
-    height: '80px',
-    borderRadius: theme.borderRadius.xl,
-    background: 'rgba(255, 255, 255, 0.2)',
-    backdropFilter: 'blur(10px)',
+  formGrid: {
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: '0 auto',
-    marginBottom: theme.spacing[5],
-  },
-  headerIcon: {
-    fontSize: '2.5rem',
-    color: theme.colors.text.inverse,
-  },
-  title: {
-    margin: 0,
-    fontSize: theme.typography.fontSize['4xl'],
-    fontWeight: theme.typography.fontWeight.bold,
-    fontFamily: theme.typography.fontFamily.heading,
-    color: theme.colors.text.inverse,
-    marginBottom: theme.spacing[4],
-  },
-  subtitle: {
-    margin: 0,
-    fontSize: theme.typography.fontSize.lg,
-    color: theme.colors.text.inverse,
-    opacity: 0.9,
-  },
-  searchSection: {
-    maxWidth: '600px',
-    margin: '0 auto',
-    padding: `0 ${theme.spacing[6]} ${theme.spacing[8]}`,
-  },
-  form: {
-    background: theme.colors.background.paper,
-    borderRadius: theme.borderRadius.xl,
-    padding: theme.spacing[8],
-    boxShadow: theme.shadows.xl,
-    border: `1px solid ${theme.colors.border.light}`,
-  },
-  inputGroup: {
-    marginBottom: theme.spacing[6],
+    flexDirection: 'column' as const,
+    gap: theme.spacing[6],
   },
   label: {
     display: 'block',
@@ -350,15 +302,6 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.text.primary,
     marginBottom: theme.spacing[2],
-  },
-  input: {
-    width: '100%',
-    padding: theme.spacing[4],
-    fontSize: theme.typography.fontSize.lg,
-    border: `2px solid ${theme.colors.border.light}`,
-    borderRadius: theme.borderRadius.md,
-    outline: 'none',
-    transition: theme.transitions.base,
   },
   hint: {
     display: 'block',
@@ -372,11 +315,11 @@ const styles: Record<string, React.CSSProperties> = {
   },
   roundButton: {
     flex: 1,
-    padding: theme.spacing[3],
+    padding: `${theme.spacing[3]} ${theme.spacing[4]}`,
     background: theme.colors.background.paper,
     color: theme.colors.text.secondary,
     border: `2px solid ${theme.colors.border.light}`,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: theme.borderRadius.lg,
     fontSize: theme.typography.fontSize.base,
     fontWeight: theme.typography.fontWeight.medium,
     cursor: 'pointer',
@@ -388,29 +331,6 @@ const styles: Record<string, React.CSSProperties> = {
     borderColor: 'transparent',
     boxShadow: theme.shadows.glow,
   },
-  submitButton: {
-    width: '100%',
-    padding: theme.spacing[4],
-    background: theme.colors.primary.gradient,
-    color: theme.colors.text.inverse,
-    border: 'none',
-    borderRadius: theme.borderRadius.md,
-    fontSize: theme.typography.fontSize.lg,
-    fontWeight: theme.typography.fontWeight.bold,
-    cursor: 'pointer',
-    transition: theme.transitions.base,
-    boxShadow: theme.shadows.lg,
-  },
-  errorSection: {
-    maxWidth: '800px',
-    margin: '0 auto',
-    padding: `0 ${theme.spacing[6]}`,
-  },
-  resultsSection: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: `0 ${theme.spacing[6]} ${theme.spacing[12]}`,
-  },
   resultsHeader: {
     textAlign: 'center' as const,
     marginBottom: theme.spacing[8],
@@ -419,34 +339,33 @@ const styles: Record<string, React.CSSProperties> = {
     margin: 0,
     fontSize: theme.typography.fontSize['3xl'],
     fontWeight: theme.typography.fontWeight.bold,
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing[2],
+    background: theme.colors.primary.gradient,
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+    marginBottom: theme.spacing[3],
   },
   resultsSubtitle: {
     margin: 0,
     fontSize: theme.typography.fontSize.base,
     color: theme.colors.text.secondary,
-  },
-  filterBadge: {
-    color: theme.colors.primary.main,
-    fontWeight: theme.typography.fontWeight.semibold,
-  },
-  collegesGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-    gap: theme.spacing[6],
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexWrap: 'wrap' as const,
+    gap: theme.spacing[2],
   },
   emptyState: {
     textAlign: 'center' as const,
     padding: theme.spacing[12],
   },
   emptyIcon: {
-    fontSize: '4rem',
+    fontSize: '5rem',
     color: theme.colors.neutral[300],
     marginBottom: theme.spacing[4],
   },
   emptyText: {
-    fontSize: theme.typography.fontSize.lg,
+    fontSize: theme.typography.fontSize.xl,
     color: theme.colors.text.primary,
     fontWeight: theme.typography.fontWeight.semibold,
     marginBottom: theme.spacing[2],
@@ -454,21 +373,6 @@ const styles: Record<string, React.CSSProperties> = {
   emptyHint: {
     fontSize: theme.typography.fontSize.base,
     color: theme.colors.text.secondary,
-  },
-  infoSection: {
-    maxWidth: '1000px',
-    margin: '0 auto',
-    padding: `${theme.spacing[8]} ${theme.spacing[6]} ${theme.spacing[12]}`,
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-    gap: theme.spacing[6],
-  },
-  infoCard: {
-    background: theme.colors.background.paper,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing[6],
-    boxShadow: theme.shadows.md,
-    border: `1px solid ${theme.colors.border.light}`,
   },
   infoTitle: {
     margin: 0,

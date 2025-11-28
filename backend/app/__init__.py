@@ -7,8 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.exceptions import http_exception_handler, general_exception_handler
-from app.routes import colleges, branches, chat, email_routes
-from dotenv import load_dotenv, find_dotenv
+from app.routes import colleges, branches, chat, email_routes, auth
 
 
 def create_app() -> FastAPI:
@@ -42,6 +41,7 @@ def create_app() -> FastAPI:
     app.include_router(branches.router)
     app.include_router(chat.router)
     app.include_router(email_routes.router)
+    app.include_router(auth.router)
     
     return app
 
