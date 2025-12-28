@@ -84,6 +84,10 @@ SMTP_FROM_NAME="KCET College Predictor"
 
 # Database
 DATABASE_URL=data/kcet_2024.db
+
+# Supabase (for authentication)
+SUPABASE_URL=your_supabase_url
+SUPABASE_KEY=your_supabase_key
 ```
 
 5. Run the development server:
@@ -108,6 +112,8 @@ npm install
 3. Create a `.env` file in the frontend directory:
 ```bash
 VITE_API_BASE_URL=http://localhost:8005
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
 4. Run the development server:
@@ -125,15 +131,23 @@ The application will be available at `http://localhost:5173`
 |----------|-------------|----------|---------|
 | `GEMINI_API_KEY` | Google Gemini API key | Yes | - |
 | `EMAIL_ENABLED` | Enable/disable email features | No | `false` |
+| `SMTP_HOST` | SMTP server host | No | `smtp.gmail.com` |
+| `SMTP_PORT` | SMTP server port | No | `587` |
 | `SMTP_USERNAME` | Gmail address for sending emails | No | - |
 | `SMTP_PASSWORD` | Gmail app password | No | - |
+| `SMTP_FROM_EMAIL` | From email address | No | - |
+| `SMTP_FROM_NAME` | From name | No | `KCET College Predictor` |
 | `DATABASE_URL` | Path to SQLite database | No | `data/kcet_2024.db` |
+| `SUPABASE_URL` | Supabase project URL | Yes | - |
+| `SUPABASE_KEY` | Supabase service role key | Yes | - |
 
 #### Frontend Environment Variables
 
 | Variable | Description | Required | Default |
 |----------|-------------|----------|---------|
 | `VITE_API_BASE_URL` | Backend API URL | No | `http://localhost:8005` |
+| `VITE_SUPABASE_URL` | Supabase project URL | Yes | - |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anonymous key | Yes | - |
 
 ## How to Contribute
 
