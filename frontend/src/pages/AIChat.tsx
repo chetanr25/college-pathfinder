@@ -591,12 +591,7 @@ const AIChat: React.FC = () => {
             {messages.map((msg) => (
               <ChatMessage 
                 key={msg.id || msg.created_at} 
-                message={{
-                  message_id: msg.id || '',
-                  role: msg.role,
-                  content: msg.content,
-                  timestamp: msg.created_at || new Date().toISOString(),
-                }} 
+                message={msg} 
               />
             ))}
 

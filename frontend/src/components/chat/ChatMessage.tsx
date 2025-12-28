@@ -15,29 +15,6 @@ interface ChatMessageProps {
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
   const isUser = message.role === 'user';
-  const isSystem = message.role === 'system';
-
-  if (isSystem) {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          marginBottom: '16px',
-        }}
-      >
-        <Typography
-          sx={{
-            fontSize: '12px',
-            color: '#9ca3af',
-            fontStyle: 'italic',
-          }}
-        >
-          {message.content}
-        </Typography>
-      </Box>
-    );
-  }
 
   // Parse content for tables
   const contentParts = splitContentWithTables(message.content);
@@ -159,7 +136,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
               />
 
               {/* Timestamp (only on last part) */}
-              {index === contentParts.length - 1 && (
+              {index === contentParts.length - 1 && message.created_at && (
                 <Typography
                   sx={{
                     fontSize: '10px',
@@ -168,7 +145,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
                     textAlign: isUser ? 'right' : 'left',
                   }}
                 >
-                  {new Date(message.timestamp).toLocaleTimeString([], {
+                  {new Date(message.created_at).toLocaleTimeString([], {
                     hour: '2-digit',
                     minute: '2-digit',
                   })}
