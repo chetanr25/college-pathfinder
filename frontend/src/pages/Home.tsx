@@ -38,7 +38,7 @@ const Home: React.FC = () => {
               onClick={() => navigate('/predictor')}
             >
                 <TrendingUp style={{ fontSize: '1.5rem' }} />
-                <span>Predict My College</span>
+                <span>Recommend me a  College</span>
                 <ArrowForward style={{ fontSize: '1.25rem' }} />
             </button>
             <button 

@@ -70,7 +70,7 @@ const RankPredictor: React.FC = () => {
         setColleges(data.colleges);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to predict colleges');
+      setError(err instanceof Error ? err.message : 'Failed to Recommend colleges');
     } finally {
       setLoading(false);
     }
@@ -81,7 +81,7 @@ const RankPredictor: React.FC = () => {
       {/* Hero Section */}
       <Hero
         icon={<TrendingUp />}
-        title="KCET Rank Predictor"
+        title="KCET Rank Recommendor"
         subtitle="Enter your KCET rank to find colleges you can get admitted to"
         size="md"
         background="linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 90%)"

@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
+<<<<<<< HEAD
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+=======
+import { Link, useLocation } from 'react-router-dom';
+>>>>>>> 879bd297f7e3a9a9781f7d1934aaefc38e713f07
 import { 
   School, 
   Category, 
@@ -28,7 +32,10 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ user, onSignOut }) => {
   const location = useLocation();
+<<<<<<< HEAD
   const navigate = useNavigate();
+=======
+>>>>>>> 879bd297f7e3a9a9781f7d1934aaefc38e713f07
   const [scrolled, setScrolled] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
