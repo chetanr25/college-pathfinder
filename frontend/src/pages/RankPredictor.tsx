@@ -89,8 +89,8 @@ const RankPredictor: React.FC = () => {
 
       {/* Search Form */}
       <Section background="default" padding="lg">
-        <Container maxWidth="md">
-          <Card variant="elevated" padding={8} style={{ boxShadow: theme.shadows.xl }}>
+        <Container maxWidth="sm">
+          <Card variant="elevated" padding={6} style={{ boxShadow: theme.shadows.lg }}>
             <form onSubmit={handleSearch}>
               <div style={styles.formGrid}>
                 <Input
@@ -234,11 +234,11 @@ const RankPredictor: React.FC = () => {
               </p>
             </div>
           ) : (
-              <Grid columns="auto" minItemWidth="350px" gap={6}>
+              <Grid columns="auto" minItemWidth="320px" gap={5}>
                 {colleges.map((college, index) => (
                   <div
                     key={`${college.college_code}-${college.branch_name}`}
-                    style={{ animation: `fadeInUp 0.6s ease-out ${index * 0.05}s both` }}
+                    style={{ animation: `fadeInUp 0.5s ease-out ${Math.min(index * 0.03, 0.3)}s both` }}
                   >
                 <CollegeCardModern
                   collegeCode={college.college_code}
@@ -294,7 +294,7 @@ const styles: Record<string, React.CSSProperties> = {
   formGrid: {
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: theme.spacing[6],
+    gap: theme.spacing[5],
   },
   label: {
     display: 'block',
@@ -311,43 +311,45 @@ const styles: Record<string, React.CSSProperties> = {
   },
   roundSelector: {
     display: 'flex',
-    gap: theme.spacing[3],
+    gap: theme.spacing[2],
+    flexWrap: 'wrap' as const,
   },
   roundButton: {
     flex: 1,
-    padding: `${theme.spacing[3]} ${theme.spacing[4]}`,
+    minWidth: '80px',
+    padding: `${theme.spacing[2]} ${theme.spacing[3]}`,
     background: theme.colors.background.paper,
     color: theme.colors.text.secondary,
     border: `2px solid ${theme.colors.border.light}`,
-    borderRadius: theme.borderRadius.lg,
-    fontSize: theme.typography.fontSize.base,
+    borderRadius: theme.borderRadius.md,
+    fontSize: theme.typography.fontSize.sm,
     fontWeight: theme.typography.fontWeight.medium,
     cursor: 'pointer',
-    transition: theme.transitions.base,
+    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
   },
   roundButtonActive: {
     background: theme.colors.primary.gradient,
     color: theme.colors.text.inverse,
     borderColor: 'transparent',
-    boxShadow: theme.shadows.glow,
+    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
   },
   resultsHeader: {
     textAlign: 'center' as const,
-    marginBottom: theme.spacing[8],
+    marginBottom: theme.spacing[6],
   },
   resultsTitle: {
     margin: 0,
-    fontSize: theme.typography.fontSize['3xl'],
+    fontSize: 'clamp(1.5rem, 4vw, 1.875rem)',
     fontWeight: theme.typography.fontWeight.bold,
     background: theme.colors.primary.gradient,
     WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
     backgroundClip: 'text',
-    marginBottom: theme.spacing[3],
+    marginBottom: theme.spacing[2],
   },
   resultsSubtitle: {
     margin: 0,
-    fontSize: theme.typography.fontSize.base,
+    fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
     display: 'flex',
     alignItems: 'center',
@@ -357,34 +359,34 @@ const styles: Record<string, React.CSSProperties> = {
   },
   emptyState: {
     textAlign: 'center' as const,
-    padding: theme.spacing[12],
+    padding: theme.spacing[10],
   },
   emptyIcon: {
-    fontSize: '5rem',
+    fontSize: '4rem',
     color: theme.colors.neutral[300],
-    marginBottom: theme.spacing[4],
+    marginBottom: theme.spacing[3],
   },
   emptyText: {
-    fontSize: theme.typography.fontSize.xl,
+    fontSize: theme.typography.fontSize.lg,
     color: theme.colors.text.primary,
     fontWeight: theme.typography.fontWeight.semibold,
     marginBottom: theme.spacing[2],
   },
   emptyHint: {
-    fontSize: theme.typography.fontSize.base,
+    fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
   },
   infoTitle: {
     margin: 0,
-    fontSize: theme.typography.fontSize.xl,
+    fontSize: theme.typography.fontSize.lg,
     fontWeight: theme.typography.fontWeight.bold,
     color: theme.colors.text.primary,
-    marginBottom: theme.spacing[4],
+    marginBottom: theme.spacing[3],
   },
   infoList: {
     margin: 0,
-    paddingLeft: theme.spacing[6],
-    fontSize: theme.typography.fontSize.base,
+    paddingLeft: theme.spacing[5],
+    fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
     lineHeight: theme.typography.lineHeight.relaxed,
   },

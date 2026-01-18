@@ -1,6 +1,15 @@
 /* Import Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
+/* CSS Variables */
+:root {
+  --navbar-height: 72px;
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --accent-gradient: linear-gradient(135deg, #13B0F5 0%, #00E4D0 100%);
+  --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* CSS Reset & Base Styles */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -225,14 +234,13 @@ textarea:focus {
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important;
 }
 
-/* Button hover effects */
-button:not(:disabled):hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+/* Button hover effects - subtle and smooth */
+button:not(:disabled) {
+  transition: all 0.25s var(--transition-smooth);
 }
 
 button:not(:disabled):active {
-  transform: translateY(0);
+  transform: scale(0.98);
 }
 
 /* Custom Button Animations */
@@ -276,23 +284,49 @@ button:not(:disabled):active {
 
 /* Responsive breakpoints */
 @media (max-width: 1024px) {
+  :root {
+    --navbar-height: 68px;
+  }
+  
   html {
     font-size: 15px;
   }
 }
 
 @media (max-width: 768px) {
+  :root {
+    --navbar-height: 64px;
+  }
+  
   html {
     font-size: 14px;
   }
   
-  /* Mobile-friendly card grids */
-  .grid {
-    grid-template-columns: 1fr !important;
+  /* Mobile-friendly layouts */
+  .mobile-stack {
+    flex-direction: column !important;
+  }
+  
+  .mobile-full {
+    width: 100% !important;
+  }
+  
+  .mobile-center {
+    text-align: center !important;
+    justify-content: center !important;
+  }
+  
+  /* Hide on mobile */
+  .hide-mobile {
+    display: none !important;
   }
 }
 
 @media (max-width: 480px) {
+  :root {
+    --navbar-height: 60px;
+  }
+  
   html {
     font-size: 13px;
   }
@@ -407,48 +441,67 @@ body {
 }
 
 /* Home page specific animations and effects */
-@keyframes float {
+@keyframes floatAnimation {
   0%, 100% {
     transform: translateY(0px);
   }
   50% {
-    transform: translateY(-20px);
+    transform: translateY(-15px);
   }
 }
 
-/* Button hover effects */
-button:hover {
-  transform: translateY(-4px) !important;
-  box-shadow: 0 20px 60px rgba(102, 126, 234, 0.5) !important;
+/* Feature card hover effects - smooth and elegant */
+.largeFeatureCard {
+  transition: all 0.35s var(--transition-smooth);
 }
 
-button:active {
-  transform: translateY(-2px) !important;
-}
-
-/* Feature card hover effects */
 .largeFeatureCard:hover {
-  transform: translateY(-8px);
-  border-color: rgba(102, 126, 234, 0.5) !important;
+  transform: translateY(-6px);
+  border-color: rgba(102, 126, 234, 0.4);
 }
 
 .largeFeatureCard:hover .featureCardGlow {
-  opacity: 1 !important;
+  opacity: 0.8;
 }
 
 .largeFeatureCard:hover .featureCardAction {
-  color: #a78bfa !important;
-  gap: 16px !important;
+  color: #a78bfa;
+  gap: 14px;
 }
 
-/* Why card hover */
+/* Why card hover - smooth */
+.whyCard {
+  transition: all 0.35s var(--transition-smooth);
+}
+
 .whyCard:hover {
-  background: rgba(255,255,255,0.08) !important;
-  transform: translateY(-8px);
-  border-color: rgba(102, 126, 234, 0.3) !important;
+  background: rgba(255,255,255,0.08);
+  transform: translateY(-4px);
+  border-color: rgba(102, 126, 234, 0.25);
 }
 
-/* Smooth transitions for all interactive elements */
-* {
-  scroll-behavior: smooth;
+/* Hero button effects - specific to hero section */
+.hero-btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+}
+
+.hero-btn-secondary:hover {
+  transform: translateY(-3px);
+  background: rgba(255,255,255,0.25);
+}
+
+/* Card hover animations */
+.card-hoverable {
+  transition: all 0.3s var(--transition-smooth);
+}
+
+.card-hoverable:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+}
+
+/* Content wrapper for pages with navbar */
+.page-content {
+  padding-top: var(--navbar-height);
 }

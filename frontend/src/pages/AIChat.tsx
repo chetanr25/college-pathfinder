@@ -16,26 +16,25 @@ const AIChat: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width: 768px)');
-  const { user, signOut } = useAuth();
+  const { user, signOut, getAccessToken } = useAuth();
   
   // State management
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
-  const [sidebarVisible, setSidebarVisible] = useState(false); // Hidden by default
+  const [sidebarVisible, setSidebarVisible] = useState(false);
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const [thinkingSteps, setThinkingSteps] = useState<Array<{ step: string; timestamp: string; completed?: boolean }>>([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string>('');
   const [isHeaderMinimized, setIsHeaderMinimized] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   
-  // Refs to avoid dependency issues
-  const wsRef = useRef<WebSocket | null>(null);
+  // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isInitializedRef = useRef(false);
   const currentSessionIdRef = useRef<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const hasChatStarted = messages.length > 0;
 
@@ -73,142 +72,10 @@ const AIChat: React.FC = () => {
     }
   }, [user, loadSessions]);
 
-  // Connect to WebSocket - stable function
-  const connectWebSocket = useCallback((sessionId: string) => {
-    // Prevent duplicate connections
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      if (currentSessionIdRef.current === sessionId) {
-        console.log('🔌 WebSocket already connected to this session');
-        return;
-      }
-      wsRef.current.close();
-    }
-
-    currentSessionIdRef.current = sessionId;
-    const wsBase = API_BASE_URL.replace('http', 'ws');
-    const wsUrl = `${wsBase}/chat/ws/${sessionId}`;
-    
-    console.log('🔌 Connecting to WebSocket:', wsUrl);
-    const ws = new WebSocket(wsUrl);
-    
-    ws.onopen = () => {
-      console.log('✅ WebSocket connected');
-      setIsConnected(true);
-    };
-
-    ws.onmessage = async (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        console.log('📨 Received:', data.type);
-
-        switch (data.type) {
-          case 'welcome':
-            setMessages(prev => {
-              if (prev.length === 0) {
-                return [{
-                  id: 'welcome',
-                  session_id: sessionId,
-                  role: 'assistant',
-                  content: data.message,
-                  created_at: new Date().toISOString(),
-                }];
-              }
-              return prev;
-            });
-            break;
-
-          case 'thinking':
-            setThinkingSteps(prev => [...prev, { step: data.step, timestamp: data.timestamp }]);
-            break;
-
-          case 'tool_call':
-            if (data.status === 'completed') {
-              setThinkingSteps(prev => 
-                prev.map((s, i) => i === prev.length - 1 ? { ...s, completed: true } : s)
-              );
-            }
-            break;
-
-          case 'response_chunk':
-            setMessages(prev => {
-              const lastMessage = prev[prev.length - 1];
-              if (lastMessage && lastMessage.role === 'assistant' && lastMessage.id === 'streaming') {
-                return [
-                  ...prev.slice(0, -1),
-                  { ...lastMessage, content: lastMessage.content + data.content }
-                ];
-              } else {
-                return [
-                  ...prev,
-                  {
-                    id: 'streaming',
-                    session_id: sessionId,
-                    role: 'assistant',
-                    content: data.content,
-                    created_at: new Date().toISOString(),
-                  }
-                ];
-              }
-            });
-            break;
-
-          case 'response_complete':
-            setThinkingSteps([]);
-            setIsProcessing(false);
-            
-            // Save assistant message to Supabase
-            if (data.full_content && currentSessionIdRef.current) {
-              chatService.saveMessage(currentSessionIdRef.current, 'assistant', data.full_content);
-            }
-            
-            setMessages(prev => {
-              const lastMessage = prev[prev.length - 1];
-              if (lastMessage && lastMessage.id === 'streaming') {
-                return [
-                  ...prev.slice(0, -1),
-                  { ...lastMessage, id: data.message_id || 'final-' + Date.now(), content: data.full_content }
-                ];
-              }
-              return prev;
-            });
-            
-            // Reload sessions list
-            loadSessions();
-            break;
-
-          case 'error':
-            setError(data.message || 'An error occurred');
-            setIsProcessing(false);
-            setThinkingSteps([]);
-            break;
-        }
-      } catch (err) {
-        console.error('Error parsing message:', err);
-      }
-    };
-
-    ws.onerror = (error) => {
-      console.error('❌ WebSocket error:', error);
-    };
-
-    ws.onclose = () => {
-      console.log('🔌 WebSocket closed');
-      setIsConnected(false);
-    };
-
-    wsRef.current = ws;
-  }, [loadSessions]);
-
-  // Store user ID in a ref to avoid re-running effect on user object changes
-  const userIdRef = useRef<string | null>(null);
-
   // Initialize chat - runs once when user is ready
   useEffect(() => {
-    // Only initialize if user exists and we haven't initialized yet
     if (!user || isInitializedRef.current) return;
     
-    // Track user ID for this initialization
-    userIdRef.current = user.id;
     isInitializedRef.current = true;
     
     const sessionIdFromUrl = searchParams.get('session_id');
@@ -217,6 +84,7 @@ const AIChat: React.FC = () => {
       if (sessionIdFromUrl) {
         // Load existing session
         setCurrentSessionId(sessionIdFromUrl);
+        currentSessionIdRef.current = sessionIdFromUrl;
         
         try {
           const history = await chatService.getMessages(sessionIdFromUrl);
@@ -226,39 +94,33 @@ const AIChat: React.FC = () => {
         } catch (err) {
           console.error('Error loading history:', err);
         }
-        
-        connectWebSocket(sessionIdFromUrl);
       } else {
         // Create new temp session
         const tempSessionId = `temp-${Date.now()}`;
         setCurrentSessionId(tempSessionId);
+        currentSessionIdRef.current = tempSessionId;
         setMessages([]);
-        connectWebSocket(tempSessionId);
       }
     };
 
     initChat();
-  }, [user?.id, searchParams, connectWebSocket]); // Use user.id instead of user object
+  }, [user?.id, searchParams]);
 
-  // Separate cleanup effect that only runs on unmount
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      console.log('🧹 Cleaning up WebSocket on unmount');
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
     };
-  }, []); // Empty deps = only run cleanup on unmount
+  }, []);
 
+  /**
+   * Send message using HTTP streaming (SSE)
+   */
   const handleSendMessage = async (message: string) => {
-    if (!wsRef.current || isProcessing || !user || wsRef.current.readyState !== WebSocket.OPEN) {
-      console.log('Cannot send message:', { 
-        ws: !!wsRef.current, 
-        isProcessing, 
-        user: !!user, 
-        readyState: wsRef.current?.readyState 
-      });
+    if (isProcessing || !user) {
+      console.log('Cannot send message:', { isProcessing, user: !!user });
       return;
     }
 
@@ -275,13 +137,6 @@ const AIChat: React.FC = () => {
           
           // Update URL without reload
           navigate(`/ai-chat?session_id=${sessionId}`, { replace: true });
-          
-          // Reconnect WebSocket with real session ID
-          connectWebSocket(sessionId);
-          
-          // Wait for connection
-          await new Promise(resolve => setTimeout(resolve, 500));
-          
           loadSessions();
         }
       }
@@ -296,7 +151,7 @@ const AIChat: React.FC = () => {
         await chatService.generateTitle(sessionId, message);
       }
 
-      // Add to UI
+      // Add user message to UI
       const userMessage: ChatMessageType = {
         id: `user-${Date.now()}`,
         session_id: sessionId,
@@ -305,52 +160,190 @@ const AIChat: React.FC = () => {
         created_at: new Date().toISOString(),
       };
       setMessages(prev => prev.filter(m => m.id !== 'welcome').concat(userMessage));
+      setIsProcessing(true);
+      setError('');
+      setThinkingSteps([]);
 
-      // Send via WebSocket
-      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        wsRef.current.send(JSON.stringify({ message }));
-        setIsProcessing(true);
-        setError('');
+      // Get auth token
+      const token = getAccessToken();
+
+      // Create abort controller for this request
+      abortControllerRef.current = new AbortController();
+
+      // Make streaming request
+      const response = await fetch(`${API_BASE_URL}/chat/stream/${sessionId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ message }),
+        signal: abortControllerRef.current.signal,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('No response body');
+      }
+
+      const decoder = new TextDecoder();
+      let responseText = '';
+
+      // Read the stream
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              console.log('📨 SSE Event:', data.type);
+
+              switch (data.type) {
+                case 'session_created':
+                  // Session was created on the backend, update our reference
+                  if (data.session_id) {
+                    setCurrentSessionId(data.session_id);
+                    currentSessionIdRef.current = data.session_id;
+                    navigate(`/ai-chat?session_id=${data.session_id}`, { replace: true });
+                  }
+                  break;
+
+                case 'thinking':
+                  setThinkingSteps(prev => [...prev, { step: data.step, timestamp: data.timestamp || new Date().toISOString() }]);
+                  break;
+
+                case 'tool_call':
+                  // Tool calls mark completion of thinking steps
+                  // The thinking messages (e.g. "🔍 Searching colleges...") are sent separately
+                  if (data.status === 'completed' || data.status === 'failed') {
+                    setThinkingSteps(prev => 
+                      prev.map((s, i) => i === prev.length - 1 ? { ...s, completed: data.status === 'completed' } : s)
+                    );
+                  }
+                  break;
+
+                case 'chunk':
+                  responseText += data.content;
+                  setMessages(prev => {
+                    const lastMessage = prev[prev.length - 1];
+                    if (lastMessage && lastMessage.role === 'assistant' && lastMessage.id === 'streaming') {
+                      return [
+                        ...prev.slice(0, -1),
+                        { ...lastMessage, content: responseText }
+                      ];
+                    } else {
+                      return [
+                        ...prev,
+                        {
+                          id: 'streaming',
+                          session_id: sessionId!,
+                          role: 'assistant',
+                          content: data.content,
+                          created_at: new Date().toISOString(),
+                        }
+                      ];
+                    }
+                  });
+                  break;
+
+                case 'complete':
+                  setThinkingSteps([]);
+                  setIsProcessing(false);
+                  
+                  // Save assistant message to Supabase
+                  if (data.full_content && currentSessionIdRef.current) {
+                    chatService.saveMessage(currentSessionIdRef.current, 'assistant', data.full_content);
+                  }
+                  
+                  setMessages(prev => {
+                    const lastMessage = prev[prev.length - 1];
+                    if (lastMessage && lastMessage.id === 'streaming') {
+                      return [
+                        ...prev.slice(0, -1),
+                        { ...lastMessage, id: data.message_id || 'final-' + Date.now(), content: data.full_content || responseText }
+                      ];
+                    }
+                    return prev;
+                  });
+                  
+                  // Reload sessions list to update sidebar
+                  loadSessions();
+                  break;
+
+                case 'error':
+                  setError(data.message || 'An error occurred');
+                  setIsProcessing(false);
+                  setThinkingSteps([]);
+                  break;
+              }
+            } catch (parseError) {
+              console.error('Error parsing SSE data:', parseError, line);
+            }
+          }
+        }
+      }
+
+      // If stream ended without complete event, finalize
+      if (isProcessing) {
+        setIsProcessing(false);
+        setThinkingSteps([]);
+      }
+
     } catch (err) {
-      setError('Failed to send message. Please try again.');
-      console.error('Send message error:', err);
+      if ((err as Error).name === 'AbortError') {
+        console.log('Request was aborted');
+      } else {
+        setError('Failed to send message. Please try again.');
+        console.error('Send message error:', err);
+      }
       setIsProcessing(false);
+      setThinkingSteps([]);
     }
   };
 
   const handleNewChat = () => {
-    // Reset initialization flag so we can create a new session
-    isInitializedRef.current = false;
-    
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
+    // Cancel any ongoing request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
     }
     
+    // Reset state
+    isInitializedRef.current = false;
     setMessages([]);
     setCurrentSessionId(null);
     currentSessionIdRef.current = null;
+    setThinkingSteps([]);
+    setIsProcessing(false);
     navigate('/ai-chat', { replace: true });
     
     // Create new temp session
     const tempSessionId = `temp-${Date.now()}`;
     setCurrentSessionId(tempSessionId);
-    connectWebSocket(tempSessionId);
+    currentSessionIdRef.current = tempSessionId;
   };
 
   const handleSelectSession = async (sessionId: string) => {
     if (sessionId === currentSessionId) return;
     
-    // Close current WebSocket
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
+    // Cancel any ongoing request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
     }
     
     // Load session history
     setCurrentSessionId(sessionId);
     currentSessionIdRef.current = sessionId;
+    setThinkingSteps([]);
+    setIsProcessing(false);
     
     try {
       const history = await chatService.getMessages(sessionId);
@@ -360,8 +353,6 @@ const AIChat: React.FC = () => {
       setMessages([]);
     }
     
-    // Connect WebSocket and update URL
-    connectWebSocket(sessionId);
     navigate(`/ai-chat?session_id=${sessionId}`, { replace: true });
     
     if (isMobile) {
@@ -395,8 +386,8 @@ const AIChat: React.FC = () => {
   };
 
   const handleSignOut = async () => {
-    if (wsRef.current) {
-      wsRef.current.close();
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
     }
     await signOut();
     navigate('/');
@@ -510,13 +501,46 @@ const AIChat: React.FC = () => {
                   </Box>
                 )}
                 
+                {/* Back to Home Button - More prominent */}
                 <Link to="/" style={{ textDecoration: 'none' }}>
-                  <IconButton sx={{ color: 'white' }} title="Home">
-                    <Home />
-                  </IconButton>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '8px 16px',
+                      background: 'rgba(255,255,255,0.2)',
+                      borderRadius: '10px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      border: '1px solid rgba(255,255,255,0.3)',
+                      '&:hover': {
+                        background: 'rgba(255,255,255,0.3)',
+                      },
+                    }}
+                  >
+                    <Home sx={{ color: 'white', fontSize: '20px' }} />
+                    <Typography sx={{ 
+                      color: '#fff', 
+                      fontSize: '14px', 
+                      fontWeight: 600,
+                      display: { xs: 'none', sm: 'block' },
+                    }}>
+                      Home
+                    </Typography>
+                  </Box>
                 </Link>
                 
-                <IconButton onClick={handleSignOut} sx={{ color: 'white' }} title="Sign Out">
+                <IconButton 
+                  onClick={handleSignOut} 
+                  sx={{ 
+                    color: 'white',
+                    '&:hover': {
+                      background: 'rgba(255,255,255,0.15)',
+                    },
+                  }} 
+                  title="Sign Out"
+                >
                   <Logout />
                 </IconButton>
               </Box>
@@ -611,11 +635,9 @@ const AIChat: React.FC = () => {
           <Container maxWidth="md" sx={{ pointerEvents: 'auto' }}>
             <ChatInput
               onSendMessage={handleSendMessage}
-              disabled={isProcessing || !isConnected}
+              disabled={isProcessing}
               placeholder={
-                !isConnected
-                  ? 'Connecting...'
-                  : isProcessing
+                isProcessing
                   ? 'AI is thinking...'
                   : 'Ask me anything about colleges...'
               }

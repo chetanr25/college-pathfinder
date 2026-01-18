@@ -34,7 +34,7 @@ const CollegeCardModern: React.FC<CollegeCardProps> = ({
       glow
       gradient={theme.colors.primary.gradient}
       onClick={handleClick}
-      padding={compact ? 4 : 6}
+      padding={compact ? 4 : 5}
       style={{ 
         display: 'flex', 
         flexDirection: 'column',
@@ -42,9 +42,9 @@ const CollegeCardModern: React.FC<CollegeCardProps> = ({
         height: '100%'
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: theme.spacing[4] }}>
-        <IconBox size="md" gradient={theme.colors.primary.gradient}>
-          <School />
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: theme.spacing[3] }}>
+        <IconBox size="sm" gradient={theme.colors.primary.gradient}>
+          <School style={{ fontSize: '1.25rem' }} />
         </IconBox>
         
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -101,7 +101,7 @@ const CollegeCardModern: React.FC<CollegeCardProps> = ({
 const styles: Record<string, React.CSSProperties> = {
   collegeName: {
     margin: 0,
-    fontSize: theme.typography.fontSize.xl,
+    fontSize: theme.typography.fontSize.lg,
     fontWeight: theme.typography.fontWeight.bold,
     color: theme.colors.text.primary,
     fontFamily: theme.typography.fontFamily.heading,
@@ -110,22 +110,23 @@ const styles: Record<string, React.CSSProperties> = {
     display: '-webkit-box',
     WebkitLineClamp: 2,
     WebkitBoxOrient: 'vertical',
-    lineHeight: 1.3,
+    lineHeight: 1.35,
     marginBottom: theme.spacing[1],
   },
   collegeCode: {
     margin: 0,
-    fontSize: theme.typography.fontSize.xs,
+    fontSize: '0.7rem',
     color: theme.colors.text.secondary,
     fontFamily: theme.typography.fontFamily.mono,
     fontWeight: theme.typography.fontWeight.medium,
+    letterSpacing: '0.02em',
   },
   stats: {
     display: 'flex',
     flexDirection: 'column' as const,
     gap: theme.spacing[2],
-    marginTop: theme.spacing[4],
-    paddingTop: theme.spacing[4],
+    marginTop: theme.spacing[3],
+    paddingTop: theme.spacing[3],
     borderTop: `1px solid ${theme.colors.border.light}`,
   },
   statItem: {
@@ -134,23 +135,23 @@ const styles: Record<string, React.CSSProperties> = {
     gap: theme.spacing[2],
   },
   statIcon: {
-    fontSize: '1.25rem',
+    fontSize: '1.1rem',
     color: theme.colors.primary.main,
   },
   statText: {
-    fontSize: theme.typography.fontSize.sm,
+    fontSize: theme.typography.fontSize.xs,
     color: theme.colors.text.secondary,
     fontWeight: theme.typography.fontWeight.medium,
   },
   branchTags: {
     display: 'flex',
     flexWrap: 'wrap' as const,
-    gap: theme.spacing[2],
-    marginTop: theme.spacing[4],
+    gap: '6px',
+    marginTop: theme.spacing[3],
   },
   footer: {
     marginTop: 'auto',
-    paddingTop: theme.spacing[4],
+    paddingTop: theme.spacing[3],
     borderTop: `1px solid ${theme.colors.border.light}`,
   },
   viewDetails: {
@@ -159,9 +160,9 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'center',
     gap: theme.spacing[2],
     color: theme.colors.primary.main,
-    fontSize: theme.typography.fontSize.sm,
+    fontSize: theme.typography.fontSize.xs,
     fontWeight: theme.typography.fontWeight.semibold,
-    transition: theme.transitions.base,
+    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
   },
 };
 

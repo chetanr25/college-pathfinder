@@ -50,14 +50,15 @@ const Input: React.FC<InputProps> = ({
   const inputStyles: React.CSSProperties = {
     width: '100%',
     padding: icon ? `${theme.spacing[3]} ${theme.spacing[3]} ${theme.spacing[3]} ${theme.spacing[10]}` : theme.spacing[3],
-    fontSize: theme.typography.fontSize.base,
+    fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.primary,
     background: theme.colors.background.paper,
     border: `2px solid ${error ? theme.colors.error.main : theme.colors.border.light}`,
-    borderRadius: theme.borderRadius.lg,
+    borderRadius: theme.borderRadius.md,
     outline: 'none',
-    transition: theme.transitions.base,
+    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
     fontFamily: theme.typography.fontFamily.primary,
+    boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
     ...style,
   };
 

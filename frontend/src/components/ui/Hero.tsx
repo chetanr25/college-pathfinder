@@ -11,6 +11,7 @@ export interface HeroProps {
   background?: 'gradient' | 'mesh' | string;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
+  withNavbar?: boolean;
 }
 
 const Hero: React.FC<HeroProps> = ({
@@ -21,22 +22,29 @@ const Hero: React.FC<HeroProps> = ({
   background = 'gradient',
   size = 'lg',
   className = '',
+  withNavbar = true,
 }) => {
   const sizes = {
     sm: {
-      padding: `${theme.spacing[12]} ${theme.spacing[6]}`,
-      titleSize: theme.typography.fontSize['3xl'],
-      subtitleSize: theme.typography.fontSize.base,
+      padding: `${theme.spacing[10]} ${theme.spacing[6]}`,
+      paddingTop: withNavbar ? 'calc(72px + 2.5rem)' : theme.spacing[10],
+      titleSize: 'clamp(1.5rem, 4vw, 1.875rem)',
+      subtitleSize: 'clamp(0.875rem, 2vw, 1rem)',
+      iconSize: '56px',
     },
     md: {
-      padding: `${theme.spacing[16]} ${theme.spacing[6]}`,
-      titleSize: theme.typography.fontSize['4xl'],
-      subtitleSize: theme.typography.fontSize.lg,
+      padding: `${theme.spacing[12]} ${theme.spacing[6]}`,
+      paddingTop: withNavbar ? 'calc(72px + 3rem)' : theme.spacing[12],
+      titleSize: 'clamp(1.75rem, 5vw, 2.25rem)',
+      subtitleSize: 'clamp(0.95rem, 2vw, 1.125rem)',
+      iconSize: '64px',
     },
     lg: {
-      padding: `${theme.spacing[20]} ${theme.spacing[6]}`,
-      titleSize: theme.typography.fontSize['5xl'],
-      subtitleSize: theme.typography.fontSize.xl,
+      padding: `${theme.spacing[16]} ${theme.spacing[6]}`,
+      paddingTop: withNavbar ? 'calc(72px + 4rem)' : theme.spacing[16],
+      titleSize: 'clamp(2rem, 6vw, 3rem)',
+      subtitleSize: 'clamp(1rem, 2.5vw, 1.25rem)',
+      iconSize: '72px',
     },
   };
 
@@ -49,6 +57,8 @@ const Hero: React.FC<HeroProps> = ({
     position: 'relative',
     background: backgrounds[background as keyof typeof backgrounds] || background,
     padding: sizes[size].padding,
+    paddingTop: sizes[size].paddingTop,
+    paddingBottom: theme.spacing[12],
     overflow: 'hidden',
   };
 
@@ -59,8 +69,8 @@ const Hero: React.FC<HeroProps> = ({
   };
 
   const iconWrapperStyles: React.CSSProperties = {
-    width: '80px',
-    height: '80px',
+    width: sizes[size].iconSize,
+    height: sizes[size].iconSize,
     borderRadius: theme.borderRadius.xl,
     background: 'rgba(255, 255, 255, 0.2)',
     backdropFilter: 'blur(10px)',
@@ -68,10 +78,10 @@ const Hero: React.FC<HeroProps> = ({
     alignItems: 'center',
     justifyContent: 'center',
     margin: '0 auto',
-    marginBottom: theme.spacing[5],
-    fontSize: '2.5rem',
+    marginBottom: theme.spacing[4],
+    fontSize: 'clamp(1.5rem, 4vw, 2rem)',
     color: theme.colors.text.inverse,
-    boxShadow: theme.shadows.xl,
+    boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
   };
 
   const titleStyles: React.CSSProperties = {
@@ -80,8 +90,8 @@ const Hero: React.FC<HeroProps> = ({
     fontWeight: theme.typography.fontWeight.bold,
     fontFamily: theme.typography.fontFamily.heading,
     color: theme.colors.text.inverse,
-    marginBottom: theme.spacing[4],
-    lineHeight: theme.typography.lineHeight.tight,
+    marginBottom: theme.spacing[3],
+    lineHeight: 1.25,
   };
 
   const subtitleStyles: React.CSSProperties = {
@@ -89,21 +99,33 @@ const Hero: React.FC<HeroProps> = ({
     fontSize: sizes[size].subtitleSize,
     color: theme.colors.text.inverse,
     opacity: 0.9,
-    marginBottom: actions ? theme.spacing[8] : 0,
-    lineHeight: theme.typography.lineHeight.relaxed,
+    marginBottom: actions ? theme.spacing[6] : 0,
+    lineHeight: 1.6,
+    maxWidth: '600px',
+    marginLeft: 'auto',
+    marginRight: 'auto',
   };
 
   return (
     <section className={`hero ${className}`} style={heroStyles}>
-      <GlowingOrb top="-30%" right="-10%" size={700} opacity={0.2} />
-      <GlowingOrb bottom="-40%" left="-15%" size={800} color="rgba(236, 72, 153, 0.3)" opacity={0.15} />
+      <GlowingOrb top="-30%" right="-10%" size={500} opacity={0.15} />
+      <GlowingOrb bottom="-40%" left="-15%" size={600} color="rgba(236, 72, 153, 0.3)" opacity={0.1} />
       
       <Container maxWidth="lg">
         <div style={contentStyles}>
           {icon && <div style={iconWrapperStyles}>{icon}</div>}
           <h1 style={titleStyles}>{title}</h1>
           {subtitle && <p style={subtitleStyles}>{subtitle}</p>}
-          {actions && <div style={{ display: 'flex', gap: theme.spacing[4], justifyContent: 'center', flexWrap: 'wrap' }}>{actions}</div>}
+          {actions && (
+            <div style={{ 
+              display: 'flex', 
+              gap: theme.spacing[3], 
+              justifyContent: 'center', 
+              flexWrap: 'wrap' 
+            }}>
+              {actions}
+            </div>
+          )}
         </div>
       </Container>
     </section>

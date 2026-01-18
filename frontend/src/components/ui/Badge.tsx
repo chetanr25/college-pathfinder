@@ -20,16 +20,16 @@ const Badge: React.FC<BadgeProps> = ({
 }) => {
   const sizeStyles = {
     sm: {
-      padding: `${theme.spacing[1]} ${theme.spacing[2]}`,
-      fontSize: theme.typography.fontSize.xs,
+      padding: `2px ${theme.spacing[2]}`,
+      fontSize: '0.65rem',
     },
     md: {
-      padding: `${theme.spacing[2]} ${theme.spacing[3]}`,
-      fontSize: theme.typography.fontSize.sm,
+      padding: `${theme.spacing[1]} ${theme.spacing[3]}`,
+      fontSize: theme.typography.fontSize.xs,
     },
     lg: {
-      padding: `${theme.spacing[2]} ${theme.spacing[4]}`,
-      fontSize: theme.typography.fontSize.base,
+      padding: `${theme.spacing[2]} ${theme.spacing[3]}`,
+      fontSize: theme.typography.fontSize.sm,
     },
   };
 

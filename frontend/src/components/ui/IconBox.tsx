@@ -18,37 +18,45 @@ const IconBox: React.FC<IconBoxProps> = ({
 }) => {
   const sizes = {
     sm: {
-      width: '48px',
-      height: '48px',
-      fontSize: '1.5rem',
+      width: '40px',
+      height: '40px',
+      fontSize: '1.25rem',
+      borderRadius: '10px',
     },
     md: {
+      width: '52px',
+      height: '52px',
+      fontSize: '1.5rem',
+      borderRadius: '12px',
+    },
+    lg: {
       width: '64px',
       height: '64px',
       fontSize: '2rem',
+      borderRadius: '14px',
     },
-    lg: {
+    xl: {
       width: '80px',
       height: '80px',
       fontSize: '2.5rem',
-    },
-    xl: {
-      width: '96px',
-      height: '96px',
-      fontSize: '3rem',
+      borderRadius: '18px',
     },
   };
 
+  const sizeConfig = sizes[size];
   const iconBoxStyles: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: theme.borderRadius.xl,
+    width: sizeConfig.width,
+    height: sizeConfig.height,
+    fontSize: sizeConfig.fontSize,
+    borderRadius: sizeConfig.borderRadius,
     background: gradient,
     color: theme.colors.text.inverse,
-    boxShadow: theme.shadows.lg,
+    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    ...sizes[size],
+    flexShrink: 0,
     ...style,
   };
 
