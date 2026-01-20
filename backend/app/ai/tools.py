@@ -3,17 +3,19 @@ Tools registry for AI agent
 
 Defines all available tools (API functions) that the AI can call
 """
-from typing import Dict, List, Any, Callable, Optional
-from app.services import CollegeService
+
+from typing import Any, Callable, Dict, List, Optional
+
 from app.ai.email_tools import (
-    send_comprehensive_report_email,  # PRIMARY EMAIL FUNCTION
-    send_prediction_summary_email,
-    send_detailed_analysis_email,
-    send_comparison_email,
-    send_branch_analysis_email,
     send_admission_tips_email,
-    send_cutoff_trends_email
+    send_branch_analysis_email,
+    send_comparison_email,
+    send_comprehensive_report_email,  # PRIMARY EMAIL FUNCTION
+    send_cutoff_trends_email,
+    send_detailed_analysis_email,
+    send_prediction_summary_email,
 )
+from app.services import CollegeService
 
 
 # Tool execution functions - these are the actual callable functions
@@ -21,17 +23,14 @@ def get_colleges_by_rank(rank: int, round: int = 1, limit: int = 10):
     """
     Find colleges where a student with given KCET rank can get admission.
     Returns colleges sorted by cutoff rank (best colleges first).
-    
+
     Args:
         rank: Student's KCET rank (must be positive integer)
         round: Counselling round number (1, 2, or 3). Default is 1.
         limit: Maximum number of colleges to return (1-500). Default is 10.
     """
     colleges = CollegeService.get_colleges_by_rank(
-        rank=rank,
-        round=round,
-        limit=limit,
-        sort_order="asc"
+        rank=rank, round=round, limit=limit, sort_order="asc"
     )
     return colleges
 
@@ -50,12 +49,12 @@ def search_colleges(
     max_rank: Optional[int] = None,
     branches: Optional[List[str]] = None,
     round: int = 1,
-    limit: Optional[int] = None
+    limit: Optional[int] = None,
 ):
     """
     Advanced search for colleges with multiple filters.
     Use when user specifies branch preferences or wants to filter by rank range.
-    
+
     Args:
         min_rank: Minimum rank - colleges with cutoff >= this rank will be included
         max_rank: Maximum rank - colleges with cutoff <= this rank will be included
@@ -69,7 +68,7 @@ def search_colleges(
         branches=branches,
         round=round,
         limit=limit,
-        sort_order="asc"
+        sort_order="asc",
     )
     return colleges
 
@@ -77,17 +76,14 @@ def search_colleges(
 def get_colleges_by_branch(branch: str, round: int = 1, limit: Optional[int] = None):
     """
     Get all colleges offering a specific branch, sorted by cutoff rank.
-    
+
     Args:
         branch: Exact branch name (e.g., 'Computer Science Engineering')
         round: Counselling round (1, 2, or 3). Default is 1.
         limit: Maximum number of colleges to return (1-500)
     """
     colleges = CollegeService.get_colleges_by_branch(
-        branch=branch,
-        round=round,
-        limit=limit,
-        sort_order="asc"
+        branch=branch, round=round, limit=limit, sort_order="asc"
     )
     return colleges
 
@@ -95,7 +91,7 @@ def get_colleges_by_branch(branch: str, round: int = 1, limit: Optional[int] = N
 def get_cutoff_trends(college_code: str, branch: str):
     """
     Get cutoff rank trends across all 3 counselling rounds for a specific college and branch.
-    
+
     Args:
         college_code: College code (e.g., 'E001', 'E002')
         branch: Branch name (e.g., 'Computer Science Engineering')
@@ -107,7 +103,7 @@ def get_cutoff_trends(college_code: str, branch: str):
 def get_college_branches(college_code: str):
     """
     Get all branches offered by a specific college with their cutoff ranks for all rounds.
-    
+
     Args:
         college_code: College code (e.g., 'E001', 'E002')
     """
@@ -120,14 +116,14 @@ def search_college_by_name(query: str, limit: int = 10):
     Search for colleges by name using fuzzy matching.
     CRITICAL: Use this when user mentions a college name (e.g., "RV", "PES", "BMS College").
     Returns a list of matching colleges with scores.
-    
+
     If multiple matches found, present them to the user in a clean format and ask them to confirm.
     If only one match with score > 0.8, you can proceed automatically.
-    
+
     Args:
         query: College name or partial name (e.g., "RV", "ramaiah", "BMS")
         limit: Maximum number of results (default: 10)
-        
+
     Returns:
         List of dicts with college_code, college_name, match_score
     """
@@ -139,13 +135,13 @@ def match_branch_names(query: str, limit: int = 10):
     """
     Match user's casual branch name to exact database branch names.
     CRITICAL: Use this when user mentions a branch casually (e.g., "CS", "computer", "AI ML").
-    
+
     Handles abbreviations: CS→Computer Science, ECE→Electronics, AI ML→Artificial Intelligence, etc.
-    
+
     Args:
         query: User's branch query (e.g., "CS", "computer science", "AI ML")
         limit: Maximum number of matches (default: 10)
-        
+
     Returns:
         List of dicts with exact branch_name and match_score
     """
@@ -161,13 +157,13 @@ def analyze_rank_prospects(rank: int, round: int = 1):
     """
     Analyze a student's rank and provide detailed statistics.
     Shows percentile, total options, and categorizes colleges as Best/Good/Moderate/Reach.
-    
+
     Use this to give students an overview of their prospects.
-    
+
     Args:
         rank: Student's KCET rank
         round: Counselling round (default: 1)
-        
+
     Returns:
         Dict with percentile, total_options, and categorized colleges
     """
@@ -179,13 +175,13 @@ def compare_colleges(college_codes: List[str], round: int = 1):
     """
     Compare 2-4 colleges side-by-side.
     Returns structured data optimized for frontend table rendering.
-    
+
     Use when user asks to compare colleges (e.g., "Compare RV and PES").
-    
+
     Args:
         college_codes: List of 2-4 college codes (e.g., ['E001', 'E005'])
         round: Counselling round (default: 1)
-        
+
     Returns:
         Dict with comparison data for all colleges
     """
@@ -197,13 +193,13 @@ def get_branch_popularity(branch_name: Optional[str] = None, round: int = 1):
     """
     Analyze branch popularity and competitiveness.
     Shows cutoff ranges, number of colleges, and competitiveness rating.
-    
+
     Use when user asks "Which branches are most competitive?" or about a specific branch's popularity.
-    
+
     Args:
         branch_name: Specific branch (None for all branches summary)
         round: Counselling round (default: 1)
-        
+
     Returns:
         Dict with branch statistics and competitiveness
     """
@@ -231,7 +227,7 @@ TOOL_FUNCTIONS = [
     send_comparison_email,
     send_branch_analysis_email,
     send_admission_tips_email,
-    send_cutoff_trends_email
+    send_cutoff_trends_email,
 ]
 
 
@@ -259,17 +255,18 @@ TOOL_EXECUTORS: Dict[str, Callable] = {
 }
 
 
-
-def execute_tool(tool_name: str, parameters: Dict[str, Any], session_id: str = None, session=None) -> Dict[str, Any]:
+def execute_tool(
+    tool_name: str, parameters: Dict[str, Any], session_id: str = None, session=None
+) -> Dict[str, Any]:
     """
     Execute a tool by name with given parameters
-    
+
     Args:
         tool_name: Name of the tool to execute
         parameters: Parameters to pass to the tool
         session_id: Current chat session ID (injected for email tools)
         session: Chat session object (for comprehensive email analysis)
-        
+
     Returns:
         Dictionary with success status, data/error, and summary
     """
@@ -278,34 +275,40 @@ def execute_tool(tool_name: str, parameters: Dict[str, Any], session_id: str = N
         return {
             "success": False,
             "error": f"Unknown tool: {tool_name}",
-            "summary": f"Tool '{tool_name}' not found"
+            "summary": f"Tool '{tool_name}' not found",
         }
-    
+
     try:
         # Inject session_id for email tools
-        if tool_name.startswith('send_') and tool_name.endswith('_email') and session_id:
-            parameters['session_id'] = session_id
-            
+        if (
+            tool_name.startswith("send_")
+            and tool_name.endswith("_email")
+            and session_id
+        ):
+            parameters["session_id"] = session_id
+
             # Set session context for all email tools (for user email access)
             if session:
                 from app.ai.email_tools import _set_session_context
+
                 _set_session_context(session)
-        
+
         result = executor(**parameters)
-        
+
         # Clear session context after execution
-        if tool_name.startswith('send_') and tool_name.endswith('_email'):
+        if tool_name.startswith("send_") and tool_name.endswith("_email"):
             from app.ai.email_tools import _set_session_context
+
             _set_session_context(None)
-        
+
         return {
             "success": True,
             "data": result,
-            "summary": f"Successfully fetched data using {tool_name}"
+            "summary": f"Successfully fetched data using {tool_name}",
         }
     except Exception as e:
         return {
             "success": False,
             "error": str(e),
-            "summary": f"Error executing {tool_name}: {str(e)}"
+            "summary": f"Error executing {tool_name}: {str(e)}",
         }

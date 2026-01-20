@@ -1,14 +1,14 @@
 import json
 import os
-from typing import Dict, Any, Optional, List
-import google.generativeai as genai
+from typing import Any, Dict, List
+
+from google import genai
+
 from app.services import CollegeService
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
 
-EXTRACTION_PROMPT = """You are an intent extraction system for a KCET college counseling chatbot. 
+EXTRACTION_PROMPT = """You are an intent extraction system for a KCET college counseling chatbot.
 Extract structured information from the user's message. Return ONLY valid JSON, no other text.
 
 INTENTS:
@@ -77,23 +77,26 @@ User: "show me top 50 colleges for rank 10000"
 
 class IntentExtractor:
     def __init__(self):
-        self.model = genai.GenerativeModel(
-            model_name="gemini-2.0-flash-lite",
-            generation_config={
-                "temperature": 0.1,
-                "max_output_tokens": 500,
-            }
-        )
-    
+        self.client = genai.Client(api_key=GEMINI_API_KEY)
+        self.model_id = "gemini-2.0-flash-lite"
+
     async def extract(self, message: str, context: str = "") -> Dict[str, Any]:
         prompt = f"{EXTRACTION_PROMPT}\n\nUser message: {message}"
         if context:
             prompt += f"\n\nConversation context: {context}"
-        
+
         try:
-            response = await self.model.generate_content_async(prompt)
+            # Note: google-genai SDK uses a different call structure
+            response = self.client.models.generate_content(
+                model=self.model_id,
+                contents=prompt,
+                config={
+                    "temperature": 0.1,
+                    "max_output_tokens": 500,
+                },
+            )
             text = response.text.strip()
-            
+
             if text.startswith("```json"):
                 text = text[7:]
             if text.startswith("```"):
@@ -101,7 +104,7 @@ class IntentExtractor:
             if text.endswith("```"):
                 text = text[:-3]
             text = text.strip()
-            
+
             result = json.loads(text)
             return self._validate_and_enhance(result)
         except json.JSONDecodeError as e:
@@ -110,7 +113,7 @@ class IntentExtractor:
         except Exception as e:
             print(f"Intent extraction error: {e}")
             return self._default_result(needs_gemini=True)
-    
+
     def _validate_and_enhance(self, result: Dict) -> Dict:
         defaults = {
             "intent": "conversational",
@@ -121,30 +124,30 @@ class IntentExtractor:
             "college_names": None,
             "email": None,
             "query": None,
-            "needs_gemini_response": True
+            "needs_gemini_response": True,
         }
-        
+
         for key, default in defaults.items():
             if key not in result:
                 result[key] = default
-        
+
         if result.get("rank") is not None:
             try:
                 result["rank"] = int(result["rank"])
-            except:
+            except Exception:
                 result["rank"] = None
-        
+
         if result.get("limit") is not None:
             try:
                 result["limit"] = min(max(int(result["limit"]), 1), 200)
-            except:
+            except Exception:
                 result["limit"] = 20
-        
+
         if result.get("round") not in [1, 2, 3]:
             result["round"] = 1
-        
+
         return result
-    
+
     def _default_result(self, needs_gemini: bool = True) -> Dict:
         return {
             "intent": "conversational",
@@ -155,16 +158,16 @@ class IntentExtractor:
             "college_names": None,
             "email": None,
             "query": None,
-            "needs_gemini_response": needs_gemini
+            "needs_gemini_response": needs_gemini,
         }
-    
+
     def resolve_branches(self, branch_terms: List[str]) -> List[str]:
         if not branch_terms:
             return []
-        
+
         resolved = []
         seen = set()
-        
+
         for term in branch_terms:
             if not term or not isinstance(term, str):
                 continue
@@ -179,13 +182,13 @@ class IntentExtractor:
             except Exception as e:
                 print(f"Branch resolution error for '{term}': {e}")
                 continue
-        
+
         return resolved
-    
+
     def resolve_college_codes(self, college_names: List[str]) -> List[str]:
         if not college_names:
             return []
-        
+
         codes = []
         for name in college_names:
             if not name or not isinstance(name, str):
@@ -199,7 +202,7 @@ class IntentExtractor:
             except Exception as e:
                 print(f"College resolution error for '{name}': {e}")
                 continue
-        
+
         return codes
 
 
