@@ -318,7 +318,6 @@ class AIAgent:
             limit = min(8, len(data))
             for i in range(limit):
                 item = data[i]
-                # Try common keys
                 name = (
                     item.get("college_name") or item.get("college") or item.get("name")
                 )
