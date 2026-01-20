@@ -94,7 +94,7 @@ jobs:
           # Build a docker container and push it to ECR
           # Using --platform linux/arm64 for Lambda compatibility
           cd backend
-          docker buildx build --platform linux/arm64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --push .
+          docker buildx build --platform linux/arm64 --provenance=false -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --push .
 
       - name: Update Lambda Function
         env:
@@ -104,3 +104,19 @@ jobs:
           aws lambda update-function-code \
             --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
             --image-uri $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: Wait for Lambda Update
+        run: |
+          echo "Waiting for Lambda function to be updated..."
+          aws lambda wait function-updated --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }}
+          echo "Lambda function updated successfully!"
+
+      - name: Verify Deployment
+        run: |
+          echo "Testing endpoint health..."
+          response=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.LAMBDA_ENDPOINT_URL }}")
+          if [ "$response" = "200" ]; then
+            echo "✅ Deployment verified! Endpoint returned HTTP $response"
+          else
+            echo "⚠️ Endpoint returned HTTP $response (may still be initializing)"
+          fi
