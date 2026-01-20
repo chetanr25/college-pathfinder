@@ -57,9 +57,6 @@ jobs:
           EMAIL_ENABLED: "true"
           DATABASE_URL: data/kcet_2024.db
         run: |
-          export JWT_EXPIRATION_HOURS=${JWT_EXPIRATION_HOURS:-24}
-          export JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
-          export JWT_SECRET_KEY=${JWT_SECRET_KEY}
           pytest
 
   deploy:
