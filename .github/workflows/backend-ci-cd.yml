@@ -51,8 +51,8 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
-          JWT_ALGORITHM: ${{ secrets.JWT_ALGORITHM }}
-          JWT_EXPIRATION_HOURS: ${{ secrets.JWT_EXPIRATION_HOURS }}
+          JWT_ALGORITHM: ${{ secrets.JWT_ALGORITHM || 'HS256' }}
+          JWT_EXPIRATION_HOURS: ${{ secrets.JWT_EXPIRATION_HOURS || '24' }}
           EMAIL_ENABLED: "true"
           DATABASE_URL: data/kcet_2024.db
         run: |
