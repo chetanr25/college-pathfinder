@@ -80,7 +80,7 @@ class ChatSession:
     ):
         self.session_id = session_id or str(uuid4())
         self.user_id = user_id
-        self.user_email = user_email  # User's authenticated email for email features
+        self.user_email = user_email
         self.created_at = created_at or datetime.now()
         self.updated_at = updated_at or datetime.now()
         self.messages = messages or []
