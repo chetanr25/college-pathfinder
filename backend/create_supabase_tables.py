@@ -3,7 +3,9 @@
 Script to create Supabase tables for chat sessions
 Run this once to set up the database schema.
 """
+
 import os
+
 from dotenv import load_dotenv
 from supabase import create_client
 
@@ -21,7 +23,7 @@ CREATE TABLE IF NOT EXISTS chat_sessions (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create chat_messages table  
+-- Create chat_messages table
 CREATE TABLE IF NOT EXISTS chat_messages (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID NOT NULL REFERENCES chat_sessions(id) ON DELETE CASCADE,
@@ -68,61 +70,64 @@ CREATE POLICY "Users can delete messages from own sessions" ON chat_messages FOR
 def main():
     supabase_url = os.getenv("SUPABASE_URL")
     supabase_key = os.getenv("SUPABASE_SERVICE_KEY") or os.getenv("SUPABASE_KEY")
-    
+
     if not supabase_url or not supabase_key:
         print("❌ Error: SUPABASE_URL and SUPABASE_SERVICE_KEY must be set in .env")
         print("\nPlease add these to your backend/.env file:")
         print("SUPABASE_URL=https://your-project.supabase.co")
         print("SUPABASE_SERVICE_KEY=your-service-key")
         return
-    
+
     print(f"🔌 Connecting to Supabase: {supabase_url}")
-    
+
     try:
         supabase = create_client(supabase_url, supabase_key)
         print("✅ Connected to Supabase")
     except Exception as e:
         print(f"❌ Failed to connect to Supabase: {e}")
         return
-    
+
     # The Supabase Python client doesn't support raw SQL execution directly.
     # We need to use the database URL directly or use the SQL editor.
-    
-    print("\n" + "="*60)
+
+    print("\n" + "=" * 60)
     print("⚠️  IMPORTANT: Run this SQL in Supabase SQL Editor")
-    print("="*60)
+    print("=" * 60)
     print("\nGo to: https://supabase.com/dashboard")
     print("Navigate to: Your Project → SQL Editor → New Query")
     print("\nCopy and paste this SQL:\n")
-    print("-"*60)
+    print("-" * 60)
     print(CREATE_TABLES_SQL)
-    print("-"*60)
+    print("-" * 60)
     print("\nThen run this SQL for RLS policies:\n")
-    print("-"*60)
+    print("-" * 60)
     print(RLS_POLICIES_SQL)
-    print("-"*60)
-    
+    print("-" * 60)
+
     # Try to check if tables exist
     print("\n🔍 Checking if tables exist...")
     try:
-        result = supabase.table('chat_sessions').select('id').limit(1).execute()
+        supabase.table("chat_sessions").select("id").limit(1).execute()
         print("✅ chat_sessions table exists!")
     except Exception as e:
         if "PGRST205" in str(e) or "not found" in str(e).lower():
-            print("❌ chat_sessions table does NOT exist - please create it using the SQL above")
+            print(
+                "❌ chat_sessions table does NOT exist - please create it using the SQL above"
+            )
         else:
             print(f"⚠️  Could not check table: {e}")
-    
+
     try:
-        result = supabase.table('chat_messages').select('id').limit(1).execute()
+        supabase.table("chat_messages").select("id").limit(1).execute()
         print("✅ chat_messages table exists!")
     except Exception as e:
         if "PGRST205" in str(e) or "not found" in str(e).lower():
-            print("❌ chat_messages table does NOT exist - please create it using the SQL above")
+            print(
+                "❌ chat_messages table does NOT exist - please create it using the SQL above"
+            )
         else:
             print(f"⚠️  Could not check table: {e}")
 
 
 if __name__ == "__main__":
     main()
-
