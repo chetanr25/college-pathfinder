@@ -30,7 +30,7 @@ class AIAgent:
         """
         self.model_id = model_id
         # We'll use the async client for process_message
-        self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY", ""))
+        self.client = genai.Client(api_key=GEMINI_API_KEY)
         self.config = types.GenerateContentConfig(
             tools=TOOL_FUNCTIONS, system_instruction=SYSTEM_PROMPT
         )
