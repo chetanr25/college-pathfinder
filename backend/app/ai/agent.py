@@ -282,7 +282,6 @@ class AIAgent:
         """
         data = result.get("data")
 
-        # Handle email tools - they return success/message directly
         if tool_name.startswith("send_") and tool_name.endswith("_email"):
             if isinstance(data, dict):
                 if data.get("success"):
