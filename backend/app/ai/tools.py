@@ -149,6 +149,10 @@ def match_branch_names(query: str, limit: int = 10):
     Returns:
         List of dicts with exact branch_name and match_score
     """
+    try:
+        limit = int(limit) if limit else 10
+    except (ValueError, TypeError):
+        limit = 10
     results = CollegeService.match_branch_names(query, limit)
     return results
 

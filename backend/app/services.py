@@ -296,15 +296,16 @@ class CollegeService:
     def search_college_by_name(query: str, limit: int = 10) -> List[Dict]:
         """
         Search for colleges by name using fuzzy matching
-        
-        Args:
-            query: Search query (partial college name)
-            limit: Maximum number of results to return
-            
-        Returns:
-            List of dictionaries with college_code, college_name, and match_score
         """
         from difflib import SequenceMatcher
+        
+        if not query or not isinstance(query, str):
+            return []
+        
+        try:
+            limit = int(limit) if limit else 10
+        except (ValueError, TypeError):
+            limit = 10
         
         # Get all unique colleges
         sql_query = """
@@ -358,15 +359,16 @@ class CollegeService:
     def match_branch_names(query: str, limit: int = 10) -> List[Dict]:
         """
         Match user's branch query to actual branch names using fuzzy matching
-        
-        Args:
-            query: User's branch query (e.g., "CS", "computer", "AI ML")
-            limit: Maximum number of matches to return
-            
-        Returns:
-            List of dictionaries with branch_name and match_score
         """
         from difflib import SequenceMatcher
+        
+        if not query or not isinstance(query, str):
+            return []
+        
+        try:
+            limit = int(limit) if limit else 10
+        except (ValueError, TypeError):
+            limit = 10
         
         # Common abbreviations mapping
         abbreviations = {

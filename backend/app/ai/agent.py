@@ -107,11 +107,10 @@ class AIAgent:
                         college["branches_truncated"] = len(branches) > 10
             return data
         
-        # For large lists of colleges, truncate to top 15
-        if isinstance(data, list) and len(data) > 15:
-            # Keep only essential fields
+        # For large lists of colleges, truncate to top 80 for Gemini
+        if isinstance(data, list) and len(data) > 80:
             truncated = []
-            for item in data[:15]:
+            for item in data[:80]:
                 if isinstance(item, dict):
                     truncated.append({
                         k: v for k, v in item.items() 

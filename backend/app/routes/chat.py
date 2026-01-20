@@ -17,6 +17,7 @@ from pydantic import BaseModel
 from app.ai.supabase_session_manager import session_manager, Message, ChatSession
 from app.ai.agent import agent
 from app.ai.prompts import WELCOME_MESSAGE, ERROR_MESSAGE
+from app.ai.smart_router import smart_router
 from app.auth.service import auth_service
 
 
@@ -180,63 +181,79 @@ async def websocket_chat(
                 if user_id and not is_temp_session:
                     session_manager.add_message(session_id, user_msg, user_id)
                 
-                # Define callback functions for streaming
-                async def emit_thinking(step: str):
-                    """Emit thinking step"""
-                    try:
+                try:
+                    # Try smart router first (uses Gemini for intent, direct DB for data)
+                    router_result = await smart_router.route(user_message, session)
+                    
+                    if router_result.handled and router_result.response:
                         await websocket.send_json({
                             "type": "thinking",
-                            "step": step,
+                            "step": "Processing your request...",
                             "timestamp": user_msg.timestamp.isoformat()
                         })
-                    except Exception as e:
-                        print(f"⚠️ Failed to send thinking step: {e}")
-                
-                async def emit_tool_call(tool_name: str, parameters: dict, status: str):
-                    """Emit tool call status"""
-                    try:
-                        # Sanitize parameters - remove large/complex data
-                        sanitized_params = {}
-                        for key, value in parameters.items():
-                            if isinstance(value, (str, int, float, bool, type(None))):
-                                if isinstance(value, str) and len(value) > 100:
-                                    sanitized_params[key] = value[:100] + "..."
-                                else:
-                                    sanitized_params[key] = value
-                            elif isinstance(value, list):
-                                sanitized_params[key] = f"[{len(value)} items]"
-                            elif isinstance(value, dict):
-                                sanitized_params[key] = f"{{dict with {len(value)} keys}}"
-                            else:
-                                sanitized_params[key] = str(type(value).__name__)
                         
-                        await websocket.send_json({
-                            "type": "tool_call",
-                            "tool_name": tool_name,
-                            "parameters": sanitized_params,
-                            "status": status
-                        })
-                    except Exception as e:
-                        print(f"⚠️ Failed to send tool call status: {e}")
-                
-                try:
-                    # Process message with AI agent
-                    response_text = ""
-                    async for chunk in agent.process_message(
-                        user_message,
-                        session,
-                        emit_thinking=emit_thinking,
-                        emit_tool_call=emit_tool_call
-                    ):
-                        response_text += chunk
-                        try:
+                        response_text = router_result.response
+                        chunk_size = 100
+                        for i in range(0, len(response_text), chunk_size):
+                            chunk = response_text[i:i + chunk_size]
                             await websocket.send_json({
                                 "type": "response_chunk",
                                 "content": chunk,
                                 "is_final": False
                             })
-                        except Exception as e:
-                            print(f"⚠️ Failed to send response chunk: {e}")
+                            await asyncio.sleep(0.01)
+                    else:
+                        async def emit_thinking(step: str):
+                            try:
+                                await websocket.send_json({
+                                    "type": "thinking",
+                                    "step": step,
+                                    "timestamp": user_msg.timestamp.isoformat()
+                                })
+                            except Exception as e:
+                                print(f"Failed to send thinking step: {e}")
+                        
+                        async def emit_tool_call(tool_name: str, parameters: dict, status: str):
+                            try:
+                                sanitized_params = {}
+                                for key, value in parameters.items():
+                                    if isinstance(value, (str, int, float, bool, type(None))):
+                                        if isinstance(value, str) and len(value) > 100:
+                                            sanitized_params[key] = value[:100] + "..."
+                                        else:
+                                            sanitized_params[key] = value
+                                    elif isinstance(value, list):
+                                        sanitized_params[key] = f"[{len(value)} items]"
+                                    elif isinstance(value, dict):
+                                        sanitized_params[key] = f"{{dict with {len(value)} keys}}"
+                                    else:
+                                        sanitized_params[key] = str(type(value).__name__)
+                                
+                                await websocket.send_json({
+                                    "type": "tool_call",
+                                    "tool_name": tool_name,
+                                    "parameters": sanitized_params,
+                                    "status": status
+                                })
+                            except Exception as e:
+                                print(f"Failed to send tool call status: {e}")
+                        
+                        response_text = ""
+                        async for chunk in agent.process_message(
+                            user_message,
+                            session,
+                            emit_thinking=emit_thinking,
+                            emit_tool_call=emit_tool_call
+                        ):
+                            response_text += chunk
+                            try:
+                                await websocket.send_json({
+                                    "type": "response_chunk",
+                                    "content": chunk,
+                                    "is_final": False
+                                })
+                            except Exception as e:
+                                print(f"Failed to send response chunk: {e}")
                     
                     # Add assistant response to session
                     assistant_msg = Message(role="assistant", content=response_text, session_id=session_id)
@@ -378,52 +395,71 @@ async def stream_chat(
                 if user_id and not is_temp_session:
                     session_manager.add_message(actual_session_id, user_msg, user_id)
                 
-                # Callback to emit thinking steps immediately
-                async def on_thinking(step: str):
+                # Try smart router first (uses Gemini for intent extraction, direct DB for data)
+                router_result = await smart_router.route(user_message, session)
+                
+                if router_result.handled and router_result.response:
+                    # Smart router handled the request - send response directly
                     await event_queue.put({
                         "type": "thinking",
-                        "step": step,
+                        "step": "Processing your request...",
                         "timestamp": user_msg.timestamp.isoformat()
                     })
-                
-                # Callback to emit tool calls immediately
-                async def on_tool_call(tool_name: str, parameters: dict, status: str):
-                    # Sanitize parameters
-                    sanitized_params = {}
-                    for key, value in parameters.items():
-                        if isinstance(value, (str, int, float, bool, type(None))):
-                            if isinstance(value, str) and len(value) > 100:
-                                sanitized_params[key] = value[:100] + "..."
-                            else:
-                                sanitized_params[key] = value
-                        elif isinstance(value, list):
-                            sanitized_params[key] = f"[{len(value)} items]"
-                        elif isinstance(value, dict):
-                            sanitized_params[key] = f"{{dict with {len(value)} keys}}"
-                        else:
-                            sanitized_params[key] = str(type(value).__name__)
                     
-                    await event_queue.put({
-                        "type": "tool_call",
-                        "tool_name": tool_name,
-                        "parameters": sanitized_params,
-                        "status": status
-                    })
-                
-                # Process message with AI agent
-                response_text = ""
-                
-                async for chunk in agent.process_message(
-                    user_message,
-                    session,
-                    emit_thinking=on_thinking,
-                    emit_tool_call=on_tool_call
-                ):
-                    response_text += chunk
-                    await event_queue.put({
-                        "type": "chunk",
-                        "content": chunk
-                    })
+                    response_text = router_result.response
+                    
+                    # Stream the response in chunks for smooth display
+                    chunk_size = 100
+                    for i in range(0, len(response_text), chunk_size):
+                        chunk = response_text[i:i + chunk_size]
+                        await event_queue.put({
+                            "type": "chunk",
+                            "content": chunk
+                        })
+                        await asyncio.sleep(0.01)
+                else:
+                    # Fall back to Gemini for complex/conversational queries
+                    async def on_thinking(step: str):
+                        await event_queue.put({
+                            "type": "thinking",
+                            "step": step,
+                            "timestamp": user_msg.timestamp.isoformat()
+                        })
+                    
+                    async def on_tool_call(tool_name: str, parameters: dict, status: str):
+                        sanitized_params = {}
+                        for key, value in parameters.items():
+                            if isinstance(value, (str, int, float, bool, type(None))):
+                                if isinstance(value, str) and len(value) > 100:
+                                    sanitized_params[key] = value[:100] + "..."
+                                else:
+                                    sanitized_params[key] = value
+                            elif isinstance(value, list):
+                                sanitized_params[key] = f"[{len(value)} items]"
+                            elif isinstance(value, dict):
+                                sanitized_params[key] = f"{{dict with {len(value)} keys}}"
+                            else:
+                                sanitized_params[key] = str(type(value).__name__)
+                        
+                        await event_queue.put({
+                            "type": "tool_call",
+                            "tool_name": tool_name,
+                            "parameters": sanitized_params,
+                            "status": status
+                        })
+                    
+                    response_text = ""
+                    async for chunk in agent.process_message(
+                        user_message,
+                        session,
+                        emit_thinking=on_thinking,
+                        emit_tool_call=on_tool_call
+                    ):
+                        response_text += chunk
+                        await event_queue.put({
+                            "type": "chunk",
+                            "content": chunk
+                        })
                 
                 response_text_holder["text"] = response_text
                 
