@@ -86,7 +86,6 @@ class IntentExtractor:
             prompt += f"\n\nConversation context: {context}"
 
         try:
-            # Note: google-genai SDK uses a different call structure
             response = self.client.models.generate_content(
                 model=self.model_id,
                 contents=prompt,
