@@ -10,7 +10,7 @@ from app.ai.email_tools import (
     send_admission_tips_email,
     send_branch_analysis_email,
     send_comparison_email,
-    send_comprehensive_report_email,  # PRIMARY EMAIL FUNCTION
+    send_comprehensive_report_email,
     send_cutoff_trends_email,
     send_detailed_analysis_email,
     send_prediction_summary_email,
@@ -18,7 +18,6 @@ from app.ai.email_tools import (
 from app.services import CollegeService
 
 
-# Tool execution functions - these are the actual callable functions
 def get_colleges_by_rank(rank: int, round: int = 1, limit: int = 10):
     """
     Find colleges where a student with given KCET rank can get admission.
