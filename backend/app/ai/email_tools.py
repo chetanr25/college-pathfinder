@@ -14,9 +14,7 @@ from app.ai.session_manager import ChatSession
 from app.email.service import email_service
 from app.email.templates_manager import template_manager
 
-FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL")
-if not FRONTEND_BASE_URL:
-    raise ValueError("FRONTEND_BASE_URL is not set")
+FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://collegepathfinder.vercel.app")
 
 _current_session: Optional[ChatSession] = None
 
