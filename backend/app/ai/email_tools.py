@@ -405,7 +405,7 @@ def send_detailed_analysis_email(
         "total_matches": len(colleges),
         "high_chance_count": high_chance,
         "branches_count": len(branches),
-        "colleges": colleges[:15],  # Top 15
+        "colleges": colleges[:50],
         "branch_distribution": branch_distribution or [],
         "generation_date": datetime.now(),
         "chat_url": _get_chat_url(session_id),
