@@ -5,6 +5,7 @@ These tools allow the AI to send various types of emails to users based on conve
 All emails include a "Continue the Chat" button with the session ID for seamless conversation continuation.
 """
 
+import os
 import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional
@@ -13,10 +14,10 @@ from app.ai.session_manager import ChatSession
 from app.email.service import email_service
 from app.email.templates_manager import template_manager
 
-# Base URL for frontend
-FRONTEND_BASE_URL = "http://collegepathfinder.vercel.app"
+FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL")
+if not FRONTEND_BASE_URL:
+    raise ValueError("FRONTEND_BASE_URL is not set")
 
-# Thread-safe session context (set by execute_tool before calling email functions)
 _current_session: Optional[ChatSession] = None
 
 
@@ -38,13 +39,8 @@ def _get_chat_url(session_id: str) -> str:
 
 def _extract_name_from_email(email: str) -> str:
     """Extract name from email address"""
-    # Get part before @
     local_part = email.split("@")[0]
-
-    # Remove numbers and special chars
     name = re.sub(r"[0-9._-]", " ", local_part)
-
-    # Capitalize first letter of each word
     name = " ".join(word.capitalize() for word in name.split() if word)
 
     return name if name else "Student"
@@ -60,29 +56,24 @@ def _analyze_conversation_history(session: ChatSession) -> Dict[str, Any]:
         "conversation_summary": [],
     }
 
-    # Analyze messages
     for msg in session.messages:
         content = msg.content.lower()
 
-        # Extract rank
         if "rank" in content:
             rank_match = re.search(r"\b(\d{1,6})\b", content)
             if rank_match and not analysis["rank"]:
                 analysis["rank"] = int(rank_match.group(1))
 
-        # Extract category
         categories = ["gm", "sc", "st", "2a", "2b", "3a", "3b", "obc"]
         for cat in categories:
             if cat in content:
                 analysis["category"] = cat.upper()
                 break
 
-        # Track discussion points
         if msg.role == "user":
-            if len(content) > 20:  # Meaningful message
+            if len(content) > 20:
                 analysis["conversation_summary"].append(content[:100])
 
-    # Limit summary to 5 points
     analysis["conversation_summary"] = analysis["conversation_summary"][:5]
 
     return analysis
@@ -120,11 +111,9 @@ def send_comprehensive_report_email(
     """
     from app.services import CollegeService
 
-    # Try to get email from session context if not provided
     session = _get_session_context()
 
     if not email and session:
-        # Try to extract email from session user data
         if hasattr(session, "user_email") and session.user_email:
             email = session.user_email
 
@@ -135,7 +124,6 @@ def send_comprehensive_report_email(
             "message": "Please provide an email address. Say 'email me' to use your account email, or provide a specific address like 'send to friend@email.com'",
         }
 
-    # Validate email
     if not _validate_email(email):
         return {
             "success": False,
@@ -143,11 +131,9 @@ def send_comprehensive_report_email(
             "message": "Please provide a valid email address.",
         }
 
-    # Extract name from email if not provided
     if not student_name:
         student_name = _extract_name_from_email(email)
 
-    # Analyze conversation history if session available in context
     conversation_data = {}
     session = _get_session_context()
     if session:
@@ -157,16 +143,13 @@ def send_comprehensive_report_email(
         if not category:
             category = conversation_data.get("category", "GM")
 
-    # Default values
     rank = rank or 50000
     category = category or "GM"
 
-    # Create conversation summary
     conversation_summary = " ".join(conversation_data.get("conversation_summary", []))
     if not conversation_summary:
         conversation_summary = f"Analysis for rank {rank} in {category} category"
 
-    # EXECUTE ACTUAL TOOLS TO GET REAL DATA
     round1_colleges = []
     round2_colleges = []
     stats = {
@@ -177,7 +160,6 @@ def send_comprehensive_report_email(
     }
 
     try:
-        # Get Round 1 colleges (top 15) - NOTE: CollegeService doesn't accept 'category' param
         print(f"[EMAIL DEBUG] Fetching Round 1 colleges for rank {rank}")
         try:
             colleges_r1_raw = CollegeService.get_colleges_by_rank(
@@ -192,7 +174,6 @@ def send_comprehensive_report_email(
 
         if colleges_r1_raw and len(colleges_r1_raw) > 0:
             for college in colleges_r1_raw:
-                # Calculate admission chance
                 cutoff = college.get("cutoff_rank", rank)
                 if rank <= cutoff:
                     admission_chance = "High"
@@ -211,7 +192,6 @@ def send_comprehensive_report_email(
         else:
             print("[EMAIL DEBUG] No Round 1 colleges found")
 
-        # Get Round 2 colleges (top 15)
         print(f"[EMAIL DEBUG] Fetching Round 2 colleges for rank {rank}")
         try:
             colleges_r2_raw = CollegeService.get_colleges_by_rank(
@@ -226,7 +206,6 @@ def send_comprehensive_report_email(
 
         if colleges_r2_raw and len(colleges_r2_raw) > 0:
             for college in colleges_r2_raw:
-                # Calculate admission chance
                 cutoff = college.get("cutoff_rank", rank)
                 if rank <= cutoff:
                     admission_chance = "High"
@@ -245,7 +224,6 @@ def send_comprehensive_report_email(
         else:
             print("[EMAIL DEBUG] No Round 2 colleges found")
 
-        # Calculate total stats
         stats["total_colleges"] = stats["round1_colleges"] + stats["round2_colleges"]
         all_branches = set()
         for college in round1_colleges + round2_colleges:
@@ -258,13 +236,11 @@ def send_comprehensive_report_email(
         )
 
     except Exception as e:
-        # Log error but continue with empty data
         print(f"[EMAIL ERROR] Error fetching college data: {e}")
         import traceback
 
         traceback.print_exc()
 
-    # Prepare context for template
     context = {
         "student_name": student_name,
         "rank": rank,
@@ -336,7 +312,6 @@ def send_prediction_summary_email(
     Returns:
         Dict with success status and message
     """
-    # Validate email format
     if not _validate_email(email):
         return {
             "success": False,
@@ -344,7 +319,6 @@ def send_prediction_summary_email(
             "message": "Please provide a valid email address.",
         }
 
-    # Prepare context
     context = {
         "student_name": student_name,
         "rank": rank,
@@ -354,7 +328,7 @@ def send_prediction_summary_email(
         "rank_year": "2024",
         "analysis_date": datetime.now(),
         "total_colleges": len(colleges),
-        "colleges": colleges[:10],  # Top 10 for email
+        "colleges": colleges[:30],
         "chat_url": _get_chat_url(session_id),
     }
 
@@ -370,8 +344,8 @@ def send_prediction_summary_email(
         if success:
             return {
                 "success": True,
-                "message": f"✅ Prediction summary sent to {email}! Check your inbox.",
-                "colleges_sent": len(colleges[:10]),
+                "message": f"Prediction summary sent to {email}! Check your inbox.",
+                "colleges_sent": len(colleges[:30]),
             }
         else:
             return {
@@ -421,7 +395,6 @@ def send_detailed_analysis_email(
             "message": "Please provide a valid email address.",
         }
 
-    # Calculate statistics
     high_chance = sum(1 for c in colleges if c.get("admission_chance") == "High")
     branches = set(c.get("branch", "") for c in colleges)
 
