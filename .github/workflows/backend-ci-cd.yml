@@ -54,7 +54,23 @@ jobs:
           FRONTEND_BASE_URL: ${{ secrets.FRONTEND_BASE_URL }}
           EMAIL_ENABLED: "true"
           DATABASE_URL: data/kcet_2024.db
-        run: pytest
+        run: |
+          export GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+          export SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          export SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}
+          export SUPABASE_SERVICE_KEY=${{ secrets.SUPABASE_SERVICE_KEY }}
+          export SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}
+          export SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
+          export SMTP_FROM_NAME=${{ secrets.SMTP_FROM_NAME }}
+          export SMTP_FROM_EMAIL=${{ secrets.SMTP_FROM_EMAIL }}
+          export GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          export GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+          export JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+          export FRONTEND_BASE_URL=${{ secrets.FRONTEND_BASE_URL }}
+          export EMAIL_ENABLED="true"
+          export DATABASE_URL=data/kcet_2024.db
+          pytest
+          pytest --cov=app --cov-report=html
 
   deploy:
     name: Build & Deploy to Lambda
