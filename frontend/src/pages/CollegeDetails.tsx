@@ -1,248 +1,292 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { School, ArrowBack, Category } from '@mui/icons-material';
-import { collegeApi, type CollegeBranches } from '../services/api';
-import LoadingSpinner from '../components/LoadingSpinner';
-import ErrorMessage from '../components/ErrorMessage';
-import { Hero, Container, Section, Button, Card, Badge, Grid, StatCard } from '../components/ui';
-import theme from '../theme';
+import {
+  Box,
+  Container,
+  Typography,
+  Paper,
+  Grid,
+  Button,
+  CircularProgress,
+  Alert,
+  Chip,
+  Divider,
+  Card,
+  CardContent,
+} from '@mui/material';
+import {
+  ArrowBack,
+  School,
+  LocationOn,
+  TrendingUp,
+  Info,
+} from '@mui/icons-material';
+import axios from 'axios';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8005';
+
+interface Branch {
+  branch_name: string;
+  cutoff_ranks: {
+    round1?: number;
+    round2?: number;
+    round3?: number;
+  };
+}
+
+interface CollegeDetails {
+  college_name: string;
+  branches: Branch[];
+}
 
 const CollegeDetails: React.FC = () => {
   const { collegeCode } = useParams<{ collegeCode: string }>();
   const navigate = useNavigate();
-  const [collegeData, setCollegeData] = useState<CollegeBranches | null>(null);
+  const [college, setCollege] = useState<CollegeDetails | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>('');
-
-  const fetchCollegeDetails = async () => {
-    if (!collegeCode) return;
-    
-    try {
-      setLoading(true);
-      setError('');
-      const data = await collegeApi.getCollegeBranches(collegeCode);
-      setCollegeData(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load college details');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchCollegeDetails();
+    const fetchCollegeDetails = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(
+          `${API_BASE_URL}/colleges/${collegeCode}/branches`
+        );
+        setCollege(response.data);
+        setError(null);
+      } catch (err) {
+        setError('Failed to fetch college details. Please try again.');
+        console.error('Error fetching college details:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (collegeCode) {
+      fetchCollegeDetails();
+    }
   }, [collegeCode]);
 
+  const handleBackToColleges = () => {
+    navigate('/colleges');
+  };
+
   if (loading) {
-    return <LoadingSpinner fullScreen message="Loading college details..." />;
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+          <CircularProgress />
+        </Box>
+      </Container>
+    );
   }
 
-  if (error) {
-    return <ErrorMessage message={error} onRetry={fetchCollegeDetails} fullScreen />;
-  }
-
-  if (!collegeData) {
-    return <ErrorMessage message="College not found" fullScreen />;
+  if (error || !college) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error || 'College not found'}
+        </Alert>
+        <Button
+          variant="contained"
+          startIcon={<ArrowBack />}
+          onClick={handleBackToColleges}
+          sx={{ color: 'white' }}
+        >
+          Back to Colleges
+        </Button>
+      </Container>
+    );
   }
 
   return (
-    <div style={styles.container}>
-      {/* Hero Section */}
-      <Hero
-        icon={<School />}
-        title={collegeData.college_name}
-        subtitle={`College Code: ${collegeCode}`}
-        size="md"
-        background="gradient"
-        actions={
-          <Button
-            variant="outline"
-            size="md"
-            icon={<ArrowBack />}
-            onClick={() => navigate('/colleges')}
-            style={{ 
-              background: 'rgba(255, 255, 255, 0.2)', 
-              borderColor: 'rgba(255, 255, 255, 0.5)', 
-              color: '#fff' 
-            }}
-          >
-            Back to Colleges
-          </Button>
-        }
-      />
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* Header with Back Button */}
+      <Box sx={{ mb: 4 }}>
+        <Button
+          variant="outlined"
+          startIcon={<ArrowBack />}
+          onClick={handleBackToColleges}
+          sx={{ 
+            mb: 2,
+            color: 'white',
+            borderColor: 'white',
+            '&:hover': {
+              borderColor: 'white',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            }
+          }}
+        >
+          Back to Colleges
+        </Button>
 
-      {/* Stats Section */}
-      <Section background="paper" padding="md">
-        <Container maxWidth="xl">
-          <Grid columns={3} gap={6}>
-            <StatCard
-              icon={<Category />}
-              value={collegeData.branches.length}
-              label="Branches Available"
-              color={theme.colors.primary.main}
-              gradient={theme.colors.primary.gradient}
-            />
-            <StatCard
-              icon={<School />}
-              value={collegeCode || 'N/A'}
-              label="College Code"
-              color={theme.colors.secondary.main}
-              gradient={theme.colors.secondary.gradient}
-            />
-            <StatCard
-              icon={<Category />}
-              value="KCET 2024"
-              label="Data Year"
-              color={theme.colors.accent.main}
-              gradient={theme.colors.accent.gradient}
-            />
-          </Grid>
-        </Container>
-      </Section>
+        <Paper
+          elevation={3}
+          sx={{
+            p: 3,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+          }}
+        >
+          <Box display="flex" alignItems="center" gap={2}>
+            <School sx={{ fontSize: 40 }} />
+            <Box>
+              <Typography variant="h4" component="h1" fontWeight="bold">
+                {college.college_name}
+              </Typography>
+              <Typography variant="subtitle1" sx={{ opacity: 0.9, mt: 1 }}>
+                College Code: {collegeCode}
+              </Typography>
+            </Box>
+          </Box>
+        </Paper>
+      </Box>
 
-      {/* Branches Table */}
-      <Section background="default" padding="lg">
-        <Container maxWidth="xl">
-          <div style={styles.sectionHeader}>
-        <h2 style={styles.sectionTitle}>Available Branches & Cutoff Ranks</h2>
-            <p style={styles.sectionSubtitle}>
-              Cutoff ranks for all counseling rounds
-            </p>
-          </div>
-        
-          <Card variant="elevated" padding={0} style={{ overflow: 'hidden' }}>
-            <div style={styles.tableWrapper}>
-          <table style={styles.table}>
-            <thead>
-              <tr style={styles.tableHeaderRow}>
-                    <th style={{ ...styles.tableHeader, width: '40%' }}>Branch Name</th>
-                    <th style={{ ...styles.tableHeader, width: '20%', textAlign: 'center' }}>Round 1</th>
-                    <th style={{ ...styles.tableHeader, width: '20%', textAlign: 'center' }}>Round 2</th>
-                    <th style={{ ...styles.tableHeader, width: '20%', textAlign: 'center' }}>Round 3</th>
-              </tr>
-            </thead>
-            <tbody>
-              {collegeData.branches.map((branch, index) => (
-                <tr
-                  key={index}
-                  style={{
-                    ...styles.tableRow,
-                        animation: `fadeIn 0.4s ease-out ${index * 0.05}s both`,
-                  }}
-                >
-                      <td style={styles.tableCellBranch}>
-                        <div style={styles.branchInfo}>
-                          <Category style={styles.branchIcon} />
-                    <strong>{branch.branch_name}</strong>
-                        </div>
-                  </td>
-                      <td style={{ ...styles.tableCell, textAlign: 'center' }}>
-                        <Badge 
-                          variant={branch.cutoff_ranks?.round1 ? 'primary' : 'info'} 
-                          size="md"
-                          gradient={!!branch.cutoff_ranks?.round1}
-                        >
-                      {branch.cutoff_ranks?.round1?.toLocaleString() || 'N/A'}
-                        </Badge>
-                  </td>
-                      <td style={{ ...styles.tableCell, textAlign: 'center' }}>
-                        <Badge 
-                          variant={branch.cutoff_ranks?.round2 ? 'primary' : 'info'} 
-                          size="md"
-                          gradient={!!branch.cutoff_ranks?.round2}
-                        >
-                      {branch.cutoff_ranks?.round2?.toLocaleString() || 'N/A'}
-                        </Badge>
-                  </td>
-                      <td style={{ ...styles.tableCell, textAlign: 'center' }}>
-                        <Badge 
-                          variant={branch.cutoff_ranks?.round3 ? 'primary' : 'info'} 
-                          size="md"
-                          gradient={!!branch.cutoff_ranks?.round3}
-                        >
-                      {branch.cutoff_ranks?.round3?.toLocaleString() || 'N/A'}
-                        </Badge>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {/* College Stats */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardContent>
+              <Box display="flex" alignItems="center" gap={1} mb={1}>
+                <School color="primary" />
+                <Typography variant="h6">Total Branches</Typography>
+              </Box>
+              <Typography variant="h3" color="primary" fontWeight="bold">
+                {college.branches.length}
+              </Typography>
+            </CardContent>
           </Card>
-        </Container>
-      </Section>
-    </div>
-  );
-};
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardContent>
+              <Box display="flex" alignItems="center" gap={1} mb={1}>
+                <TrendingUp color="primary" />
+                <Typography variant="h6">Best Cutoff</Typography>
+              </Box>
+              <Typography variant="h3" color="primary" fontWeight="bold">
+                {Math.min(
+                  ...college.branches
+                    .map((b) => b.cutoff_ranks.round1 || Infinity)
+                    .filter((r) => r !== Infinity)
+                ).toLocaleString()}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardContent>
+              <Box display="flex" alignItems="center" gap={1} mb={1}>
+                <Info color="primary" />
+                <Typography variant="h6">Rounds Available</Typography>
+              </Box>
+              <Typography variant="h3" color="primary" fontWeight="bold">
+                3
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    minHeight: '100vh',
-    background: theme.colors.background.default,
-  },
-  sectionHeader: {
-    textAlign: 'center' as const,
-    marginBottom: theme.spacing[6],
-  },
-  sectionTitle: {
-    margin: 0,
-    fontSize: 'clamp(1.5rem, 4vw, 1.875rem)',
-    fontWeight: theme.typography.fontWeight.bold,
-    fontFamily: theme.typography.fontFamily.heading,
-    background: theme.colors.primary.gradient,
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    backgroundClip: 'text',
-    marginBottom: theme.spacing[2],
-  },
-  sectionSubtitle: {
-    margin: 0,
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.text.secondary,
-  },
-  tableWrapper: {
-    overflowX: 'auto' as const,
-    borderRadius: theme.borderRadius.lg,
-  },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse' as const,
-    minWidth: '600px',
-  },
-  tableHeaderRow: {
-    background: theme.colors.primary.gradient,
-  },
-  tableHeader: {
-    padding: `${theme.spacing[3]} ${theme.spacing[4]}`,
-    textAlign: 'left' as const,
-    color: theme.colors.text.inverse,
-    fontSize: theme.typography.fontSize.xs,
-    fontWeight: theme.typography.fontWeight.bold,
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.05em',
-  },
-  tableRow: {
-    transition: 'background-color 0.2s ease',
-    borderBottom: `1px solid ${theme.colors.border.light}`,
-  },
-  tableCellBranch: {
-    padding: `${theme.spacing[3]} ${theme.spacing[4]}`,
-  },
-  tableCell: {
-    padding: `${theme.spacing[3]} ${theme.spacing[4]}`,
-  },
-  branchInfo: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing[2],
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.text.primary,
-    fontWeight: theme.typography.fontWeight.medium,
-  },
-  branchIcon: {
-    fontSize: '1.1rem',
-    color: theme.colors.primary.main,
-  },
+      {/* Branches List */}
+      <Paper elevation={3} sx={{ p: 3 }}>
+        <Typography variant="h5" gutterBottom fontWeight="bold">
+          Available Branches
+        </Typography>
+        <Divider sx={{ mb: 3 }} />
+
+        <Grid container spacing={2}>
+          {college.branches.map((branch, index) => (
+            <Grid item xs={12} key={index}>
+              <Card variant="outlined" sx={{ '&:hover': { boxShadow: 3 } }}>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom color="primary">
+                    {branch.branch_name}
+                  </Typography>
+
+                  <Grid container spacing={2} sx={{ mt: 1 }}>
+                    <Grid item xs={12} sm={4}>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Round 1 Cutoff
+                        </Typography>
+                        <Typography variant="h6" fontWeight="bold">
+                          {branch.cutoff_ranks.round1
+                            ? branch.cutoff_ranks.round1.toLocaleString()
+                            : 'N/A'}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Round 2 Cutoff
+                        </Typography>
+                        <Typography variant="h6" fontWeight="bold">
+                          {branch.cutoff_ranks.round2
+                            ? branch.cutoff_ranks.round2.toLocaleString()
+                            : 'N/A'}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Round 3 Cutoff
+                        </Typography>
+                        <Typography variant="h6" fontWeight="bold">
+                          {branch.cutoff_ranks.round3
+                            ? branch.cutoff_ranks.round3.toLocaleString()
+                            : 'N/A'}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  </Grid>
+
+                  {/* Trend Indicator */}
+                  {branch.cutoff_ranks.round1 &&
+                    branch.cutoff_ranks.round3 &&
+                    branch.cutoff_ranks.round3 < branch.cutoff_ranks.round1 && (
+                      <Chip
+                        label="Cutoff Decreasing"
+                        color="success"
+                        size="small"
+                        sx={{ mt: 2 }}
+                      />
+                    )}
+                  {branch.cutoff_ranks.round1 &&
+                    branch.cutoff_ranks.round3 &&
+                    branch.cutoff_ranks.round3 > branch.cutoff_ranks.round1 && (
+                      <Chip
+                        label="Cutoff Increasing"
+                        color="warning"
+                        size="small"
+                        sx={{ mt: 2 }}
+                      />
+                    )}
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Paper>
+
+      {/* Back Button at Bottom */}
+      <Box sx={{ mt: 4, textAlign: 'center' }}>
+        <Button
+          variant="contained"
+          startIcon={<ArrowBack />}
+          onClick={handleBackToColleges}
+          size="large"
+          sx={{ color: 'white' }}
+        >
+          Back to Colleges
+        </Button>
+      </Box>
+    </Container>
+  );
 };
 
 export default CollegeDetails;
