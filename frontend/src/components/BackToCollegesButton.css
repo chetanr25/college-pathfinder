@@ -1,0 +1,44 @@
+/*
+  Styles for BackToCollegesButton
+
+  The issue reported that the "Back to colleges" control on the college details view
+  used a purplish/blue color that blended into the background. To fix this, we force
+  the button text color to white and apply subtle focus/hover states that maintain
+  contrast and accessibility.
+*/
+
+.back-to-colleges {
+  color: #ffffff !important; /* Ensure white text on any background */
+  background: transparent; /* Keep existing background unless overridden */
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  line-height: 1;
+  transition: opacity 120ms ease-in-out, transform 120ms ease-in-out;
+  -webkit-font-smoothing: antialiased;
+}
+
+.back-to-colleges:hover,
+.back-to-colleges:focus {
+  opacity: 0.95;
+  transform: translateY(-1px);
+  text-decoration: underline;
+  outline: none;
+}
+
+.back-to-colleges:active {
+  transform: translateY(0);
+}
+
+/* If the app uses dark backgrounds for the header area, add a subtle text-shadow
+   so the white text remains readable on patterned or gradient backgrounds. */
+.back-to-colleges {
+  text-shadow: 0 1px 1px rgba(0,0,0,0.25);
+}
