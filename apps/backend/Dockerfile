@@ -14,7 +14,7 @@ COPY . .
 EXPOSE 8005
 
 # Run with uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8005"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8005"]
 
 # ─── DISABLED: AWS Lambda (migrated to EC2) ─────────────────────────────────────
 # FROM public.ecr.aws/lambda/python:3.11
