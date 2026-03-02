@@ -3,7 +3,6 @@ SQLAlchemy models for PostgreSQL (users, chat sessions, messages).
 """
 
 import uuid
-from datetime import datetime, timezone
 
 from sqlalchemy import Column, DateTime, ForeignKey, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID

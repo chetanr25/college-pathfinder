@@ -7,6 +7,7 @@ from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
+from app.models import Base
 
 load_dotenv()
 
@@ -24,7 +25,6 @@ config.set_main_option(
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-from app.models import Base
 
 target_metadata = Base.metadata
 

@@ -24,9 +24,9 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from app.ai.agent import agent
+from app.ai.pg_session_manager import ChatSession, Message, session_manager
 from app.ai.prompts import ERROR_MESSAGE, WELCOME_MESSAGE
 from app.ai.smart_router import smart_router
-from app.ai.pg_session_manager import ChatSession, Message, session_manager
 from app.auth.service import auth_service
 
 
