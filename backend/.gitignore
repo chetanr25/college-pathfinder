@@ -1,9 +1,0 @@
-.venv
-__pycache__/
-*.pyc
-instance/
-.env
-.pytest_cache/
-*.md
-temp/
-sessions/
