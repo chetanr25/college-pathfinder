@@ -1,6 +1,7 @@
 """
 Routes package initialization
 """
-from app.routes import colleges, branches
+
+from app.routes import branches, colleges
 
 __all__ = ["colleges", "branches"]

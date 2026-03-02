@@ -122,11 +122,11 @@ const BranchDetails: React.FC = () => {
               </p>
           </div>
         ) : (
-            <Grid columns="auto" minItemWidth="350px" gap={6}>
+            <Grid columns="auto" minItemWidth="320px" gap={5}>
               {colleges.map((college, index) => (
                 <div
                   key={college.college_code}
-                  style={{ animation: `fadeInUp 0.6s ease-out ${index * 0.05}s both` }}
+                  style={{ animation: `fadeInUp 0.5s ease-out ${Math.min(index * 0.03, 0.3)}s both` }}
                 >
               <CollegeCardModern
                 collegeCode={college.college_code}
@@ -153,47 +153,48 @@ const styles: Record<string, React.CSSProperties> = {
   },
   roundLabel: {
     display: 'block',
-    fontSize: theme.typography.fontSize.base,
+    fontSize: theme.typography.fontSize.sm,
     fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.text.primary,
-    marginBottom: theme.spacing[4],
+    marginBottom: theme.spacing[3],
   },
   roundSelector: {
     display: 'flex',
-    gap: theme.spacing[3],
+    gap: theme.spacing[2],
     justifyContent: 'center',
+    flexWrap: 'wrap' as const,
   },
   roundButton: {
     flex: 1,
-    maxWidth: '150px',
-    padding: `${theme.spacing[3]} ${theme.spacing[6]}`,
+    maxWidth: '120px',
+    minWidth: '90px',
+    padding: `${theme.spacing[2]} ${theme.spacing[4]}`,
     background: theme.colors.background.paper,
     color: theme.colors.text.secondary,
     border: `2px solid ${theme.colors.border.light}`,
-    borderRadius: theme.borderRadius.lg,
-    fontSize: theme.typography.fontSize.base,
+    borderRadius: theme.borderRadius.md,
+    fontSize: theme.typography.fontSize.sm,
     fontWeight: theme.typography.fontWeight.medium,
     cursor: 'pointer',
-    transition: theme.transitions.base,
+    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
   },
   roundButtonActive: {
     background: theme.colors.secondary.gradient,
     color: theme.colors.text.inverse,
     borderColor: 'transparent',
-    boxShadow: theme.shadows.glow,
-    transform: 'translateY(-2px)',
+    boxShadow: '0 4px 15px rgba(240, 147, 251, 0.3)',
   },
   resultsHeader: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: theme.spacing[4],
-    marginBottom: theme.spacing[8],
+    gap: theme.spacing[3],
+    marginBottom: theme.spacing[6],
     flexWrap: 'wrap' as const,
   },
   resultsTitle: {
     margin: 0,
-    fontSize: theme.typography.fontSize['2xl'],
+    fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
     fontWeight: theme.typography.fontWeight.bold,
     background: theme.colors.secondary.gradient,
     WebkitBackgroundClip: 'text',
@@ -202,21 +203,21 @@ const styles: Record<string, React.CSSProperties> = {
   },
   emptyState: {
     textAlign: 'center' as const,
-    padding: `${theme.spacing[16]} ${theme.spacing[4]}`,
+    padding: `${theme.spacing[12]} ${theme.spacing[4]}`,
   },
   emptyIcon: {
-    fontSize: '5rem',
+    fontSize: '4rem',
     color: theme.colors.neutral[300],
-    marginBottom: theme.spacing[4],
+    marginBottom: theme.spacing[3],
   },
   emptyText: {
-    fontSize: theme.typography.fontSize.xl,
+    fontSize: theme.typography.fontSize.lg,
     color: theme.colors.text.primary,
     fontWeight: theme.typography.fontWeight.semibold,
     marginBottom: theme.spacing[2],
   },
   emptyHint: {
-    fontSize: theme.typography.fontSize.base,
+    fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
   },
 };

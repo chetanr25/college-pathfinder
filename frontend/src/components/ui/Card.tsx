@@ -36,9 +36,9 @@ const Card: React.FC<CardProps> = ({
 
   const getCardStyles = (): React.CSSProperties => {
     const baseStyles: React.CSSProperties = {
-      borderRadius: theme.borderRadius.xl,
+      borderRadius: theme.borderRadius.lg,
       padding: theme.spacing[padding],
-      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       cursor: onClick ? 'pointer' : 'default',
       position: 'relative',
       overflow: 'hidden',
@@ -66,7 +66,7 @@ const Card: React.FC<CardProps> = ({
 
     const hoverStyles = hoverable
       ? {
-          transform: `perspective(1000px) rotateX(${(mousePosition.y - 50) / 20}deg) rotateY(${(mousePosition.x - 50) / 20}deg) translateZ(10px)`,
+          transform: `perspective(1000px) rotateX(${(mousePosition.y - 50) / 40}deg) rotateY(${(mousePosition.x - 50) / 40}deg) translateZ(5px)`,
         }
       : {};
 
@@ -92,9 +92,9 @@ const Card: React.FC<CardProps> = ({
             top: 0,
             left: 0,
             right: 0,
-            height: '4px',
+            height: '3px',
             background: gradient,
-            borderRadius: `${theme.borderRadius.xl} ${theme.borderRadius.xl} 0 0`,
+            borderRadius: `${theme.borderRadius.lg} ${theme.borderRadius.lg} 0 0`,
           }}
         />
       )}
@@ -104,9 +104,9 @@ const Card: React.FC<CardProps> = ({
             position: 'absolute',
             top: `${mousePosition.y}%`,
             left: `${mousePosition.x}%`,
-            width: '300px',
-            height: '300px',
-            background: 'radial-gradient(circle, rgba(79, 70, 229, 0.15) 0%, transparent 70%)',
+            width: '250px',
+            height: '250px',
+            background: 'radial-gradient(circle, rgba(79, 70, 229, 0.1) 0%, transparent 70%)',
             transform: 'translate(-50%, -50%)',
             pointerEvents: 'none',
             transition: 'all 0.3s ease',

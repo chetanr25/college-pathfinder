@@ -35,10 +35,10 @@ const Button: React.FC<ButtonProps> = ({
       justifyContent: 'center',
       gap: theme.spacing[2],
       border: 'none',
-      borderRadius: theme.borderRadius.lg,
+      borderRadius: theme.borderRadius.md,
       fontWeight: theme.typography.fontWeight.semibold,
       cursor: disabled ? 'not-allowed' : 'pointer',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
       position: 'relative',
       overflow: 'hidden',
       width: fullWidth ? '100%' : 'auto',
@@ -49,16 +49,16 @@ const Button: React.FC<ButtonProps> = ({
     // Size styles
     const sizeStyles = {
       sm: {
-        padding: `${theme.spacing[2]} ${theme.spacing[4]}`,
-        fontSize: theme.typography.fontSize.sm,
+        padding: `${theme.spacing[2]} ${theme.spacing[3]}`,
+        fontSize: theme.typography.fontSize.xs,
       },
       md: {
-        padding: `${theme.spacing[3]} ${theme.spacing[6]}`,
-        fontSize: theme.typography.fontSize.base,
+        padding: `${theme.spacing[2]} ${theme.spacing[5]}`,
+        fontSize: theme.typography.fontSize.sm,
       },
       lg: {
-        padding: `${theme.spacing[4]} ${theme.spacing[8]}`,
-        fontSize: theme.typography.fontSize.lg,
+        padding: `${theme.spacing[3]} ${theme.spacing[6]}`,
+        fontSize: theme.typography.fontSize.base,
       },
     };
 
@@ -67,12 +67,12 @@ const Button: React.FC<ButtonProps> = ({
       primary: {
         background: theme.colors.primary.gradient,
         color: theme.colors.text.inverse,
-        boxShadow: theme.shadows.lg,
+        boxShadow: '0 4px 15px rgba(79, 70, 229, 0.3)',
       },
       secondary: {
         background: theme.colors.secondary.gradient,
         color: theme.colors.text.inverse,
-        boxShadow: theme.shadows.lg,
+        boxShadow: '0 4px 15px rgba(236, 72, 153, 0.3)',
       },
       outline: {
         background: 'transparent',

@@ -1,15 +1,14 @@
 """
 Branch routes for the KCET College Predictor API
 """
-from fastapi import APIRouter
+
 from typing import List
+
+from fastapi import APIRouter
 
 from app.services import CollegeService
 
-router = APIRouter(
-    prefix="/branches",
-    tags=["branches"]
-)
+router = APIRouter(prefix="/branches", tags=["branches"])
 
 
 @router.get("/list", response_model=List[str])

@@ -44,16 +44,16 @@ const BranchCard: React.FC<BranchCardProps> = ({
       glow
       gradient={gradient}
       onClick={handleClick}
-      padding={5}
+      padding={4}
       style={{ 
         display: 'flex', 
         alignItems: 'center',
         cursor: 'pointer',
-        minHeight: '100px'
+        minHeight: '80px'
       }}
     >
-      <IconBox size="md" gradient={gradient}>
-        <Category />
+      <IconBox size="sm" gradient={gradient}>
+        <Category style={{ fontSize: '1.25rem' }} />
       </IconBox>
 
       <div style={styles.content}>
@@ -84,13 +84,13 @@ const styles: Record<string, React.CSSProperties> = {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    gap: theme.spacing[1],
+    gap: '2px',
     minWidth: 0,
-    marginLeft: theme.spacing[4],
+    marginLeft: theme.spacing[3],
   },
   branchName: {
     margin: 0,
-    fontSize: theme.typography.fontSize.lg,
+    fontSize: theme.typography.fontSize.base,
     fontWeight: theme.typography.fontWeight.bold,
     color: theme.colors.text.primary,
     fontFamily: theme.typography.fontFamily.heading,
@@ -100,7 +100,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   description: {
     margin: 0,
-    fontSize: theme.typography.fontSize.sm,
+    fontSize: theme.typography.fontSize.xs,
     color: theme.colors.text.secondary,
     lineHeight: theme.typography.lineHeight.relaxed,
     overflow: 'hidden',
@@ -111,7 +111,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   collegeCount: {
     margin: 0,
-    fontSize: theme.typography.fontSize.sm,
+    fontSize: theme.typography.fontSize.xs,
     color: theme.colors.primary.main,
     fontWeight: theme.typography.fontWeight.medium,
   },
@@ -119,15 +119,15 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '40px',
-    height: '40px',
+    width: '32px',
+    height: '32px',
     borderRadius: theme.borderRadius.full,
     background: theme.colors.neutral[100],
-    transition: theme.transitions.base,
+    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
     flexShrink: 0,
   },
   arrow: {
-    fontSize: '1.25rem',
+    fontSize: '1rem',
     color: theme.colors.text.secondary,
   },
 };

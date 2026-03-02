@@ -41,7 +41,8 @@ const NotFound: React.FC = () => {
 
 const styles: Record<string, React.CSSProperties> = {
   container: {
-    minHeight: 'calc(100vh - 200px)',
+    minHeight: '100vh',
+    paddingTop: '72px', // Navbar height
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -53,7 +54,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   title: {
     margin: 0,
-    fontSize: '6rem',
+    fontSize: 'clamp(4rem, 10vw, 5rem)',
     fontWeight: theme.typography.fontWeight.bold,
     background: theme.colors.primary.gradient,
     WebkitBackgroundClip: 'text',
@@ -63,17 +64,17 @@ const styles: Record<string, React.CSSProperties> = {
   },
   subtitle: {
     margin: 0,
-    fontSize: theme.typography.fontSize['3xl'],
+    fontSize: 'clamp(1.5rem, 4vw, 1.875rem)',
     fontWeight: theme.typography.fontWeight.bold,
     color: theme.colors.text.primary,
-    marginBottom: theme.spacing[4],
+    marginBottom: theme.spacing[3],
   },
   description: {
     margin: 0,
-    fontSize: theme.typography.fontSize.lg,
+    fontSize: theme.typography.fontSize.base,
     color: theme.colors.text.secondary,
     lineHeight: theme.typography.lineHeight.relaxed,
-    marginBottom: theme.spacing[8],
+    marginBottom: theme.spacing[6],
   },
   actions: {
     display: 'flex',

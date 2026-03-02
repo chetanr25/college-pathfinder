@@ -117,11 +117,11 @@ const Colleges: React.FC = () => {
               </p>
             </div>
           ) : (
-            <Grid columns="auto" minItemWidth="350px" gap={6}>
+            <Grid columns="auto" minItemWidth="320px" gap={5}>
               {filteredColleges.map((college, index) => (
                 <div
                   key={college.college_code}
-                  style={{ animation: `fadeInUp 0.6s ease-out ${index * 0.05}s both` }}
+                  style={{ animation: `fadeInUp 0.5s ease-out ${Math.min(index * 0.03, 0.3)}s both` }}
                 >
                   <CollegeCardModern
                     collegeCode={college.college_code}
@@ -145,31 +145,34 @@ const styles: Record<string, React.CSSProperties> = {
     background: theme.colors.background.default,
   },
   searchWrapper: {
-    marginBottom: theme.spacing[8],
+    maxWidth: '600px',
+    margin: '0 auto',
+    marginBottom: theme.spacing[6],
+    padding: `0 ${theme.spacing[4]}`,
   },
   resultCount: {
     fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
-    marginTop: theme.spacing[3],
+    marginTop: theme.spacing[2],
     textAlign: 'center' as const,
   },
   emptyState: {
     textAlign: 'center' as const,
-    padding: `${theme.spacing[16]} ${theme.spacing[4]}`,
+    padding: `${theme.spacing[12]} ${theme.spacing[4]}`,
   },
   emptyIcon: {
-    fontSize: '5rem',
+    fontSize: '4rem',
     color: theme.colors.neutral[300],
-    marginBottom: theme.spacing[4],
+    marginBottom: theme.spacing[3],
   },
   emptyText: {
-    fontSize: theme.typography.fontSize.xl,
+    fontSize: theme.typography.fontSize.lg,
     color: theme.colors.text.primary,
     fontWeight: theme.typography.fontWeight.semibold,
     marginBottom: theme.spacing[2],
   },
   emptyHint: {
-    fontSize: theme.typography.fontSize.base,
+    fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
   },
 };

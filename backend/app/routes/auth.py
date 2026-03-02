@@ -1,20 +1,21 @@
 """
 Authentication routes
 """
-from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel, EmailStr
-from typing import Optional
-from app.auth.service import auth_service
-from app.auth.middleware import get_current_user
 
-router = APIRouter(
-    prefix="/auth",
-    tags=["authentication"]
-)
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, EmailStr
+
+from app.auth.middleware import get_current_user
+from app.auth.service import auth_service
+
+router = APIRouter(prefix="/auth", tags=["authentication"])
 
 
 class GoogleAuthRequest(BaseModel):
     """Google authentication request"""
+
     token: str  # Google ID token
     email: EmailStr
     name: str
@@ -23,6 +24,7 @@ class GoogleAuthRequest(BaseModel):
 
 class AuthResponse(BaseModel):
     """Authentication response"""
+
     access_token: str
     token_type: str = "bearer"
     user: dict
@@ -38,27 +40,26 @@ async def google_auth(request: GoogleAuthRequest):
         email=request.email,
         name=request.name,
         avatar_url=request.avatar_url,
-        google_id=request.token  # Store Google ID for reference
+        google_id=request.token,  # Store Google ID for reference
     )
-    
+
     if not user:
         raise HTTPException(status_code=500, detail="Failed to authenticate user")
-    
+
     # Create JWT token
     access_token = auth_service.create_access_token(
-        user_id=str(user['id']),
-        email=user['email']
+        user_id=str(user["id"]), email=user["email"]
     )
-    
+
     return {
         "access_token": access_token,
         "token_type": "bearer",
         "user": {
-            "id": user['id'],
-            "email": user['email'],
-            "name": user['name'],
-            "avatar_url": user.get('avatar_url')
-        }
+            "id": user["id"],
+            "email": user["email"],
+            "name": user["name"],
+            "avatar_url": user.get("avatar_url"),
+        },
     }
 
 
@@ -69,12 +70,12 @@ async def get_current_user_info(user: dict = Depends(get_current_user)):
     """
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    
+
     return {
-        "id": user['id'],
-        "email": user['email'],
-        "name": user['name'],
-        "avatar_url": user.get('avatar_url')
+        "id": user["id"],
+        "email": user["email"],
+        "name": user["name"],
+        "avatar_url": user.get("avatar_url"),
     }
 
 
@@ -84,4 +85,3 @@ async def logout():
     Logout endpoint (client should discard token)
     """
     return {"message": "Logged out successfully"}
-

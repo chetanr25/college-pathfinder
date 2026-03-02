@@ -24,10 +24,10 @@ const Section: React.FC<SectionProps> = ({
   };
 
   const paddings = {
-    sm: `${theme.spacing[8]} 0`,
-    md: `${theme.spacing[12]} 0`,
-    lg: `${theme.spacing[16]} 0`,
-    xl: `${theme.spacing[20]} 0`,
+    sm: `${theme.spacing[6]} 0`,
+    md: `${theme.spacing[8]} 0`,
+    lg: `${theme.spacing[10]} 0`,
+    xl: `${theme.spacing[16]} 0`,
   };
 
   const sectionStyles: React.CSSProperties = {
