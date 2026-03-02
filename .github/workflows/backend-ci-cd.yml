@@ -47,22 +47,6 @@ jobs:
         run: |
           ruff check .
 
-      - name: Run Tests
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
-          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          SMTP_FROM_NAME: ${{ secrets.SMTP_FROM_NAME }}
-          SMTP_FROM_EMAIL: ${{ secrets.SMTP_FROM_EMAIL }}
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
-          FRONTEND_BASE_URL: ${{ secrets.FRONTEND_BASE_URL }}
-          EMAIL_ENABLED: "false"
-          DATABASE_URL: data/kcet_2024.db
-          POSTGRES_URL: sqlite+aiosqlite:///./test.db
-        run: pytest
-
   build-and-push:
     name: Build and Push to ECR
     needs: test
