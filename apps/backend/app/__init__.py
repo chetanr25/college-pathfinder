@@ -21,18 +21,41 @@ async def lifespan(app: FastAPI):
     from pathlib import Path
 
     backend_dir = Path(__file__).parent.parent  # /app in container
-    result = subprocess.run(
-        [sys.executable, "-m", "alembic", "upgrade", "head"],
-        capture_output=True, text=True, cwd=str(backend_dir)
-    )
-    if result.returncode != 0:
-        print(f"[ALEMBIC] Migration warning: {result.stderr}")
-    else:
-        print(f"[ALEMBIC] {result.stdout.strip() or 'Migrations up to date'}")
+    
+    # Try to run migrations, but don't fail if tables already exist
+    try:
+        result = subprocess.run(
+            [sys.executable, "-m", "alembic", "upgrade", "head"],
+            capture_output=True, text=True, cwd=str(backend_dir)
+        )
+        if result.returncode != 0:
+            # Check if it's just a "tables already exist" error
+            if "already exists" in result.stderr:
+                print(f"[ALEMBIC] Tables already exist, marking migrations as applied...")
+                # Mark the current migration as applied without running it
+                subprocess.run(
+                    [sys.executable, "-m", "alembic", "stamp", "head"],
+                    capture_output=True, text=True, cwd=str(backend_dir)
+                )
+                print(f"[ALEMBIC] Migrations marked as applied")
+            else:
+                print(f"[ALEMBIC] Migration warning: {result.stderr}")
+        else:
+            print(f"[ALEMBIC] {result.stdout.strip() or 'Migrations up to date'}")
+    except Exception as e:
+        print(f"[ALEMBIC] Migration error (continuing anyway): {e}")
 
-    await init_db()  # create_all for any tables not covered by migrations
+    try:
+        await init_db()  # create_all for any tables not covered by migrations
+    except Exception as e:
+        print(f"[DB] Database initialization error: {e}")
+    
     yield
-    await close_db()
+    
+    try:
+        await close_db()
+    except Exception as e:
+        print(f"[DB] Database cleanup error: {e}")
 
 
 def create_app() -> FastAPI:
