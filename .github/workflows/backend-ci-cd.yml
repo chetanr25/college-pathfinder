@@ -173,13 +173,6 @@ jobs:
             # Wait for container to initialise
             sleep 20
 
-            # Check container is running
-            if ! docker ps --filter "name=${{ env.CONTAINER_NAME }}" --filter "status=running" | grep -q "${{ env.CONTAINER_NAME }}"; then
-              echo "Error: Container is not running"
-              docker logs --tail 50 ${{ env.CONTAINER_NAME }}
-              exit 1
-            fi
-
             # Check health endpoint
             if curl -f http://localhost:${{ env.APP_PORT }}/chat/health; then
               echo "Deployment verified — backend is healthy"
