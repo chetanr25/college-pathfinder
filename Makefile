@@ -23,7 +23,7 @@ db:
 
 # Run alembic migrations (requires postgres running)
 migrate:
-	cd app/backend && alembic upgrade head
+	cd apps/backend && alembic upgrade head
 
 # View logs
 logs:
@@ -40,5 +40,5 @@ clean:
 # Deploy backend image to AWS ECR (requires .env with AWS_REGION, ECR_REPO, IMAGE_TAG)
 deploy-ecr:
 	aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(ECR_REPO)
-	docker build -f app/backend/Dockerfile -t $(ECR_REPO):$(IMAGE_TAG) app/backend
+	docker build -f apps/backend/Dockerfile -t $(ECR_REPO):$(IMAGE_TAG) apps/backend
 	docker push $(ECR_REPO):$(IMAGE_TAG)
