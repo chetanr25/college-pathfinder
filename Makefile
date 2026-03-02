@@ -40,5 +40,4 @@ clean:
 # Deploy backend image to AWS ECR (requires .env with AWS_REGION, ECR_REPO, IMAGE_TAG)
 deploy-ecr:
 	aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(ECR_REPO)
-	docker build -f apps/backend/Dockerfile -t $(ECR_REPO):$(IMAGE_TAG) apps/backend
-	docker push $(ECR_REPO):$(IMAGE_TAG)
+	docker buildx build --platform linux/arm64 -f apps/backend/Dockerfile -t $(ECR_REPO):$(IMAGE_TAG) --push apps/backend
