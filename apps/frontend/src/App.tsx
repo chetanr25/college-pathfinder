@@ -4,6 +4,15 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+
+// Debug logging for client ID
+console.log('Environment check:', {
+  VITE_GOOGLE_CLIENT_ID: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_ID_USED: GOOGLE_CLIENT_ID,
+  hasClientId: !!GOOGLE_CLIENT_ID,
+  environment: import.meta.env.MODE
+});
+
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Colleges from './pages/Colleges';

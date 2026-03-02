@@ -41,12 +41,18 @@ const Login: React.FC = () => {
         navigate('/ai-chat');
       } catch (err) {
         console.error('Sign in failed:', err);
+        console.error('Full error details:', { error: err, tokenResponse });
         setError('Sign in failed. Please try again.');
       } finally {
         setSigningIn(false);
       }
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Google OAuth Error:', error);
+      console.error('Client ID check:', {
+        clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        hasClientId: !!import.meta.env.VITE_GOOGLE_CLIENT_ID
+      });
       setError('Google sign in was cancelled or failed.');
     },
   });
@@ -96,6 +102,12 @@ const Login: React.FC = () => {
             <AutoAwesome style={{ color: '#a78bfa', fontSize: '1.25rem' }} />
             <span>Access across devices</span>
           </div>
+        </div>
+
+        {/* Temporary Debug Info */}
+        <div style={{ background: '#f3f4f6', padding: '12px', borderRadius: '8px', marginBottom: '16px', fontSize: '0.75rem' }}>
+          <div>Client ID: {import.meta.env.VITE_GOOGLE_CLIENT_ID ? '✅ Loaded' : '❌ Missing'}</div>
+          <div>Mode: {import.meta.env.MODE}</div>
         </div>
 
         {/* Google Sign In Button */}

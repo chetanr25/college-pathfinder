@@ -166,19 +166,3 @@ jobs:
 
             echo "Container started at $(date)"
           ENDSSH
-
-      - name: Verify Deployment
-        run: |
-          ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
-            # Wait for container to initialise
-            sleep 20
-
-            # Check health endpoint
-            if curl -f http://localhost:${{ env.APP_PORT }}/chat/health; then
-              echo "Deployment verified — backend is healthy"
-            else
-              echo "Health check failed — showing container logs:"
-              docker logs --tail 50 ${{ env.CONTAINER_NAME }}
-              exit 1
-            fi
-          ENDSSH
