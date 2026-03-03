@@ -206,7 +206,7 @@ const AIChat: React.FC = () => {
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6));
-              console.log('📨 SSE Event:', data.type);
+              console.log('SSE Event:', data.type);
 
               switch (data.type) {
                 case 'session_created':
