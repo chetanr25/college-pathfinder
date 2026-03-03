@@ -75,12 +75,7 @@ def create_app() -> FastAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[
-            "https://collegepathfinder.vercel.app",
-            "http://localhost:5173",
-            "http://localhost:3000",
-            "https://13.205.81.121"
-        ],
+        allow_origins=["*"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
