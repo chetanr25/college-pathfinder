@@ -40,6 +40,7 @@ Before you begin:
 ### Prerequisites
 
 Before you begin, ensure you have:
+
 - Python 3.11 or higher
 - Node.js 18+ and npm
 - Gmail account with App Password (for email features)
@@ -48,24 +49,28 @@ Before you begin, ensure you have:
 ### Backend Setup
 
 1. Fork and clone the repository:
+
 ```bash
 git clone https://github.com/your-username/major_project.git
 cd major_project/backend
 ```
 
 2. Create and activate a virtual environment:
+
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
 3. Install dependencies:
+
 ```bash
 pip install -r requirements.txt
 ```
 
 4. Create a `.env` file in the backend directory:
-```bash
+
+````bash
 # API Configuration
 APP_NAME="KCET College Predictor API"
 APP_VERSION="1.0.0"
@@ -84,45 +89,36 @@ SMTP_FROM_NAME="KCET College Predictor"
 
 # Database
 DATABASE_URL=data/kcet_2024.db
-<<<<<<< HEAD
-=======
-
-# Supabase (for authentication)
-SUPABASE_URL=your_supabase_url
-SUPABASE_KEY=your_supabase_key
->>>>>>> 879bd297f7e3a9a9781f7d1934aaefc38e713f07
-```
 
 5. Run the development server:
 ```bash
 python main.py
-```
+````
 
 The API will be available at `http://localhost:8005`
 
 ### Frontend Setup
 
 1. Navigate to the frontend directory:
+
 ```bash
 cd frontend
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Create a `.env` file in the frontend directory:
+
 ```bash
 VITE_API_BASE_URL=http://localhost:8005
-<<<<<<< HEAD
-=======
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
->>>>>>> 879bd297f7e3a9a9781f7d1934aaefc38e713f07
 ```
 
 4. Run the development server:
+
 ```bash
 npm run dev
 ```
@@ -133,46 +129,31 @@ The application will be available at `http://localhost:5173`
 
 #### Backend Environment Variables
 
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| `GEMINI_API_KEY` | Google Gemini API key | Yes | - |
-| `EMAIL_ENABLED` | Enable/disable email features | No | `false` |
-<<<<<<< HEAD
-| `SMTP_USERNAME` | Gmail address for sending emails | No | - |
-| `SMTP_PASSWORD` | Gmail app password | No | - |
-| `DATABASE_URL` | Path to SQLite database | No | `data/kcet_2024.db` |
-=======
-| `SMTP_HOST` | SMTP server host | No | `smtp.gmail.com` |
-| `SMTP_PORT` | SMTP server port | No | `587` |
-| `SMTP_USERNAME` | Gmail address for sending emails | No | - |
-| `SMTP_PASSWORD` | Gmail app password | No | - |
-| `SMTP_FROM_EMAIL` | From email address | No | - |
-| `SMTP_FROM_NAME` | From name | No | `KCET College Predictor` |
-| `DATABASE_URL` | Path to SQLite database | No | `data/kcet_2024.db` |
-| `SUPABASE_URL` | Supabase project URL | Yes | - |
-| `SUPABASE_KEY` | Supabase service role key | Yes | - |
->>>>>>> 879bd297f7e3a9a9781f7d1934aaefc38e713f07
+| Variable         | Description                      | Required | Default             |
+| ---------------- | -------------------------------- | -------- | ------------------- |
+| `GEMINI_API_KEY` | Google Gemini API key            | Yes      | -                   |
+| `EMAIL_ENABLED`  | Enable/disable email features    | No       | `false`             |
+| `SMTP_USERNAME`  | Gmail address for sending emails | No       | -                   |
+| `SMTP_PASSWORD`  | Gmail app password               | No       | -                   |
+| `DATABASE_URL`   | Path to SQLite database          | No       | `data/kcet_2024.db` |
 
 #### Frontend Environment Variables
 
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| `VITE_API_BASE_URL` | Backend API URL | No | `http://localhost:8005` |
-<<<<<<< HEAD
-=======
-| `VITE_SUPABASE_URL` | Supabase project URL | Yes | - |
-| `VITE_SUPABASE_ANON_KEY` | Supabase anonymous key | Yes | - |
->>>>>>> 879bd297f7e3a9a9781f7d1934aaefc38e713f07
+| Variable            | Description     | Required | Default                 |
+| ------------------- | --------------- | -------- | ----------------------- |
+| `VITE_API_BASE_URL` | Backend API URL | No       | `http://localhost:8005` |
 
 ## How to Contribute
 
 ### Reporting Bugs
 
 Before creating a bug report:
+
 - Check the [Issues](../../issues) page to avoid duplicates
 - Collect information about the bug (steps to reproduce, error messages, screenshots)
 
 Create a bug report with:
+
 - **Clear title**: Brief description of the issue
 - **Description**: Detailed explanation of the problem
 - **Steps to Reproduce**: Numbered list of steps
@@ -203,11 +184,11 @@ Follow PEP 8 style guide:
 def get_colleges_by_rank(rank: int, round: int = 1) -> List[Dict]:
     """
     Get colleges accessible for a given rank.
-    
+
     Args:
         rank: Student's KCET rank
         round: Counselling round number
-        
+
     Returns:
         List of college dictionaries
     """
@@ -219,6 +200,7 @@ def getColleges(r,rd=1):
 ```
 
 **Key Points:**
+
 - Use type hints for all function parameters and return values
 - Write docstrings for all public functions (Google style)
 - Use meaningful variable names
@@ -227,6 +209,7 @@ def getColleges(r,rd=1):
 - Use 4 spaces for indentation
 
 **Project-Specific Guidelines:**
+
 - Place route handlers in `app/routes/`
 - Business logic goes in `app/services.py`
 - Database queries use context manager pattern
@@ -240,31 +223,36 @@ Follow React and TypeScript best practices:
 ```typescript
 // Good
 interface CollegeCardProps {
-  college: College;
-  onClick?: (collegeCode: string) => void;
+  college: College
+  onClick?: (collegeCode: string) => void
 }
 
 const CollegeCard: React.FC<CollegeCardProps> = ({ college, onClick }) => {
   const handleClick = () => {
     if (onClick) {
-      onClick(college.college_code);
+      onClick(college.college_code)
     }
-  };
+  }
 
   return (
     <Card onClick={handleClick}>
-      <Typography variant="h6">{college.college_name}</Typography>
+      <Typography variant='h6'>{college.college_name}</Typography>
     </Card>
-  );
-};
+  )
+}
 
 // Bad
 function CollegeCard(props) {
-  return <div onClick={() => props.onClick(props.college.college_code)}>{props.college.college_name}</div>
+  return (
+    <div onClick={() => props.onClick(props.college.college_code)}>
+      {props.college.college_name}
+    </div>
+  )
 }
 ```
 
 **Key Points:**
+
 - Use TypeScript for all new code
 - Define interfaces for props and data structures
 - Use functional components with hooks
@@ -275,6 +263,7 @@ function CollegeCard(props) {
 - Use 2 spaces for indentation
 
 **Project-Specific Guidelines:**
+
 - Place components in `src/components/`
 - Place pages in `src/pages/`
 - API calls go through `src/services/api.ts`
@@ -307,15 +296,8 @@ frontend/
 
 Follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
 
-```
-<type>(<scope>): <subject>
-
-<body>
-
-<footer>
-```
-
 **Types:**
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
@@ -326,6 +308,7 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/) specific
 - `chore`: Build process or auxiliary tool changes
 
 **Examples:**
+
 ```bash
 feat(chat): add WebSocket reconnection logic
 
@@ -353,27 +336,32 @@ Add clarification for Windows users regarding virtual environment activation.
 ## Pull Request Process
 
 1. **Create a branch** from `main`:
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
 
 2. **Make your changes**:
+
    - Follow the coding standards
    - Write/update tests
    - Update documentation
 
 3. **Test your changes**:
+
    - Run backend tests
    - Test frontend functionality
    - Check for linting errors
 
 4. **Commit your changes**:
+
    ```bash
    git add .
    git commit -m "feat: add your feature"
    ```
 
 5. **Push to your fork**:
+
    ```bash
    git push origin feature/your-feature-name
    ```
@@ -403,54 +391,6 @@ Add clarification for Windows users regarding virtual environment activation.
 - Once approved, a maintainer will merge your PR
 - Your contribution will be credited in the release notes
 
-## Testing
-
-### Backend Tests
-
-```bash
-cd backend
-pytest
-```
-
-Test files should:
-- Be named `test_*.py`
-- Use pytest fixtures for setup
-- Test both success and error cases
-- Mock external dependencies (API calls, database)
-
-Example:
-```python
-def test_get_colleges_by_rank():
-    """Test college retrieval by rank"""
-    result = CollegeService.get_colleges_by_rank(rank=5000, round=1, limit=10)
-    assert len(result) <= 10
-    assert all(college['cutoff_rank'] >= 5000 for college in result)
-```
-
-### Frontend Tests
-
-```bash
-cd frontend
-npm test
-```
-
-Test files should:
-- Be named `*.test.tsx` or `*.spec.tsx`
-- Use React Testing Library
-- Test component behavior, not implementation
-- Include accessibility checks
-
-Example:
-```typescript
-describe('CollegeCard', () => {
-  it('renders college name', () => {
-    const college = { college_code: 'E001', college_name: 'Test College' };
-    render(<CollegeCard college={college} />);
-    expect(screen.getByText('Test College')).toBeInTheDocument();
-  });
-});
-```
-
 ## Documentation
 
 ### Code Documentation
@@ -463,6 +403,7 @@ describe('CollegeCard', () => {
 ### README Updates
 
 Update README.md when:
+
 - Adding new features
 - Changing installation steps
 - Modifying configuration options
@@ -480,6 +421,7 @@ Update README.md when:
 ### AI Agent Development
 
 When working on the AI agent:
+
 - Test with various user queries
 - Ensure tool calls execute correctly
 - Validate response formatting (especially markdown tables)
@@ -489,6 +431,7 @@ When working on the AI agent:
 ### Email Template Development
 
 When creating/modifying email templates:
+
 - Test in multiple email clients (Gmail, Outlook, etc.)
 - Use inline CSS for compatibility
 - Ensure responsive design
@@ -498,6 +441,7 @@ When creating/modifying email templates:
 ### Database Queries
 
 When writing database queries:
+
 - Use parameterized queries (prevent SQL injection)
 - Test with edge cases (null values, empty results)
 - Consider performance for large datasets
@@ -506,6 +450,7 @@ When writing database queries:
 ## Getting Help
 
 If you need help:
+
 - Check existing [Issues](../../issues) and [Pull Requests](../../pulls)
 - Review the [README.md](README.md) and documentation
 - Ask questions by creating a new issue with the `question` label
@@ -514,6 +459,7 @@ If you need help:
 ## Recognition
 
 Contributors will be recognized in:
+
 - The project's contributor list
 - Release notes for their contributions
 - The README.md (for significant contributions)
