@@ -1,0 +1,12 @@
+.env
+*.env
+*.md
+!docs/*.md
+package-lock.json
+*.DS_Store
+.vscode
+temp/
+.aws-local
+*tests*
+*tests/
+imp.txt
