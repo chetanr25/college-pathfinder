@@ -45,7 +45,7 @@ async def google_auth(request: GoogleAuthRequest):
 
     if not user:
         raise HTTPException(
-            status_code=500, 
+            status_code=500,
             detail="Authentication failed. User creation returned None. Check server logs."
         )
 

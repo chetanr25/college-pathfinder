@@ -1,8 +1,9 @@
 import asyncio
 import os
 import sys
-from sqlalchemy.ext.asyncio import create_async_engine
+
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import create_async_engine
 
 # Add current directory to path to find 'app'
 sys.path.append(os.getcwd())
@@ -22,7 +23,7 @@ try:
             display_url = f"{user_part}@{display_url}"
     else:
         display_url = url
-        
+
     print(f"Checking connection to: {display_url}")
 except Exception as e:
     print(f"Could not load settings: {e}")
@@ -39,13 +40,13 @@ async def check():
     try:
         # Create engine
         engine = create_async_engine(url, echo=False)
-        
+
         # Try to connect
         async with engine.connect() as conn:
             result = await conn.execute(text("SELECT 1"))
             val = result.scalar()
             print(f"SUCCESS: Database returned {val}")
-            
+
             # Check database name
             result_db = await conn.execute(text("SELECT current_database()"))
             db_name = result_db.scalar()
@@ -59,7 +60,7 @@ async def check():
                 print("SUCCESS: 'users' table exists and has expected columns.")
             except Exception as table_error:
                 print(f"FAILED: 'users' table check failed: {table_error}")
-                
+
                 # Check what tables actually exist
                 print("Listing all tables:")
                 result_tables = await conn.execute(text("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'"))
@@ -70,10 +71,10 @@ async def check():
         await engine.dispose()
         print("-" * 50)
         print("✅ DATABASE CONNECTION HEALTHY")
-        
+
     except Exception as e:
         print("-" * 50)
-        print(f"❌ CONNECTION FAILED")
+        print("❌ CONNECTION FAILED")
         print(f"Error type: {type(e).__name__}")
         print(f"Error message: {e}")
         print("-" * 50)
