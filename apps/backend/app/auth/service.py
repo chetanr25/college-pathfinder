@@ -84,8 +84,11 @@ class AuthService:
                 }
         except Exception as e:
             import traceback
-            print(f"[AUTH ERROR] get_or_create_user failed: {e}")
-            print(traceback.format_exc())
+            import sys
+            print(f"[AUTH ERROR] get_or_create_user failed: {e}", file=sys.stderr, flush=True)
+            print(traceback.format_exc(), file=sys.stderr, flush=True)
+            # Try printing to stdout as well just in case
+            print(f"DEBUG: Auth failed for email {email}. Error: {e}", flush=True)
             return None
 
     def create_access_token(self, user_id: str, email: str) -> str:
