@@ -3,6 +3,7 @@ Main entry point for the KCET College Predictor API
 """
 
 from dotenv import find_dotenv, load_dotenv
+
 from app import app
 
 load_dotenv(find_dotenv())
