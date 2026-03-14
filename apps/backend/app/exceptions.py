@@ -42,4 +42,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 
 async def general_exception_handler(request: Request, exc: Exception):
     """Global general exception handler"""
-    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
+    import traceback
+    print(f"Global exception: {exc}")
+    traceback.print_exc()
+    return JSONResponse(status_code=500, content={"detail": f"Internal server error: {str(exc)}"})

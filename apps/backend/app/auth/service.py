@@ -90,6 +90,11 @@ class AuthService:
                     "avatar_url": new_user.avatar_url,
                 }
         except Exception as e:
+            # IMPORTANT: Re-raise exception so wrapper can handle it and expose error
+            print(f"ERROR: {e}", file=sys.stderr, flush=True)
+            import traceback
+            traceback.print_exc(file=sys.stderr)
+            raise e
             import traceback
             import sys
             print(f"[AUTH ERROR] get_or_create_user failed: {e}", file=sys.stderr, flush=True)

@@ -44,7 +44,10 @@ async def google_auth(request: GoogleAuthRequest):
     )
 
     if not user:
-        raise HTTPException(status_code=500, detail="Failed to authenticate user — check POSTGRES_URL in .env")
+        raise HTTPException(
+            status_code=500, 
+            detail="Authentication failed. User creation returned None. Check server logs."
+        )
 
     # Create JWT token
     access_token = auth_service.create_access_token(
