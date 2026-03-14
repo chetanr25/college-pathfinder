@@ -50,7 +50,23 @@ async def check():
             result_db = await conn.execute(text("SELECT current_database()"))
             db_name = result_db.scalar()
             print(f"Connected to database: {db_name}")
-            
+
+            # Check if users table exists and has correct columns
+            print("Checking 'users' table...")
+            try:
+                # Try to select one row
+                await conn.execute(text("SELECT id, email, name, google_id FROM users LIMIT 1"))
+                print("SUCCESS: 'users' table exists and has expected columns.")
+            except Exception as table_error:
+                print(f"FAILED: 'users' table check failed: {table_error}")
+                
+                # Check what tables actually exist
+                print("Listing all tables:")
+                result_tables = await conn.execute(text("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'"))
+                tables = result_tables.fetchall()
+                for t in tables:
+                    print(f" - {t[0]}")
+
         await engine.dispose()
         print("-" * 50)
         print("✅ DATABASE CONNECTION HEALTHY")
