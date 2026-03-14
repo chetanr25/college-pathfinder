@@ -582,7 +582,7 @@ async def stream_chat(
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
             "X-Accel-Buffering": "no",  # Disable nginx buffering
-            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Origin": "https://collegepathfinder.chetanr25.in",
             "Access-Control-Allow-Headers": "Content-Type, Authorization",
         },
     )
