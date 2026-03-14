@@ -1,0 +1,66 @@
+import asyncio
+import os
+import sys
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy import text
+
+# Add current directory to path to find 'app'
+sys.path.append(os.getcwd())
+
+display_url = "UNKNOWN"
+
+try:
+    from app.config import settings
+    url = settings.POSTGRES_URL
+    # Mask password for display
+    if "@" in url:
+        display_url = url.split("@")[1]
+        user_part = url.split("@")[0]
+        if ":" in user_part:
+            display_url = f"{user_part.split(':')[0]}:****@{display_url}"
+        else:
+            display_url = f"{user_part}@{display_url}"
+    else:
+        display_url = url
+        
+    print(f"Checking connection to: {display_url}")
+except Exception as e:
+    print(f"Could not load settings: {e}")
+    url = os.environ.get("POSTGRES_URL")
+    print(f"Using URL from env: {url}")
+
+if not url:
+    print("Error: POSTGRES_URL not set!")
+    sys.exit(1)
+
+async def check():
+    print("-" * 50)
+    print("Starting connection test...")
+    try:
+        # Create engine
+        engine = create_async_engine(url, echo=False)
+        
+        # Try to connect
+        async with engine.connect() as conn:
+            result = await conn.execute(text("SELECT 1"))
+            val = result.scalar()
+            print(f"SUCCESS: Database returned {val}")
+            
+            # Check database name
+            result_db = await conn.execute(text("SELECT current_database()"))
+            db_name = result_db.scalar()
+            print(f"Connected to database: {db_name}")
+            
+        await engine.dispose()
+        print("-" * 50)
+        print("✅ DATABASE CONNECTION HEALTHY")
+        
+    except Exception as e:
+        print("-" * 50)
+        print(f"❌ CONNECTION FAILED")
+        print(f"Error type: {type(e).__name__}")
+        print(f"Error message: {e}")
+        print("-" * 50)
+
+if __name__ == "__main__":
+    asyncio.run(check())

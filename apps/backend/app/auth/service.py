@@ -53,12 +53,17 @@ class AuthService:
         self, email: str, name: str, avatar_url: str = None, google_id: str = None
     ) -> Optional[Dict[str, Any]]:
         """Get existing user or create new one"""
+        # Add basic debug print to start
+        import sys
+        print(f"DEBUG: Attempting auth for {email}", file=sys.stderr, flush=True)
+
         try:
             async with async_session_factory() as db:
                 result = await db.execute(select(User).where(User.email == email))
                 user = result.scalar_one_or_none()
 
                 if user:
+                    print(f"DEBUG: Found existing user {user.id}", file=sys.stderr, flush=True)
                     return {
                         "id": str(user.id),
                         "email": user.email,
@@ -66,6 +71,7 @@ class AuthService:
                         "avatar_url": user.avatar_url,
                     }
 
+                print(f"DEBUG: Creating new user for {email}", file=sys.stderr, flush=True)
                 new_user = User(
                     email=email,
                     name=name,
@@ -75,6 +81,7 @@ class AuthService:
                 db.add(new_user)
                 await db.commit()
                 await db.refresh(new_user)
+                print(f"DEBUG: Created new user {new_user.id}", file=sys.stderr, flush=True)
 
                 return {
                     "id": str(new_user.id),
