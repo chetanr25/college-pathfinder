@@ -24,9 +24,12 @@ async def lifespan(app: FastAPI):
 
     # Try to run migrations, but don't fail if tables already exist
     try:
+        print("[ALEMBIC] Running migrations...")
+        # Run alembic with specific timeout to prevent hanging
         result = subprocess.run(
             [sys.executable, "-m", "alembic", "upgrade", "head"],
-            capture_output=True, text=True, cwd=str(backend_dir)
+            capture_output=True, text=True, cwd=str(backend_dir),
+            timeout=30  # Add timeout
         )
         if result.returncode != 0:
             # Check if it's just a "tables already exist" error
@@ -35,13 +38,16 @@ async def lifespan(app: FastAPI):
                 # Mark the current migration as applied without running it
                 subprocess.run(
                     [sys.executable, "-m", "alembic", "stamp", "head"],
-                    capture_output=True, text=True, cwd=str(backend_dir)
+                    capture_output=True, text=True, cwd=str(backend_dir),
+                    timeout=30
                 )
                 print("[ALEMBIC] Migrations marked as applied")
             else:
                 print(f"[ALEMBIC] Migration warning: {result.stderr}")
         else:
             print(f"[ALEMBIC] {result.stdout.strip() or 'Migrations up to date'}")
+    except subprocess.TimeoutExpired:
+        print("[ALEMBIC] Migration timed out after 30s. Continuing startup...")
     except Exception as e:
         print(f"[ALEMBIC] Migration error (continuing anyway): {e}")
 
