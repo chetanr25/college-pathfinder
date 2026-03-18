@@ -34,10 +34,11 @@ class Settings:
 
     # CORS Settings
     CORS_ORIGINS: List[str] = [
-        "https://collegepathfinder.chetanr25.in",
-        "https://collegepathfinder.vercel.app",
-        "http://localhost:3000",
-        "http://localhost:5173"
+        origin.strip()
+        for origin in os.getenv(
+            "CORS_ORIGINS",
+            "https://college-finder.chetanr25.in,https://collegepathfinder.chetanr25.in,https://collegepathfinder.vercel.app,http://localhost:3000,http://localhost:5173"
+        ).split(",")
     ]
     CORS_METHODS: List[str] = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
     CORS_HEADERS: List[str] = ["*"]

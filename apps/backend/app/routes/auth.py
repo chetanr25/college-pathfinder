@@ -30,13 +30,6 @@ class AuthResponse(BaseModel):
     user: dict
 
 
-@router.options("/google")
-async def google_auth_options():
-    """
-    Handle OPTIONS request for Google Auth
-    """
-    return {}
-
 @router.post("/google", response_model=AuthResponse)
 async def google_auth(request: GoogleAuthRequest):
     """
