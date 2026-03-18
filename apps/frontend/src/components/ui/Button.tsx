@@ -43,7 +43,6 @@ const Button: React.FC<ButtonProps> = ({
       overflow: 'hidden',
       width: fullWidth ? '100%' : 'auto',
       fontFamily: theme.typography.fontFamily.primary,
-      ...style,
     };
 
     // Size styles
@@ -92,6 +91,7 @@ const Button: React.FC<ButtonProps> = ({
       ...sizeStyles[size],
       ...variantStyles[variant],
       opacity: disabled ? 0.6 : 1,
+      ...style,
     };
   };
 

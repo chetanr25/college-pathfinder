@@ -44,36 +44,41 @@ const BranchCard: React.FC<BranchCardProps> = ({
       glow
       gradient={gradient}
       onClick={handleClick}
-      padding={4}
-      style={{ 
-        display: 'flex', 
-        alignItems: 'center',
+      padding={5}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
         cursor: 'pointer',
-        minHeight: '80px'
+        height: '100%',
       }}
     >
-      <IconBox size="sm" gradient={gradient}>
-        <Category style={{ fontSize: '1.25rem' }} />
-      </IconBox>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: theme.spacing[3] }}>
+        <IconBox size="sm" gradient={gradient}>
+          <Category style={{ fontSize: '1.25rem' }} />
+        </IconBox>
 
-      <div style={styles.content}>
-        <h3 style={styles.branchName} title={branchName}>
-          {branchName}
-        </h3>
-        {description && (
-          <p style={styles.description} title={description}>
-            {description}
-          </p>
-        )}
-        {collegeCount !== undefined && (
-          <p style={styles.collegeCount}>
-            {collegeCount} {collegeCount === 1 ? 'college' : 'colleges'} available
-          </p>
-        )}
+        <div style={styles.content}>
+          <h3 style={styles.branchName} title={branchName}>
+            {branchName}
+          </h3>
+          {description && (
+            <p style={styles.description} title={description}>
+              {description}
+            </p>
+          )}
+          {collegeCount !== undefined && (
+            <p style={styles.collegeCount}>
+              {collegeCount} {collegeCount === 1 ? 'college' : 'colleges'} available
+            </p>
+          )}
+        </div>
       </div>
 
-      <div style={styles.arrowWrapper}>
-        <ArrowForward style={styles.arrow} />
+      <div style={styles.footer}>
+        <div style={styles.viewDetails}>
+          <span>View Colleges</span>
+          <ArrowForward style={{ fontSize: '1rem' }} />
+        </div>
       </div>
     </Card>
   );
@@ -84,9 +89,8 @@ const styles: Record<string, React.CSSProperties> = {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    gap: '2px',
+    gap: '4px',
     minWidth: 0,
-    marginLeft: theme.spacing[3],
   },
   branchName: {
     margin: 0,
@@ -94,9 +98,8 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: theme.typography.fontWeight.bold,
     color: theme.colors.text.primary,
     fontFamily: theme.typography.fontFamily.heading,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap' as const,
+    lineHeight: 1.35,
+    marginBottom: theme.spacing[1],
   },
   description: {
     margin: 0,
@@ -115,20 +118,23 @@ const styles: Record<string, React.CSSProperties> = {
     color: theme.colors.primary.main,
     fontWeight: theme.typography.fontWeight.medium,
   },
-  arrowWrapper: {
+  footer: {
+    marginTop: 'auto',
+    paddingTop: theme.spacing[3],
+    borderTop: `1px solid ${theme.colors.border.light}`,
+  },
+  viewDetails: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '32px',
-    height: '32px',
-    borderRadius: theme.borderRadius.full,
-    background: theme.colors.neutral[100],
-    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-    flexShrink: 0,
-  },
-  arrow: {
-    fontSize: '1rem',
-    color: theme.colors.text.secondary,
+    gap: theme.spacing[2],
+    fontSize: theme.typography.fontSize.xs,
+    fontWeight: theme.typography.fontWeight.semibold,
+    background: theme.colors.primary.gradient,
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   },
 };
 

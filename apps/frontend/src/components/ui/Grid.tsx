@@ -21,7 +21,7 @@ const Grid: React.FC<GridProps> = ({
   const gridStyles: React.CSSProperties = {
     display: 'grid',
     gridTemplateColumns:
-      columns === 'auto' ? `repeat(auto-fill, minmax(${minItemWidth}, 1fr))` : `repeat(${columns}, 1fr)`,
+      columns === 'auto' ? `repeat(auto-fit, minmax(min(${minItemWidth}, 100%), 1fr))` : `repeat(${columns}, 1fr)`,
     gap: theme.spacing[gap],
     ...style,
   };

@@ -7,6 +7,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
 import { Hero, Container, Section, Grid, Card, Input, Button, Badge } from '../components/ui';
 import theme from '../theme';
+import SEO from '../components/SEO';
 
 const RankPredictor: React.FC = () => {
   const [rank, setRank] = useState<string>('');
@@ -78,11 +79,12 @@ const RankPredictor: React.FC = () => {
 
   return (
     <div style={styles.container}>
+      <SEO title="KCET Rank Predictor" description="Enter your KCET rank to find eligible engineering colleges across all counselling rounds. Filter by branch and round." />
       {/* Hero Section */}
       <Hero
         icon={<TrendingUp />}
-        title="KCET Rank Recommendor"
-        subtitle="Enter your KCET rank to find colleges you can get admitted to"
+        title="KCET Rank Predictor"
+        subtitle="Enter your rank, optionally filter by branch, and discover eligible colleges across all counselling rounds"
         size="md"
         background="linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 90%)"
       />
@@ -258,14 +260,14 @@ const RankPredictor: React.FC = () => {
       {!hasSearched && (
         <Section background="mesh" padding="xl">
           <Container maxWidth="lg">
-            <Grid columns={2} gap={6}>
+            <Grid columns="auto" minItemWidth="280px" gap={6}>
               <Card variant="glass">
             <h3 style={styles.infoTitle}>How it works</h3>
             <ol style={styles.infoList}>
               <li>Enter your KCET rank</li>
-              <li>Select the counselling round</li>
-              <li>Get a list of colleges where you have a chance of admission</li>
-              <li>View detailed cutoff information for each college</li>
+              <li>Optionally filter by one or more branches</li>
+              <li>Select the counselling round (1, 2, or 3)</li>
+              <li>View colleges where your rank falls within the cutoff</li>
             </ol>
               </Card>
 

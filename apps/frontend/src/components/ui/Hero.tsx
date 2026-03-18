@@ -26,22 +26,22 @@ const Hero: React.FC<HeroProps> = ({
 }) => {
   const sizes = {
     sm: {
-      padding: `${theme.spacing[10]} ${theme.spacing[6]}`,
-      paddingTop: withNavbar ? 'calc(72px + 2.5rem)' : theme.spacing[10],
+      padding: `${theme.spacing[10]} ${theme.spacing[4]}`,
+      paddingTop: withNavbar ? 'calc(var(--navbar-height, 72px) + 2.5rem)' : theme.spacing[10],
       titleSize: 'clamp(1.5rem, 4vw, 1.875rem)',
       subtitleSize: 'clamp(0.875rem, 2vw, 1rem)',
       iconSize: '56px',
     },
     md: {
-      padding: `${theme.spacing[12]} ${theme.spacing[6]}`,
-      paddingTop: withNavbar ? 'calc(72px + 3rem)' : theme.spacing[12],
+      padding: `${theme.spacing[12]} ${theme.spacing[4]}`,
+      paddingTop: withNavbar ? 'calc(var(--navbar-height, 72px) + 3rem)' : theme.spacing[12],
       titleSize: 'clamp(1.75rem, 5vw, 2.25rem)',
       subtitleSize: 'clamp(0.95rem, 2vw, 1.125rem)',
       iconSize: '64px',
     },
     lg: {
-      padding: `${theme.spacing[16]} ${theme.spacing[6]}`,
-      paddingTop: withNavbar ? 'calc(72px + 4rem)' : theme.spacing[16],
+      padding: `${theme.spacing[16]} ${theme.spacing[4]}`,
+      paddingTop: withNavbar ? 'calc(var(--navbar-height, 72px) + 4rem)' : theme.spacing[16],
       titleSize: 'clamp(2rem, 6vw, 3rem)',
       subtitleSize: 'clamp(1rem, 2.5vw, 1.25rem)',
       iconSize: '72px',

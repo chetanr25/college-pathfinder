@@ -6,6 +6,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
 import { Hero, Container, Section, Button, Card, Badge, Grid, StatCard } from '../components/ui';
 import theme from '../theme';
+import SEO from '../components/SEO';
 
 const CollegeDetails: React.FC = () => {
   const { collegeCode } = useParams<{ collegeCode: string }>();
@@ -47,6 +48,7 @@ const CollegeDetails: React.FC = () => {
 
   return (
     <div style={styles.container}>
+      <SEO title={collegeData?.college_name || 'College Details'} description={`View branch-wise cutoff ranks for ${collegeData?.college_name || 'this college'} across all KCET counselling rounds.`} />
       {/* Hero Section */}
       <Hero
         icon={<School />}
@@ -74,7 +76,7 @@ const CollegeDetails: React.FC = () => {
       {/* Stats Section */}
       <Section background="paper" padding="md">
         <Container maxWidth="xl">
-          <Grid columns={3} gap={6}>
+          <Grid columns="auto" minItemWidth="200px" gap={6}>
             <StatCard
               icon={<Category />}
               value={collegeData.branches.length}
@@ -91,7 +93,7 @@ const CollegeDetails: React.FC = () => {
             />
             <StatCard
               icon={<Category />}
-              value="KCET 2024"
+              value="KCET"
               label="Data Year"
               color={theme.colors.accent.main}
               gradient={theme.colors.accent.gradient}

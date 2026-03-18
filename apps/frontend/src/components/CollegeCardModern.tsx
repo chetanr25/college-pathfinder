@@ -159,10 +159,13 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     justifyContent: 'center',
     gap: theme.spacing[2],
-    color: theme.colors.primary.main,
     fontSize: theme.typography.fontSize.xs,
     fontWeight: theme.typography.fontWeight.semibold,
-    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+    background: theme.colors.primary.gradient,
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   },
 };
 

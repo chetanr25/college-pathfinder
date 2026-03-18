@@ -9,6 +9,7 @@ import ChatInput from '../components/chat/ChatInput';
 import ThinkingIndicator from '../components/chat/ThinkingIndicator';
 import ChatSidebar from '../components/chat/ChatSidebar';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8005';
 
@@ -404,6 +405,7 @@ const AIChat: React.FC = () => {
 
   return (
     <Box sx={{ height: '100vh', display: 'flex', overflow: 'hidden', bgcolor: '#f9fafb' }}>
+      <SEO title="AI College Counselor" description="Get personalized KCET college recommendations from our AI counselor. Ask about cutoffs, compare colleges, and find the best match for your rank." />
       {/* Sidebar */}
       {sidebarVisible && (
         <ChatSidebar
@@ -664,21 +666,24 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     gap: '24px',
-    padding: '60px 20px',
+    padding: '40px 20px',
     minHeight: '50vh',
   },
   welcomeTitle: {
-    fontSize: '24px',
-    fontWeight: 600,
-    color: '#374151',
+    fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
+    fontWeight: 700,
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
     textAlign: 'center',
-    marginBottom: '8px',
+    marginBottom: '4px',
   },
   welcomeSubtitle: {
     fontSize: '14px',
     color: '#6b7280',
     textAlign: 'center',
-    marginBottom: '24px',
+    marginBottom: '16px',
   },
   exampleCards: {
     display: 'grid',
@@ -688,27 +693,30 @@ const styles = {
     maxWidth: '900px',
   },
   exampleCard: {
-    padding: '20px',
-    borderRadius: '16px',
+    padding: '24px',
+    borderRadius: '20px',
     cursor: 'pointer',
-    transition: 'all 0.2s ease-in-out',
-    border: '1px solid #e5e7eb',
-    background: '#ffffff',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    border: '1px solid rgba(0,0,0,0.06)',
+    background: 'rgba(255, 255, 255, 0.85)',
+    backdropFilter: 'blur(12px)',
+    boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
     '&:hover': {
-      boxShadow: '0 8px 24px rgba(102, 126, 234, 0.15)',
+      boxShadow: '0 12px 32px rgba(102, 126, 234, 0.18)',
       transform: 'translateY(-4px)',
-      borderColor: '#667eea',
+      borderColor: 'rgba(102, 126, 234, 0.3)',
     },
   },
   exampleTitle: {
     fontSize: '14px',
-    fontWeight: 600,
+    fontWeight: 700,
     color: '#374151',
   },
   exampleQuestion: {
     fontSize: '13px',
     color: '#6b7280',
-    lineHeight: 1.5,
+    lineHeight: 1.6,
+    fontStyle: 'italic',
   },
   inputContainer: {
     position: 'fixed' as const,

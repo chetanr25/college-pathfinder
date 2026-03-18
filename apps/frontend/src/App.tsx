@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
@@ -105,14 +106,16 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <AuthProvider>
-        <Router>
-          <ScrollToTop />
-          <AppContent />
-        </Router>
-      </AuthProvider>
-    </GoogleOAuthProvider>
+    <HelmetProvider>
+      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+        <AuthProvider>
+          <Router>
+            <ScrollToTop />
+            <AppContent />
+          </Router>
+        </AuthProvider>
+      </GoogleOAuthProvider>
+    </HelmetProvider>
   );
 };
 

@@ -7,6 +7,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
 import { Hero, Container, Section, Grid, Button, Card, Badge } from '../components/ui';
 import theme from '../theme';
+import SEO from '../components/SEO';
 
 const BranchDetails: React.FC = () => {
   const { branchName } = useParams<{ branchName: string }>();
@@ -50,6 +51,7 @@ const BranchDetails: React.FC = () => {
 
   return (
     <div style={styles.container}>
+      <SEO title={decodedBranchName || 'Branch Details'} description={`Find colleges offering ${decodedBranchName || 'this branch'} with KCET cutoff data across all counselling rounds.`} />
       {/* Hero Section */}
       <Hero
         icon={<Category />}

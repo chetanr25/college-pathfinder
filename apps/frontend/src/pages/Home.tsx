@@ -11,12 +11,14 @@ import {
   InsightsOutlined
 } from '@mui/icons-material';
 import theme from '../theme';
+import SEO from '../components/SEO';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
 
   return (
     <div style={styles.container}>
+      <SEO />
       {/* Hero Section - Epic Landing */}
       <section style={styles.hero}>
         <div style={styles.heroBlob1} />
@@ -29,8 +31,7 @@ const Home: React.FC = () => {
               <span style={styles.heroTitleGradient}>Engineering Excellence</span>
           </h1>
           <p style={styles.heroSubtitle}>
-              Navigate your college admissions with confidence. Get real-time cutoff predictions, 
-              personalized AI guidance, and make the smartest college choice.
+              Explore KCET cutoff data for 200+ engineering colleges. Get AI-powered guidance and find the right college for your rank.
           </p>
             <div style={styles.heroActions}>
             <button 
@@ -38,7 +39,7 @@ const Home: React.FC = () => {
               onClick={() => navigate('/predictor')}
             >
                 <TrendingUp style={{ fontSize: '1.5rem' }} />
-                <span>Recommend me a  College</span>
+                <span>Find Colleges for My Rank</span>
                 <ArrowForward style={{ fontSize: '1.25rem' }} />
             </button>
             <button 
@@ -65,9 +66,8 @@ const Home: React.FC = () => {
               <div style={styles.aiLabel}>Powered by Advanced AI</div>
               <h2 style={styles.aiTitle}>Meet Your Personal AI College Counselor</h2>
               <p style={styles.aiDescription}>
-                Get instant, intelligent answers to all your college admission questions. Our AI counselor 
-                analyzes thousands of college data points to provide personalized recommendations based on 
-                your rank, preferences, and career goals.
+                Ask questions about KCET cutoffs, compare colleges, get branch recommendations based on
+                your rank, and request a personalized report emailed directly to you.
               </p>
               <div style={styles.aiFeatures}>
                 <div style={styles.aiFeatureItem}>
@@ -80,8 +80,8 @@ const Home: React.FC = () => {
                 <div style={styles.aiFeatureItem}>
                   <InsightsOutlined style={{ fontSize: '1.5rem', color: '#60a5fa' }} />
                   <div>
-                    <div style={styles.aiFeatureTitle}>Real-time Analysis</div>
-                    <div style={styles.aiFeatureDesc}>Instant cutoff predictions</div>
+                    <div style={styles.aiFeatureTitle}>KCET Data Lookup</div>
+                    <div style={styles.aiFeatureDesc}>Queries the KCET cutoff database</div>
                   </div>
                 </div>
                 <div style={styles.aiFeatureItem}>
@@ -128,14 +128,12 @@ const Home: React.FC = () => {
               </div>
               <h3 style={styles.featureCardTitle}>Rank Predictor</h3>
               <p style={styles.featureCardDescription}>
-                Enter your rank and instantly discover which engineering colleges you can get into. 
-                Our advanced algorithm analyzes cutoff trends across all counselling rounds to give 
-                you accurate predictions. Filter by branch, location, and college type to find your perfect match.
+                Enter your KCET rank and instantly see which engineering colleges you qualify for.
+                Filter by branch and counselling round to narrow down results to exactly what you need.
               </p>
               <div style={styles.featureCardMeta}>
-                <span>✓ Accurate Predictions</span>
-                <span>✓ Multi-Round Analysis</span>
-                <span>✓ Smart Filtering</span>
+                <span>✓ Round 1, 2 & 3 data</span>
+                <span>✓ Branch filter</span>
               </div>
               <div className="featureCardAction" style={styles.featureCardAction}>
                 <span>Predict Now</span>
@@ -155,14 +153,13 @@ const Home: React.FC = () => {
               </div>
               <h3 style={styles.featureCardTitle}>Explore 200+ Colleges</h3>
               <p style={styles.featureCardDescription}>
-                Browse through comprehensive information about 200+ engineering colleges in Karnataka. 
-                View detailed cutoff ranks for every branch, compare colleges side-by-side, and discover 
-                hidden gems that match your profile. Get insights into placement records and campus facilities.
+                Browse 200+ engineering colleges in Karnataka with KCET cutoff data.
+                View branch-wise cutoff ranks across all three counselling rounds and find
+                colleges that match your rank.
               </p>
               <div style={styles.featureCardMeta}>
-                <span>✓ Complete Database</span>
-                <span>✓ Branch-wise Details</span>
-                <span>✓ Easy Comparison</span>
+                <span>✓ 200+ colleges</span>
+                <span>✓ Branch-wise cutoffs</span>
               </div>
               <div className="featureCardAction" style={styles.featureCardAction}>
                 <span>Browse Colleges</span>
@@ -182,14 +179,12 @@ const Home: React.FC = () => {
               </div>
               <h3 style={styles.featureCardTitle}>50+ Engineering Branches</h3>
               <p style={styles.featureCardDescription}>
-                Explore diverse engineering branches from Computer Science to Emerging Technologies. 
-                Understand career prospects, industry demand, and salary trends for each branch. 
-                Find colleges offering your preferred specialization and compare admission cutoffs.
+                Browse all engineering branches available in KCET. Select a branch to see
+                which colleges offer it and what the admission cutoffs are across all counselling rounds.
               </p>
               <div style={styles.featureCardMeta}>
-                <span>✓ Complete Guide</span>
-                <span>✓ Career Insights</span>
-                <span>✓ College Lists</span>
+                <span>✓ 50+ branches</span>
+                <span>✓ College lists per branch</span>
               </div>
               <div className="featureCardAction" style={styles.featureCardAction}>
                 <span>Explore Branches</span>
@@ -203,22 +198,21 @@ const Home: React.FC = () => {
       {/* Why Choose Us Section */}
       <section style={styles.whySection}>
         <div style={styles.whyContainer}>
-          <h2 style={styles.whySectionTitle}>Why Students Trust Us</h2>
+          <h2 style={styles.whySectionTitle}>What You Get</h2>
           <div style={styles.whyGrid}>
             <div className="whyCard" style={styles.whyCard}>
               <div style={styles.whyNumber}>01</div>
-              <h3 style={styles.whyTitle}>100% Accurate Data</h3>
+              <h3 style={styles.whyTitle}>KCET Data</h3>
               <p style={styles.whyDesc}>
-                Official cutoff data from reliable sources. Updated regularly 
-                to ensure you always have the most accurate information.
+                Official KCET cutoff ranks across all three counselling rounds for 200+ engineering colleges in Karnataka.
               </p>
             </div>
             <div className="whyCard" style={styles.whyCard}>
               <div style={styles.whyNumber}>02</div>
-              <h3 style={styles.whyTitle}>AI-Powered Insights</h3>
+              <h3 style={styles.whyTitle}>AI Counselor</h3>
               <p style={styles.whyDesc}>
-                Advanced machine learning algorithms analyze patterns and trends to 
-                provide intelligent recommendations tailored to your profile.
+                Ask the AI counselor anything — rank-based recommendations, branch comparisons,
+                admission chances, and personalized email reports.
               </p>
             </div>
             <div className="whyCard" style={styles.whyCard}>
@@ -246,7 +240,7 @@ const Home: React.FC = () => {
         <div style={styles.ctaContent}>
           <h2 style={styles.ctaTitle}>Ready to Find Your Perfect College?</h2>
           <p style={styles.ctaSubtitle}>
-            Join thousands of students who found their dream engineering college with our help
+            Enter your rank and instantly see which colleges and branches you can get admitted to
           </p>
           <button 
             style={styles.ctaButton}
@@ -266,13 +260,13 @@ const styles: Record<string, React.CSSProperties> = {
   container: {
     minHeight: '100vh',
     background: '#0a0a0f',
-    paddingTop: '72px', // Navbar height
+    paddingTop: 'var(--navbar-height, 72px)',
   },
   
   // Hero Section
   hero: {
     position: 'relative' as const,
-    minHeight: 'calc(100vh - 72px)',
+    minHeight: 'calc(100vh - var(--navbar-height, 72px))',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -608,6 +602,7 @@ const styles: Record<string, React.CSSProperties> = {
     background: 'rgba(255,255,255,0.05)',
     borderRadius: '18px',
     border: '1px solid rgba(255,255,255,0.1)',
+    borderLeft: '3px solid #667eea',
     transition: 'all 0.3s ease',
   },
   whyNumber: {

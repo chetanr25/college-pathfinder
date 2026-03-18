@@ -49,22 +49,23 @@ const Input: React.FC<InputProps> = ({
 
   const inputStyles: React.CSSProperties = {
     width: '100%',
-    padding: icon ? `${theme.spacing[3]} ${theme.spacing[3]} ${theme.spacing[3]} ${theme.spacing[10]}` : theme.spacing[3],
-    fontSize: theme.typography.fontSize.sm,
+    padding: icon ? `${theme.spacing[4]} ${theme.spacing[4]} ${theme.spacing[4]} ${theme.spacing[12]}` : theme.spacing[4],
+    fontSize: theme.typography.fontSize.base,
     color: theme.colors.text.primary,
-    background: theme.colors.background.paper,
-    border: `2px solid ${error ? theme.colors.error.main : theme.colors.border.light}`,
-    borderRadius: theme.borderRadius.md,
+    background: 'rgba(255, 255, 255, 0.85)',
+    backdropFilter: 'blur(12px)',
+    border: `2px solid ${error ? theme.colors.error.main : 'rgba(0,0,0,0.08)'}`,
+    borderRadius: '16px',
     outline: 'none',
-    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     fontFamily: theme.typography.fontFamily.primary,
-    boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.02)',
     ...style,
   };
 
   const iconStyles: React.CSSProperties = {
     position: 'absolute',
-    left: theme.spacing[3],
+    left: theme.spacing[4],
     top: label ? 'calc(50% + 12px)' : '50%',
     transform: 'translateY(-50%)',
     color: theme.colors.text.secondary,
@@ -72,6 +73,7 @@ const Input: React.FC<InputProps> = ({
     display: 'flex',
     alignItems: 'center',
     fontSize: '1.25rem',
+    opacity: 0.6,
   };
 
   const hintStyles: React.CSSProperties = {
