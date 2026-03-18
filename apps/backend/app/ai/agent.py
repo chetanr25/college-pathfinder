@@ -148,6 +148,32 @@ class AIAgent:
 
         return history
 
+    def _build_config(self, session: ChatSession) -> types.GenerateContentConfig:
+        """Build per-request config, injecting authenticated user email if available."""
+        import re as _re
+
+        user_email = getattr(session, "user_email", None)
+        if not user_email:
+            return self.config
+
+        name_raw = user_email.split("@")[0]
+        user_name = (
+            " ".join(
+                w.capitalize() for w in _re.split(r"[._\-0-9]+", name_raw) if w
+            )
+            or "Student"
+        )
+        email_hint = (
+            f"\n\n🔐 AUTHENTICATED USER: email={user_email} | name={user_name}\n"
+            f"When user says 'email me', 'mail me', 'send to my email', or similar → "
+            f"IMMEDIATELY call send_comprehensive_report_email(email='{user_email}') — "
+            f"do NOT ask for email, do NOT ask for confirmation."
+        )
+        return types.GenerateContentConfig(
+            tools=TOOL_FUNCTIONS,
+            system_instruction=self.config.system_instruction + email_hint,
+        )
+
     async def process_message(
         self,
         user_message: str,
@@ -170,8 +196,9 @@ class AIAgent:
         # Build conversation history
         history = self._build_conversation_history(session)
 
-        # In the new SDK, we use the client to start a chat
-        # Note: We use the synchronous client here but we'll use a manual loop for control
+        # Build per-request config with authenticated user email injected
+        config = self._build_config(session)
+
         if emit_thinking:
             await emit_thinking("💭 Understanding your question...")
 
@@ -189,7 +216,7 @@ class AIAgent:
             try:
                 # Get response from Gemini (using aiapp for async)
                 response = await self.client.aio.models.generate_content(
-                    model=self.model_id, contents=current_history, config=self.config
+                    model=self.model_id, contents=current_history, config=config
                 )
             except Exception as e:
                 print(f"Error getting response from Gemini: {e}")

@@ -50,32 +50,68 @@ def _analyze_conversation_history(session: ChatSession) -> Dict[str, Any]:
     """Analyze entire conversation to extract key information"""
     analysis = {
         "rank": None,
-        "category": "GM",
-        "colleges": [],
-        "branches_discussed": [],
+        "branches": [],
         "conversation_summary": [],
     }
 
     for msg in session.messages:
         content = msg.content.lower()
 
+        # Extract rank — support "32k", "rank 5000", "rank of 32000", "rank: 5000"
+        # Take LAST mentioned rank so changes mid-conversation are respected
         if "rank" in content:
-            rank_match = re.search(r"\b(\d{1,6})\b", content)
-            if rank_match and not analysis["rank"]:
-                analysis["rank"] = int(rank_match.group(1))
+            rank_match = re.search(
+                r"rank\s*(?:of\s*|is\s*|:\s*)?(\d{1,2}k|\d{3,6})", content
+            )
+            if rank_match:
+                rank_str = rank_match.group(1)
+                if rank_str.endswith("k"):
+                    analysis["rank"] = int(rank_str[:-1]) * 1000
+                else:
+                    analysis["rank"] = int(rank_str)
 
-        categories = ["gm", "sc", "st", "2a", "2b", "3a", "3b", "obc"]
-        for cat in categories:
-            if cat in content:
-                analysis["category"] = cat.upper()
-                break
-
+        # Extract branch preferences from user messages only
         if msg.role == "user":
+            if re.search(r"\bcs\b|\bcse\b|computer\s*sci|computer\s*eng", content):
+                if "computer" not in analysis["branches"]:
+                    analysis["branches"].append("computer")
+            if re.search(r"\bise?\b|information\s*sci", content):
+                if "information science" not in analysis["branches"]:
+                    analysis["branches"].append("information science")
+            if re.search(r"\bece\b|\bec\b|electronics\s*(?:and|&)?\s*comm", content):
+                if "electronics" not in analysis["branches"]:
+                    analysis["branches"].append("electronics")
+            if re.search(r"\bai\b|\bml\b|\baiml\b|artificial\s*intel|machine\s*learn", content):
+                if "artificial intelligence" not in analysis["branches"]:
+                    analysis["branches"].append("artificial intelligence")
+            if re.search(r"\bdata\s+science\b|\bds\b", content):
+                if "data science" not in analysis["branches"]:
+                    analysis["branches"].append("data science")
+            if re.search(r"\bmech(?:anical)?\b", content):
+                if "mechanical" not in analysis["branches"]:
+                    analysis["branches"].append("mechanical")
+            if re.search(r"\bcivil\b", content):
+                if "civil" not in analysis["branches"]:
+                    analysis["branches"].append("civil")
+            if re.search(r"\beee\b|electrical", content):
+                if "electrical" not in analysis["branches"]:
+                    analysis["branches"].append("electrical")
+
+            # "CS related" / "computer and related" → expand to common CS branches
+            if re.search(r"(cs|computer|cse)\s*(?:and\s+)?related", content):
+                for term in [
+                    "computer",
+                    "information science",
+                    "artificial intelligence",
+                    "data science",
+                ]:
+                    if term not in analysis["branches"]:
+                        analysis["branches"].append(term)
+
             if len(content) > 20:
                 analysis["conversation_summary"].append(content[:100])
 
     analysis["conversation_summary"] = analysis["conversation_summary"][:5]
-
     return analysis
 
 
@@ -84,7 +120,6 @@ def send_comprehensive_report_email(
     session_id: str = "",
     student_name: Optional[str] = None,
     rank: Optional[int] = None,
-    category: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Send comprehensive KCET analysis report with REAL DATA from tools.
@@ -101,7 +136,6 @@ def send_comprehensive_report_email(
         session_id: Current chat session ID
         student_name: Student's name (auto-extracted from email if not provided)
         rank: Student's rank (auto-extracted from conversation if not provided)
-        category: Student's category (defaults to GM)
 
     Returns:
         Dict with success status and message
@@ -140,15 +174,19 @@ def send_comprehensive_report_email(
         conversation_data = _analyze_conversation_history(session)
         if not rank:
             rank = conversation_data.get("rank")
-        if not category:
-            category = conversation_data.get("category", "GM")
 
     rank = rank or 50000
-    category = category or "GM"
 
     conversation_summary = " ".join(conversation_data.get("conversation_summary", []))
     if not conversation_summary:
-        conversation_summary = f"Analysis for rank {rank} in {category} category"
+        conversation_summary = f"Analysis for rank {rank}"
+
+    # Resolve branch preferences from conversation into actual DB branch names
+    branch_terms = conversation_data.get("branches", [])
+    resolved_branches = None
+    if branch_terms:
+        from app.ai.intent_extractor import intent_extractor
+        resolved_branches = intent_extractor.resolve_branches(branch_terms) or None
 
     round1_colleges = []
     round2_colleges = []
@@ -160,11 +198,16 @@ def send_comprehensive_report_email(
     }
 
     try:
-        print(f"[EMAIL DEBUG] Fetching Round 1 colleges for rank {rank}")
+        print(f"[EMAIL DEBUG] Fetching Round 1 colleges for rank {rank}, branches={resolved_branches}")
         try:
-            colleges_r1_raw = CollegeService.get_colleges_by_rank(
-                rank=rank, round=1, limit=15, sort_order="asc"
-            )
+            if resolved_branches:
+                colleges_r1_raw = CollegeService.search_colleges(
+                    min_rank=rank, branches=resolved_branches, round=1, limit=15, sort_order="asc"
+                )
+            else:
+                colleges_r1_raw = CollegeService.get_colleges_by_rank(
+                    rank=rank, round=1, limit=15, sort_order="asc"
+                )
             print(
                 f"[EMAIL DEBUG] Round 1 fetch successful: {len(colleges_r1_raw) if colleges_r1_raw else 0} colleges"
             )
@@ -194,9 +237,14 @@ def send_comprehensive_report_email(
 
         print(f"[EMAIL DEBUG] Fetching Round 2 colleges for rank {rank}")
         try:
-            colleges_r2_raw = CollegeService.get_colleges_by_rank(
-                rank=rank, round=2, limit=15, sort_order="asc"
-            )
+            if resolved_branches:
+                colleges_r2_raw = CollegeService.search_colleges(
+                    min_rank=rank, branches=resolved_branches, round=2, limit=15, sort_order="asc"
+                )
+            else:
+                colleges_r2_raw = CollegeService.get_colleges_by_rank(
+                    rank=rank, round=2, limit=15, sort_order="asc"
+                )
             print(
                 f"[EMAIL DEBUG] Round 2 fetch successful: {len(colleges_r2_raw) if colleges_r2_raw else 0} colleges"
             )
@@ -244,7 +292,6 @@ def send_comprehensive_report_email(
     context = {
         "student_name": student_name,
         "rank": rank,
-        "category": category,
         "analysis_date": datetime.now(),
         "chat_url": _get_chat_url(session_id),
         "conversation_summary": conversation_summary,
