@@ -15,7 +15,7 @@ backend:
 
 # Start frontend locally with npm
 frontend:
-	cd app/frontend && npm run dev
+	cd apps/frontend && npm run dev
 
 # Start postgres only
 db:

@@ -78,7 +78,7 @@ User: "show me top 50 colleges for rank 10000"
 class IntentExtractor:
     def __init__(self):
         self.client = genai.Client(api_key=GEMINI_API_KEY)
-        self.model_id = "gemini-2.0-flash-lite"
+        self.model_id = "gemini-3.1-flash-lite-preview"
 
     async def extract(self, message: str, context: str = "") -> Dict[str, Any]:
         prompt = f"{EXTRACTION_PROMPT}\n\nUser message: {message}"

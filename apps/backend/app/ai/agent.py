@@ -21,12 +21,12 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 class AIAgent:
     """AI Agent using Gemini with function calling"""
 
-    def __init__(self, model_id: str = "gemini-2.0-flash"):
+    def __init__(self, model_id: str = "gemini-3.1-flash-lite-preview"):
         """
         Initialize AI Agent
 
         Args:
-            model_id: Gemini model to use (default: gemini-2.0-flash)
+            model_id: Gemini model to use (default: gemini-3.1-flash-lite-preview)
         """
         self.model_id = model_id
         # We'll use the async client for process_message

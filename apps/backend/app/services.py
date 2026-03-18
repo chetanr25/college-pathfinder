@@ -433,10 +433,11 @@ class CollegeService:
         query_lower = query.lower().strip()
         matches = []
 
-        # Check if query is an abbreviation
+        # Check if query is an abbreviation (only match whole words, not substrings)
         expanded_queries = [query_lower]
+        query_words = set(query_lower.split())
         for abbr, expansions in abbreviations.items():
-            if abbr in query_lower or query_lower in abbr:
+            if abbr == query_lower or abbr in query_words:
                 expanded_queries.extend(expansions)
 
         for branch in all_branches:
