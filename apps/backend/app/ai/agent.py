@@ -14,7 +14,6 @@ from app.ai.prompts import SYSTEM_PROMPT, TOOL_CALL_MESSAGES
 from app.ai.session_manager import ChatSession
 from app.ai.tools import TOOL_FUNCTIONS, execute_tool
 
-# Configure Gemini API
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
 
@@ -29,7 +28,6 @@ class AIAgent:
             model_id: Gemini model to use (default: gemini-3.1-flash-lite-preview)
         """
         self.model_id = model_id
-        # We'll use the async client for process_message
         self.client = genai.Client(api_key=GEMINI_API_KEY)
         self.config = types.GenerateContentConfig(
             tools=TOOL_FUNCTIONS, system_instruction=SYSTEM_PROMPT
@@ -46,21 +44,18 @@ class AIAgent:
         Returns:
             Truncated data suitable for Gemini
         """
-        # For compare_colleges, remove the full branches list (too large)
         if tool_name == "compare_colleges" and isinstance(data, dict):
             if "comparison" in data:
                 for college in data["comparison"]:
                     if "branches" in college:
-                        # Keep only branch count and names (not full cutoff data)
                         branches = college["branches"]
                         college["branches"] = [
                             {"branch_name": b.get("branch_name", "Unknown")}
-                            for b in branches[:10]  # Limit to 10 branches
+                            for b in branches[:10]
                         ]
                         college["branches_truncated"] = len(branches) > 10
             return data
 
-        # For large lists of colleges, truncate to top 80 for Gemini
         if isinstance(data, list) and len(data) > 80:
             truncated = []
             for item in data[:80]:
@@ -90,7 +85,6 @@ class AIAgent:
                     truncated.append(item)
             return truncated
 
-        # For other dict responses, limit string lengths
         if isinstance(data, dict):
             return self._truncate_dict(data)
 
@@ -136,11 +130,9 @@ class AIAgent:
         history = []
 
         for msg in recent_messages:
-            # Skip thinking messages (internal only)
             if msg.role == "thinking":
                 continue
 
-            # Map roles
             role = "user" if msg.role == "user" else "model"
             history.append(
                 types.Content(role=role, parts=[types.Part(text=msg.content)])
@@ -193,16 +185,12 @@ class AIAgent:
         Yields:
             Response chunks from Gemini
         """
-        # Build conversation history
         history = self._build_conversation_history(session)
-
-        # Build per-request config with authenticated user email injected
         config = self._build_config(session)
 
         if emit_thinking:
             await emit_thinking("💭 Understanding your question...")
 
-        # Manual loop for tool calling in the new SDK
         current_history = history + [
             types.Content(role="user", parts=[types.Part(text=user_message)])
         ]
@@ -214,7 +202,6 @@ class AIAgent:
             iteration += 1
 
             try:
-                # Get response from Gemini (using aiapp for async)
                 response = await self.client.aio.models.generate_content(
                     model=self.model_id, contents=current_history, config=config
                 )
@@ -223,16 +210,13 @@ class AIAgent:
                 yield "I encountered an error. Please try again."
                 return
 
-            # Check for tool calls
             tool_calls = []
             if response.candidates and response.candidates[0].content.parts:
                 for part in response.candidates[0].content.parts:
                     if part.function_call:
                         tool_calls.append(part.function_call)
 
-            # If no tool calls, this is the final response
             if not tool_calls:
-                # Stream the final response (simulated since we used generate_content)
                 final_text = response.text or ""
                 if not final_text:
                     final_text = "I apologize, but I couldn't generate a response."

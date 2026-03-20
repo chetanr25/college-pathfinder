@@ -13,13 +13,9 @@ load_dotenv()
 
 config = context.config
 
-# Override sqlalchemy.url from environment
 config.set_main_option(
     "sqlalchemy.url",
-    os.getenv(
-        "POSTGRES_URL",
-        "postgresql+asyncpg://postgres:postgres@localhost:5432/collegefinder",
-    ),
+    os.getenv("POSTGRES_URL"),
 )
 
 if config.config_file_name is not None:

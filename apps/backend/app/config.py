@@ -6,14 +6,12 @@ import os
 from pathlib import Path
 from typing import List
 
-# Get the backend directory (parent of app/)
 BACKEND_DIR = Path(__file__).parent.parent
 
 
 class Settings:
     """Application settings"""
 
-    # API Information
     APP_NAME: str = os.getenv("APP_NAME", "College Path Finder API")
     APP_DESCRIPTION: str = os.getenv(
         "APP_DESCRIPTION",
@@ -21,33 +19,22 @@ class Settings:
     )
     APP_VERSION: str = os.getenv("APP_VERSION", "1.0.0")
 
-    # SQLite Database for KCET data
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL", str(BACKEND_DIR / "data" / "kcet_2024.db")
     )
 
-    # PostgreSQL for users, sessions, messages
-    POSTGRES_URL: str = os.getenv(
-        "POSTGRES_URL",
-        "postgresql+asyncpg://postgres:postgres@localhost:5432/collegefinder",
-    )
+    POSTGRES_URL: str = os.getenv("POSTGRES_URL")
 
-    # CORS Settings
     CORS_ORIGINS: List[str] = [
         origin.strip()
-        for origin in os.getenv(
-            "CORS_ORIGINS",
-            "https://college-finder.chetanr25.in,https://collegepathfinder.chetanr25.in,https://collegepathfinder.vercel.app,http://localhost:3000,http://localhost:5173"
-        ).split(",")
+        for origin in os.getenv("CORS_ORIGINS").split(",")
     ]
     CORS_METHODS: List[str] = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
     CORS_HEADERS: List[str] = ["*"]
 
-    # API Settings
     DEFAULT_ROUND: int = int(os.getenv("DEFAULT_ROUND", "1"))
     MIN_ROUND: int = int(os.getenv("MIN_ROUND", "1"))
     MAX_ROUND: int = int(os.getenv("MAX_ROUND", "3"))
 
 
-# Create settings instance
 settings = Settings()
