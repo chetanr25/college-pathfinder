@@ -95,7 +95,6 @@ class ChatSession:
         self.messages.append(message)
         self.updated_at = datetime.now()
 
-        # Update preview with first user message
         if message.role == "user" and not self.preview:
             self.preview = message.content[:100]
             self.title = message.content[:40] + (
@@ -155,14 +154,12 @@ class PostgresSessionManager:
         self, session_id: str, user_id: str = None
     ) -> Optional[ChatSession]:
         """Get a session by ID"""
-        # Check cache first
         if session_id in self._cache:
             cached = self._cache[session_id]
             if user_id and cached.user_id and cached.user_id != user_id:
                 return None
             return cached
 
-        # Load from PostgreSQL
         try:
             async with async_session_factory() as db:
                 stmt = select(ChatSessionModel).where(
@@ -187,7 +184,6 @@ class PostgresSessionManager:
                     preview=db_session.preview or "",
                 )
 
-                # Load messages
                 msg_stmt = (
                     select(ChatMessageModel)
                     .where(ChatMessageModel.session_id == uuid.UUID(session_id))
@@ -274,7 +270,6 @@ class PostgresSessionManager:
                 )
                 db.add(db_msg)
 
-                # Update session title/preview
                 stmt = select(ChatSessionModel).where(
                     ChatSessionModel.id == uuid.UUID(session_id)
                 )
@@ -356,6 +351,4 @@ class PostgresSessionManager:
         """Save a message (async version)"""
         await self.add_message(session_id, message, user_id)
 
-
-# Global session manager instance
 session_manager = PostgresSessionManager()

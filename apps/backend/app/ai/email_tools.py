@@ -56,9 +56,6 @@ def _analyze_conversation_history(session: ChatSession) -> Dict[str, Any]:
 
     for msg in session.messages:
         content = msg.content.lower()
-
-        # Extract rank — support "32k", "rank 5000", "rank of 32000", "rank: 5000"
-        # Take LAST mentioned rank so changes mid-conversation are respected
         if "rank" in content:
             rank_match = re.search(
                 r"rank\s*(?:of\s*|is\s*|:\s*)?(\d{1,2}k|\d{3,6})", content
@@ -70,7 +67,6 @@ def _analyze_conversation_history(session: ChatSession) -> Dict[str, Any]:
                 else:
                     analysis["rank"] = int(rank_str)
 
-        # Extract branch preferences from user messages only
         if msg.role == "user":
             if re.search(r"\bcs\b|\bcse\b|computer\s*sci|computer\s*eng", content):
                 if "computer" not in analysis["branches"]:
@@ -97,7 +93,6 @@ def _analyze_conversation_history(session: ChatSession) -> Dict[str, Any]:
                 if "electrical" not in analysis["branches"]:
                     analysis["branches"].append("electrical")
 
-            # "CS related" / "computer and related" → expand to common CS branches
             if re.search(r"(cs|computer|cse)\s*(?:and\s+)?related", content):
                 for term in [
                     "computer",
@@ -181,7 +176,6 @@ def send_comprehensive_report_email(
     if not conversation_summary:
         conversation_summary = f"Analysis for rank {rank}"
 
-    # Resolve branch preferences from conversation into actual DB branch names
     branch_terms = conversation_data.get("branches", [])
     resolved_branches = None
     if branch_terms:
@@ -512,11 +506,9 @@ def send_comparison_email(
     Returns:
         Dict with success status and message
     """
-    # Try to get email from session context if not provided
     session = _get_session_context()
 
     if not email and session:
-        # Try to extract email from session user data
         if hasattr(session, "user_email") and session.user_email:
             email = session.user_email
 
@@ -529,11 +521,9 @@ def send_comparison_email(
     if not _validate_email(email):
         return {"success": False, "message": "Invalid email address format."}
 
-    # Extract name from email if not provided
     if not student_name:
         student_name = _extract_name_from_email(email)
 
-    # Build context - support both old and new formats
     context = {
         "student_name": student_name,
         "recommendation_text": recommendation
@@ -542,12 +532,10 @@ def send_comparison_email(
         "round": round,
     }
 
-    # Handle new format from compare_colleges() tool
     if comparison_data:
         context["comparison"] = comparison_data.get("comparison", [])
         context["round"] = comparison_data.get("round", round)
 
-    # Handle old format with pairwise comparisons
     if comparisons:
         context["comparisons"] = comparisons
 
@@ -692,7 +680,6 @@ def send_cutoff_trends_email(
     if not _validate_email(email):
         return {"success": False, "message": "Invalid email address."}
 
-    # Default trends data if not provided
     if not trends_data:
         trends_data = {
             "cutoff_2022": rank + 500,

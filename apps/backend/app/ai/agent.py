@@ -226,8 +226,6 @@ class AIAgent:
                     yield final_text[i : i + chunk_size]
                 return
 
-            # Handle tool calls
-            # Add the assistant's tool call part to history
             current_history.append(response.candidates[0].content)
 
             tool_responses = []
@@ -237,7 +235,6 @@ class AIAgent:
 
                 print(f"Agent: executing tool {tool_name} with params {parameters}")
 
-                # Emit tool call start
                 if emit_thinking:
                     thinking_msg = TOOL_CALL_MESSAGES.get(
                         tool_name, f"🔧 Using {tool_name}..."
@@ -251,12 +248,10 @@ class AIAgent:
                 if emit_tool_call:
                     await emit_tool_call(tool_name, parameters, "started")
 
-                # Execute tool
                 result = execute_tool(
                     tool_name, parameters, session.session_id, session
                 )
 
-                # Emit tool call completion
                 if emit_tool_call:
                     status = "completed" if result["success"] else "failed"
                     await emit_tool_call(tool_name, parameters, status)
@@ -264,7 +259,6 @@ class AIAgent:
                 if emit_thinking:
                     await emit_thinking(f"✅ {result['summary']}")
 
-                # Prepare response for Gemini
                 if result.get("success"):
                     data = result.get("data", [])
                     truncated_data = self._truncate_tool_response(data, tool_name)
@@ -280,7 +274,6 @@ class AIAgent:
                     )
                 )
 
-            # Add all tool responses to history
             current_history.append(types.Content(role="model", parts=tool_responses))
 
         yield "I've reached the maximum number of attempts to answer your question. Please try rephrasing."
@@ -303,7 +296,6 @@ class AIAgent:
                     )
             return result.get("summary", "Email operation completed.")
 
-        # Handle compare_colleges
         if tool_name == "compare_colleges" and isinstance(data, dict):
             comparison = data.get("comparison", [])
             if comparison:
@@ -323,7 +315,6 @@ class AIAgent:
         if data is None:
             return result.get("summary", "No results available.")
 
-        # If data is a list of colleges, summarize top entries
         if isinstance(data, list):
             lines = []
             limit = min(8, len(data))
@@ -354,9 +345,7 @@ class AIAgent:
             header = f"Here are the top {limit} results:\n\n"
             return header + "\n".join(lines)
 
-        # If data is a dict with branches or trends
         if isinstance(data, dict):
-            # Don't dump large JSON, create a summary
             summary_parts = []
             for key, value in list(data.items())[:5]:
                 if isinstance(value, (str, int, float)):
@@ -367,6 +356,4 @@ class AIAgent:
 
         return str(data)[:500]
 
-
-# Global agent instance
 agent = AIAgent()

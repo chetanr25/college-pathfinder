@@ -20,7 +20,7 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False, index=True)
     name = Column(String(255), nullable=False)
     avatar_url = Column(Text, nullable=True)
-    google_id = Column(Text, nullable=True)  # Google user sub ID
+    google_id = Column(Text, nullable=True)
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Dict, List, Optional
 from uuid import uuid4
 
-# Directory to store session files
 SESSIONS_DIR = Path(__file__).parent.parent.parent / "sessions"
 SESSIONS_DIR.mkdir(exist_ok=True)
 
@@ -70,7 +69,7 @@ class ChatSession:
         self.created_at = created_at or datetime.now()
         self.updated_at = updated_at or datetime.now()
         self.messages = messages or []
-        self.context = context or {}  # Store user preferences, rank, etc.
+        self.context = context or {}  
         self.metadata = metadata or {}
 
     def add_message(self, message: Message):
