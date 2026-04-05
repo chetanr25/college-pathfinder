@@ -69,7 +69,7 @@ class ChatSession:
         self.created_at = created_at or datetime.now()
         self.updated_at = updated_at or datetime.now()
         self.messages = messages or []
-        self.context = context or {}  
+        self.context = context or {}
         self.metadata = metadata or {}
 
     def add_message(self, message: Message):
