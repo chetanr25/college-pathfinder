@@ -259,22 +259,25 @@ class CollegeService:
         college_name = results[0]["college_name"]
         branches = []
         for row in results:
+            r1 = row["GM_rank_r1"] if row["GM_rank_r1"] else None
+            r2 = row["GM_rank_r2"] if row["GM_rank_r2"] else None
+            r3 = row["GM_rank_r3"] if row["GM_rank_r3"] else None
+            # Skip branches with no valid cutoff data in any round
+            if not any([r1, r2, r3]):
+                continue
             branches.append(
                 {
                     "branch_name": row["branch_name"],
                     "cutoff_ranks": {
-                        "round1": row["GM_rank_r1"]
-                        if row["GM_rank_r1"] is not None
-                        else 0,
-                        "round2": row["GM_rank_r2"]
-                        if row["GM_rank_r2"] is not None
-                        else 0,
-                        "round3": row["GM_rank_r3"]
-                        if row["GM_rank_r3"] is not None
-                        else 0,
+                        "round1": r1,
+                        "round2": r2,
+                        "round3": r3,
                     },
                 }
             )
+
+        # Sort: branches with round1 cutoff first (lower rank = better), then others
+        branches.sort(key=lambda b: b["cutoff_ranks"]["round1"] or float("inf"))
 
         return {"college_name": college_name, "branches": branches}
 

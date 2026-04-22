@@ -5,6 +5,9 @@ Configuration settings for the KCET College Predictor API
 import os
 from pathlib import Path
 from typing import List
+import dotenv
+
+dotenv.load_dotenv()
 
 BACKEND_DIR = Path(__file__).parent.parent
 
@@ -25,9 +28,10 @@ class Settings:
 
     POSTGRES_URL: str = os.getenv("POSTGRES_URL")
 
+    CORS_ENABLED: bool = os.getenv("CORS_ENABLED", "true").lower() == "true"
     CORS_ORIGINS: List[str] = [
         origin.strip()
-        for origin in os.getenv("CORS_ORIGINS").split(",")
+        for origin in os.getenv("CORS_ORIGINS", "*").split(",")
     ]
     CORS_METHODS: List[str] = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
     CORS_HEADERS: List[str] = ["*"]
