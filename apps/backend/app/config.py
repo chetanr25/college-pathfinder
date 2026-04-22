@@ -5,6 +5,7 @@ Configuration settings for the KCET College Predictor API
 import os
 from pathlib import Path
 from typing import List
+
 import dotenv
 
 dotenv.load_dotenv()
