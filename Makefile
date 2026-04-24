@@ -3,7 +3,12 @@ export
 
 COMPOSE = docker compose -f infra/docker-compose.yml
 
-.PHONY: backend frontend up down db migrate logs clean deploy-ecr
+.PHONY: backend frontend up down db migrate logs clean deploy-ecr init
+
+# Initial setup: install pre-commit hooks
+init:
+	pip install pre-commit
+	pre-commit install
 
 # Start backend + postgres (docker)
 up:
@@ -11,7 +16,7 @@ up:
 
 # Start only backend + postgres
 backend:
-	$(COMPOSE) up --build postgres backend
+	$(COMPOSE) up --build postgres backend -d
 
 # Start frontend locally with npm
 frontend:

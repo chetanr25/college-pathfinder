@@ -217,6 +217,16 @@ WebSocket implementation provides:
 - [Database Schema](docs/SCHEMA.md) - Database structure and schema
 - [Contributing Guide](CONTRIBUTING.md) - Development setup and guidelines
 
+## Initial Setup
+
+After cloning, run:
+
+```bash
+make init
+```
+
+This installs `pre-commit` and sets up the git hooks. Ruff lint + format will run automatically on every commit.
+
 ## Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
