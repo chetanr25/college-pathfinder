@@ -139,6 +139,7 @@ jobs:
           SMTP_PORT=587
           EMAIL_ENABLED=true
           FRONTEND_BASE_URL=${{ secrets.FRONTEND_BASE_URL }}
+          CORS_ORIGINS=${{ secrets.CORS_ORIGINS }}
           DEFAULT_ROUND=1
           MIN_ROUND=1
           MAX_ROUND=3
