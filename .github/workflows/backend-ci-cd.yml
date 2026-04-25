@@ -139,7 +139,7 @@ jobs:
           SMTP_PORT=587
           EMAIL_ENABLED=true
           FRONTEND_BASE_URL=${{ secrets.FRONTEND_BASE_URL }}
-          CORS_ORIGINS=${{ secrets.CORS_ORIGINS }}
+          CORS_ORIGINS=https://college-finder.chetanr25.in,https://collegepathfinder.chetanr25.in,https://collegepathfinder.vercel.app,http://localhost:3000,http://localhost:5173
           DEFAULT_ROUND=1
           MIN_ROUND=1
           MAX_ROUND=3
@@ -157,33 +157,22 @@ jobs:
             # Pull latest image
             docker pull ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
 
-            # Create docker network if it doesn't exist
-            docker network create college-network 2>/dev/null || true
-
-            # Start PostgreSQL if not running
-            docker run -d \
-              --name postgres-db \
-              --network college-network \
-              --restart unless-stopped \
-              -e POSTGRES_DB=collegefinder \
-              -e POSTGRES_USER=postgres \
-              -e POSTGRES_PASSWORD=postgres \
-              -v pgdata:/var/lib/postgresql/data \
-              -p 5432:5432 \
-              postgres:16-alpine 2>/dev/null || echo "PostgreSQL already running"
+            # Stop docker-compose backend if running (pipeline container replaces it)
+            docker stop infra-backend-1 2>/dev/null || true
+            docker rm infra-backend-1 2>/dev/null || true
 
             # Stop and remove old backend container (ignore errors if not running)
             docker stop ${{ env.CONTAINER_NAME }} 2>/dev/null || true
-            docker remove ${{ env.CONTAINER_NAME }} 2>/dev/null || true
+            docker rm ${{ env.CONTAINER_NAME }} 2>/dev/null || true
 
-            # Start new backend container
+            # Start new backend container on infra_default network (where postgres lives)
             docker run -d \
               --name ${{ env.CONTAINER_NAME }} \
-              --network college-network \
+              --network infra_default \
               --restart unless-stopped \
               --env-file ${{ env.DEPLOY_DIR }}/.env \
-              -e POSTGRES_URL=postgresql+asyncpg://postgres:postgres@postgres-db:5432/collegefinder \
-              -p 8080:8005 \
+              -e POSTGRES_URL=postgresql+asyncpg://postgres:postgres@infra-postgres-1:5432/collegefinder \
+              -p 8005:8005 \
               ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
 
             # Remove dangling images to free disk space

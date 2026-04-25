@@ -33,10 +33,22 @@ class NoDataFoundError(HTTPException):
         super().__init__(status_code=404, detail=detail)
 
 
+def _cors_headers(request: Request) -> dict:
+    origin = request.headers.get("origin", "")
+    if origin:
+        return {
+            "Access-Control-Allow-Origin": origin,
+            "Access-Control-Allow-Credentials": "true",
+        }
+    return {}
+
+
 async def http_exception_handler(request: Request, exc: HTTPException):
     """Global HTTP exception handler"""
     return JSONResponse(
-        status_code=exc.status_code, content={"detail": str(exc.detail)}
+        status_code=exc.status_code,
+        content={"detail": str(exc.detail)},
+        headers=_cors_headers(request),
     )
 
 
@@ -45,4 +57,8 @@ async def general_exception_handler(request: Request, exc: Exception):
     import traceback
     print(f"Global exception: {exc}")
     traceback.print_exc()
-    return JSONResponse(status_code=500, content={"detail": f"Internal server error: {str(exc)}"})
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Internal server error: {str(exc)}"},
+        headers=_cors_headers(request),
+    )
