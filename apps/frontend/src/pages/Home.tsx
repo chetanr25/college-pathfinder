@@ -211,7 +211,7 @@ const Home: React.FC = () => {
               <div style={styles.whyNumber}>02</div>
               <h3 style={styles.whyTitle}>AI Counselor</h3>
               <p style={styles.whyDesc}>
-                Ask the AI counselor anything — rank-based recommendations, branch comparisons,
+                Ask the AI counselor anything rank-based recommendations, branch comparisons,
                 admission chances, and personalized email reports.
               </p>
             </div>

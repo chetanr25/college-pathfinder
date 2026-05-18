@@ -1,5 +1,5 @@
 /**
- * Chat Service — Backend REST API Integration
+ * Chat Service Backend REST API Integration
  * Replaces Supabase direct access; all data goes through the FastAPI backend.
  */
 import axios from 'axios';
