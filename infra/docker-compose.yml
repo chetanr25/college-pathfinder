@@ -29,7 +29,7 @@ services:
         required: false
     environment:
       POSTGRES_URL: postgresql+asyncpg://postgres:${DB_PASSWORD:-postgres}@postgres:5432/collegefinder
-      DATABASE_URL: /app/data/kcet_2024.db
+      DATABASE_URL: /app/data/kcet_2025.db
     depends_on:
       postgres:
         condition: service_healthy
