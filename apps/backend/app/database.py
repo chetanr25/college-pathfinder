@@ -32,7 +32,7 @@ def get_db_connection() -> Generator[sqlite3.Connection, None, None]:
     # If the path doesn't exist, try to find it relative to this file
     if not os.path.exists(db_path):
         backend_dir = Path(__file__).parent.parent
-        db_path = str(backend_dir / "data" / "kcet_2024.db")
+        db_path = str(backend_dir / "data" / "kcet_2025.db")
 
     conn = None
     try:

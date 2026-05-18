@@ -24,7 +24,7 @@ class Settings:
     APP_VERSION: str = os.getenv("APP_VERSION", "1.0.0")
 
     DATABASE_URL: str = os.getenv(
-        "DATABASE_URL", str(BACKEND_DIR / "data" / "kcet_2024.db")
+        "DATABASE_URL", str(BACKEND_DIR / "data" / "kcet_2025.db")
     )
 
     POSTGRES_URL: str = os.getenv("POSTGRES_URL")

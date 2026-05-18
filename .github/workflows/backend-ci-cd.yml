@@ -126,7 +126,7 @@ jobs:
           # DATABASE_URL is the SQLite file path for KCET college data (read-only, bundled in image)
           ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "cat > ${{ env.DEPLOY_DIR }}/.env << 'ENVEOF'
           POSTGRES_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/collegefinder
-          DATABASE_URL=data/kcet_2024.db
+          DATABASE_URL=data/kcet_2025.db
           JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
           GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
           GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
