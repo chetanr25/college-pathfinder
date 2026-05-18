@@ -7,6 +7,7 @@ import ErrorMessage from '../components/ErrorMessage';
 import { Hero, Container, Section, Grid, Input } from '../components/ui';
 import theme from '../theme';
 import SEO from '../components/SEO';
+import { usePersistedState } from '../hooks/usePersistedState';
 
 interface GroupedCollege {
   college_code: string;
@@ -16,10 +17,10 @@ interface GroupedCollege {
 }
 
 const Colleges: React.FC = () => {
-  const [colleges, setColleges] = useState<GroupedCollege[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [colleges, setColleges] = usePersistedState<GroupedCollege[]>('colleges:data', []);
+  const [loading, setLoading] = useState(colleges.length === 0);
   const [error, setError] = useState<string>('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = usePersistedState<string>('colleges:search', '');
 
   const fetchColleges = async () => {
     try {
@@ -62,7 +63,12 @@ const Colleges: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchColleges();
+    if (colleges.length === 0) {
+      fetchColleges();
+    } else {
+      setLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filteredColleges = colleges.filter((college) =>
