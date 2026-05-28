@@ -35,13 +35,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const token = localStorage.getItem(TOKEN_KEY);
         if (token) {
-          const response = await fetch(`${API_BASE_URL}/auth/me`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (response.ok) {
-            const userData: AppUser = await response.json();
-            setUser(userData);
-          } else {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 8000);
+          try {
+            const response = await fetch(`${API_BASE_URL}/auth/me`, {
+              headers: { Authorization: `Bearer ${token}` },
+              signal: controller.signal,
+            });
+            clearTimeout(timeoutId);
+            if (response.ok) {
+              const userData: AppUser = await response.json();
+              setUser(userData);
+            } else {
+              localStorage.removeItem(TOKEN_KEY);
+              localStorage.removeItem(USER_KEY);
+            }
+          } catch {
+            clearTimeout(timeoutId);
             localStorage.removeItem(TOKEN_KEY);
             localStorage.removeItem(USER_KEY);
           }
@@ -63,6 +73,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    * which records it as the user's google_id and returns a signed JWT.
    */
   const signInWithGoogle = useCallback(async (token: string, email: string, name: string, avatarUrl?: string) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
     const response = await fetch(`${API_BASE_URL}/auth/google`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -72,7 +85,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name,
         avatar_url: avatarUrl ?? null,
       }),
-    });
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timeoutId));
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
