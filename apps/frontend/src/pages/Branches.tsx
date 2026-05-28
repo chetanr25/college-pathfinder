@@ -7,12 +7,13 @@ import ErrorMessage from '../components/ErrorMessage';
 import { Hero, Container, Section, Grid, Input } from '../components/ui';
 import theme from '../theme';
 import SEO from '../components/SEO';
+import { usePersistedState } from '../hooks/usePersistedState';
 
 const Branches: React.FC = () => {
-  const [branches, setBranches] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [branches, setBranches] = usePersistedState<string[]>('branches:data', []);
+  const [loading, setLoading] = useState(branches.length === 0);
   const [error, setError] = useState<string>('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = usePersistedState<string>('branches:search', '');
 
   const fetchBranches = async () => {
     try {
@@ -28,7 +29,12 @@ const Branches: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchBranches();
+    if (branches.length === 0) {
+      fetchBranches();
+    } else {
+      setLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filteredBranches = branches.filter((branch) =>

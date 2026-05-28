@@ -41,7 +41,7 @@ class CollegeService:
                    WHEN ? = 2 THEN GM_rank_r2
                    WHEN ? = 3 THEN GM_rank_r3
                END as cutoff_rank
-        FROM kcet_2024
+        FROM kcet_2025
         WHERE CASE
                 WHEN ? = 1 THEN GM_rank_r1 >= ?
                 WHEN ? = 2 THEN GM_rank_r2 >= ?
@@ -91,7 +91,7 @@ class CollegeService:
                    WHEN ? = 2 THEN GM_rank_r2
                    WHEN ? = 3 THEN GM_rank_r3
                END as cutoff_rank
-        FROM kcet_2024
+        FROM kcet_2025
         WHERE LOWER(branch_name) = LOWER(?)
         ORDER BY cutoff_rank {order}
         """
@@ -122,7 +122,7 @@ class CollegeService:
         """
         query = """
         SELECT college_name, branch_name, GM_rank_r1, GM_rank_r2, GM_rank_r3
-        FROM kcet_2024
+        FROM kcet_2025
         WHERE college_code = ? AND LOWER(branch_name) = LOWER(?)
         """
         results = execute_query(query, (college_code, branch))
@@ -182,7 +182,7 @@ class CollegeService:
                    WHEN ? = 2 THEN GM_rank_r2
                    WHEN ? = 3 THEN GM_rank_r3
                END as cutoff_rank
-        FROM kcet_2024
+        FROM kcet_2025
         WHERE 1=1
         """
         params.extend([round, round, round])
@@ -229,7 +229,7 @@ class CollegeService:
         Returns:
             List of branch names
         """
-        query = "SELECT DISTINCT branch_name FROM kcet_2024 ORDER BY branch_name"
+        query = "SELECT DISTINCT branch_name FROM kcet_2025 ORDER BY branch_name"
         results = execute_query(query)
         return [result["branch_name"] for result in results] if results else []
 
@@ -249,7 +249,7 @@ class CollegeService:
         """
         query = """
         SELECT college_name, branch_name, GM_rank_r1, GM_rank_r2, GM_rank_r3
-        FROM kcet_2024
+        FROM kcet_2025
         WHERE college_code = ?
         """
         results = execute_query(query, (college_code,))
@@ -291,7 +291,7 @@ class CollegeService:
         """
         sql_query = """
         SELECT DISTINCT college_code, college_name
-        FROM kcet_2024
+        FROM kcet_2025
         ORDER BY college_code
         """
         colleges = execute_query(sql_query, ())
@@ -322,7 +322,7 @@ class CollegeService:
         # Get all unique colleges
         sql_query = """
         SELECT DISTINCT college_code, college_name
-        FROM kcet_2024
+        FROM kcet_2025
         ORDER BY college_code
         """
         all_colleges = execute_query(sql_query, ())
@@ -428,7 +428,7 @@ class CollegeService:
         # Get all unique branches
         sql_query = """
         SELECT DISTINCT branch_name
-        FROM kcet_2024
+        FROM kcet_2025
         ORDER BY branch_name
         """
         all_branches = execute_query(sql_query, ())
@@ -496,7 +496,7 @@ class CollegeService:
                    WHEN ? = 2 THEN GM_rank_r2
                    WHEN ? = 3 THEN GM_rank_r3
                END as cutoff_rank
-        FROM kcet_2024
+        FROM kcet_2025
         WHERE CASE
                 WHEN ? = 1 THEN GM_rank_r1 >= ?
                 WHEN ? = 2 THEN GM_rank_r2 >= ?
@@ -660,7 +660,7 @@ class CollegeService:
                        WHEN ? = 2 THEN GM_rank_r2
                        WHEN ? = 3 THEN GM_rank_r3
                    END as cutoff_rank
-            FROM kcet_2024
+            FROM kcet_2025
             WHERE LOWER(branch_name) = LOWER(?)
             AND CASE
                     WHEN ? = 1 THEN GM_rank_r1 IS NOT NULL
@@ -706,7 +706,7 @@ class CollegeService:
                        WHEN ? = 2 THEN GM_rank_r2
                        WHEN ? = 3 THEN GM_rank_r3
                    END) as avg_cutoff
-            FROM kcet_2024
+            FROM kcet_2025
             WHERE CASE
                     WHEN ? = 1 THEN GM_rank_r1 IS NOT NULL
                     WHEN ? = 2 THEN GM_rank_r2 IS NOT NULL

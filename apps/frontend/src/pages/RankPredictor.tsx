@@ -8,20 +8,22 @@ import ErrorMessage from '../components/ErrorMessage';
 import { Hero, Container, Section, Grid, Card, Input, Button, Badge } from '../components/ui';
 import theme from '../theme';
 import SEO from '../components/SEO';
+import { usePersistedState } from '../hooks/usePersistedState';
 
 const RankPredictor: React.FC = () => {
-  const [rank, setRank] = useState<string>('');
-  const [selectedRound, setSelectedRound] = useState(1);
-  const [limit, setLimit] = useState<string>('10');
-  const [selectedBranches, setSelectedBranches] = useState<string[]>([]);
-  const [availableBranches, setAvailableBranches] = useState<string[]>([]);
+  const [rank, setRank] = usePersistedState<string>('predictor:rank', '');
+  const [selectedRound, setSelectedRound] = usePersistedState<number>('predictor:round', 1);
+  const [limit, setLimit] = usePersistedState<string>('predictor:limit', '10');
+  const [selectedBranches, setSelectedBranches] = usePersistedState<string[]>('predictor:branches', []);
+  const [availableBranches, setAvailableBranches] = usePersistedState<string[]>('branches:data', []);
   const [loadingBranches, setLoadingBranches] = useState(false);
-  const [colleges, setColleges] = useState<CollegeList['colleges']>([]);
+  const [colleges, setColleges] = usePersistedState<CollegeList['colleges']>('predictor:results', []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
-  const [hasSearched, setHasSearched] = useState(false);
+  const [hasSearched, setHasSearched] = usePersistedState<boolean>('predictor:hasSearched', false);
 
   useEffect(() => {
+    if (availableBranches.length > 0) return;
     const fetchBranches = async () => {
       try {
         setLoadingBranches(true);
@@ -34,6 +36,7 @@ const RankPredictor: React.FC = () => {
       }
     };
     fetchBranches();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSearch = async (e: React.FormEvent) => {

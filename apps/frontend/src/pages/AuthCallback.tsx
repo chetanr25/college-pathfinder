@@ -1,6 +1,6 @@
 /**
  * Auth Callback Page
- * No longer used — JWT auth does not need an OAuth redirect callback.
+ * No longer used JWT auth does not need an OAuth redirect callback.
  * Redirects to login for any stale bookmarks.
  */
 import React, { useEffect } from 'react';
