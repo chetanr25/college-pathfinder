@@ -5,8 +5,11 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    allowedHosts: true, // Allow requests from ANY domain (true = disable host check)
-    host: true,         // Listen on all network interfaces
-    port: 5173,         // Default Vite port
+    allowedHosts: true,
+    host: true,
+    port: 5173,
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+    },
   }
 })
