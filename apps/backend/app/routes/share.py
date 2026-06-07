@@ -125,7 +125,7 @@ def _generate_og_image(
     # ── Brand line ──────────────────────────────────────────────────────────
     draw.text((PAD, 50), "College Path Finder", font=f_brand, fill=(199, 210, 254))
     dot_x = PAD + _text_width(f_brand, "College Path Finder") + 16
-    draw.text((dot_x, 50), f"· KCET 2025", font=f_brand, fill=(148, 130, 220))
+    draw.text((dot_x, 50), "· KCET 2025", font=f_brand, fill=(148, 130, 220))
 
     # ── Rank headline ───────────────────────────────────────────────────────
     draw.text((PAD, 105), f"Rank {rank:,}", font=f_huge, fill=(255, 255, 255))
