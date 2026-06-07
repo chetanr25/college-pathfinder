@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+// import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   School,
@@ -137,32 +137,32 @@ const ParticleField: React.FC = () => {
   );
 };
 
-const AnimatedCounter: React.FC<{ end: number; suffix?: string; duration?: number }> = ({ end, suffix = '', duration = 2000 }) => {
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLSpanElement>(null);
-  const started = useRef(false);
+// const _AnimatedCounter: React.FC<{ end: number; suffix?: string; duration?: number }> = ({ end, suffix = '', duration = 2000 }) => {
+//   const [count, setCount] = useState(0);
+//   const ref = useRef<HTMLSpanElement>(null);
+//   const started = useRef(false);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting && !started.current) {
-        started.current = true;
-        const start = Date.now();
-        const tick = () => {
-          const elapsed = Date.now() - start;
-          const progress = Math.min(elapsed / duration, 1);
-          const eased = 1 - Math.pow(1 - progress, 3);
-          setCount(Math.floor(eased * end));
-          if (progress < 1) requestAnimationFrame(tick);
-        };
-        requestAnimationFrame(tick);
-      }
-    }, { threshold: 0.5 });
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [end, duration]);
+//   useEffect(() => {
+//     const observer = new IntersectionObserver(([entry]) => {
+//       if (entry.isIntersecting && !started.current) {
+//         started.current = true;
+//         const start = Date.now();
+//         const tick = () => {
+//           const elapsed = Date.now() - start;
+//           const progress = Math.min(elapsed / duration, 1);
+//           const eased = 1 - Math.pow(1 - progress, 3);
+//           setCount(Math.floor(eased * end));
+//           if (progress < 1) requestAnimationFrame(tick);
+//         };
+//         requestAnimationFrame(tick);
+//       }
+//     }, { threshold: 0.5 });
+//     if (ref.current) observer.observe(ref.current);
+//     return () => observer.disconnect();
+//   }, [end, duration]);
 
-  return <span ref={ref}>{count}{suffix}</span>;
-};
+//   return <span ref={ref}>{count}{suffix}</span>;
+// };
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -316,7 +316,7 @@ const Home: React.FC = () => {
           ].map(({ num, suffix, label }) => (
             <div key={label} style={styles.statItem}>
               <div style={styles.statNum}>
-                <AnimatedCounter end={num} suffix={suffix} />
+                <_AnimatedCounter end={num} suffix={suffix} />
               </div>
               <div style={styles.statLabel}>{label}</div>
             </div>
