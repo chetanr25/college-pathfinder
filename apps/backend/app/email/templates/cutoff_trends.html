@@ -74,7 +74,7 @@
                         </div>
                     </div>
                     <div class="year-box">
-                        <div class="year-label">{{ year_3|default('2024') }}</div>
+                        <div class="year-label">{{ year_3|default('2025') }}</div>
                         <div class="year-value">{{ cutoff_year_3|format_number }}</div>
                         <div class="trend-indicator {{ trend_year_3|default('trend-down') }}">
                             {% if trend_year_3 == 'trend-up' %}↑ Increased{% elif trend_year_3 == 'trend-down' %}↓ Decreased{% else %}→ Stable{% endif %}
@@ -102,7 +102,7 @@
                     <div class="college-trend-data">
                         <span style="color: #6c757d;">2022: <strong>{{ branch_trend.year_2022|format_number }}</strong></span>
                         <span style="color: #6c757d;">2023: <strong>{{ branch_trend.year_2023|format_number }}</strong></span>
-                        <span style="color: #6c757d;">2024: <strong>{{ branch_trend.year_2024|format_number }}</strong></span>
+                        <span style="color: #6c757d;">2025: <strong>{{ branch_trend.year_2025|format_number }}</strong></span>
                     </div>
                     <div style="margin-top: 8px; font-size: 13px; color: #28a745;">
                         Trend: {{ branch_trend.trend_description }}
@@ -115,7 +115,7 @@
                 <h3 style="color: #2c3e50; margin-bottom: 20px;">📊 Visual Trend Analysis</h3>
                 <div class="chart-placeholder">
                     Cutoff Trends Graph<br>
-                    <span style="font-size: 14px; opacity: 0.8;">(2022 - 2024)</span>
+                    <span style="font-size: 14px; opacity: 0.8;">(2022 - 2025)</span>
                 </div>
                 <p style="color: #6c757d; font-size: 13px;">
                     * Graph shows comparative analysis across years for top branches
