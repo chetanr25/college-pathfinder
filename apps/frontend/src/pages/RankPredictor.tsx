@@ -5,12 +5,15 @@ import { collegeApi, branchApi, type CollegeList } from '../services/api';
 import CollegeCardModern from '../components/CollegeCardModern';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
+import ServerDownCard from '../components/ServerDownCard';
 import { Hero, Container, Section, Grid, Card, Input, Button, Badge } from '../components/ui';
 import theme from '../theme';
 import SEO from '../components/SEO';
 import { usePersistedState } from '../hooks/usePersistedState';
+import { useServerStatus } from '../hooks/useServerStatus';
 
 const RankPredictor: React.FC = () => {
+  const { status: serverStatus } = useServerStatus();
   const [rank, setRank] = usePersistedState<string>('predictor:rank', '');
   const [selectedRound, setSelectedRound] = usePersistedState<number>('predictor:round', 1);
   const [limit, setLimit] = usePersistedState<string>('predictor:limit', '10');
@@ -79,6 +82,9 @@ const RankPredictor: React.FC = () => {
       setLoading(false);
     }
   };
+
+  if (serverStatus === 'checking') return <LoadingSpinner fullScreen message="Connecting to server..." />;
+  if (serverStatus === 'down') return <ServerDownCard />;
 
   return (
     <div style={styles.container}>

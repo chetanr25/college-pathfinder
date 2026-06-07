@@ -4,6 +4,8 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { useScrollRestoration } from './hooks/useScrollRestoration';
+import { useServerStatus } from './hooks/useServerStatus';
+import ServerDownCard from './components/ServerDownCard';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
@@ -28,8 +30,9 @@ const ScrollManager: React.FC = () => {
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
+  const { status: serverStatus } = useServerStatus();
 
-  if (loading) {
+  if (loading || serverStatus === 'checking') {
     return (
       <div style={{
         minHeight: '100vh',
@@ -41,6 +44,10 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
         <div style={{ color: '#fff', fontSize: '1.25rem' }}>Loading...</div>
       </div>
     );
+  }
+
+  if (serverStatus === 'down') {
+    return <ServerDownCard />;
   }
 
   if (!user) {

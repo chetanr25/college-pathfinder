@@ -12,6 +12,8 @@ import {
 import { useGoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../contexts/AuthContext';
 import SEO from '../components/SEO';
+import ServerDownCard from '../components/ServerDownCard';
+import { useServerStatus } from '../hooks/useServerStatus';
 
 const GRADIENT = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
 
@@ -33,6 +35,7 @@ const Login: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [btnHovered, setBtnHovered] = useState(false);
   const isMobile = useIsMobile();
+  const { status: serverStatus } = useServerStatus();
 
   useEffect(() => {
     if (user && !loading) {
@@ -75,12 +78,16 @@ const Login: React.FC = () => {
     googleLogin();
   };
 
-  if (loading) {
+  if (loading || serverStatus === 'checking') {
     return (
       <div style={styles.loadingScreen}>
         <div style={styles.loadingRing} />
       </div>
     );
+  }
+
+  if (serverStatus === 'down') {
+    return <ServerDownCard />;
   }
 
   /* ── Mobile layout ── */
