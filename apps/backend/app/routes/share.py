@@ -7,8 +7,6 @@ from typing import List, Optional
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import HTMLResponse, StreamingResponse
 
-from app.services import CollegeService
-
 router = APIRouter(prefix="/share", tags=["share"])
 
 FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:5173")
@@ -23,22 +21,6 @@ def _esc(s: str) -> str:
         .replace(">", "&gt;")
     )
 
-
-def _fetch_data(rank: int, round: int, branches: Optional[List[str]]):
-    """Return (preview_colleges[:5], total_count)."""
-    if branches:
-        preview = CollegeService.search_colleges(
-            min_rank=rank, max_rank=None, branches=branches,
-            round=round, limit=5, sort_order="asc",
-        )
-        total = CollegeService.search_colleges(
-            min_rank=rank, max_rank=None, branches=branches,
-            round=round, limit=500, sort_order="asc",
-        )
-    else:
-        preview = CollegeService.get_colleges_by_rank(rank, round, 5, "asc")
-        total = CollegeService.get_colleges_by_rank(rank, round, 500, "asc")
-    return preview, len(total)
 
 
 def _get_font(size: int, bold: bool = False):
@@ -109,108 +91,82 @@ def _generate_og_image(
     rank: int,
     round: int,
     branches: Optional[List[str]],
-    colleges: list,
-    total_count: int,
+    count: int,
 ) -> bytes:
+    """
+    Generate the OG image entirely from URL params — no DB query, fast render.
+    Uses horizontal line drawing (630 ops) instead of pixel-by-pixel (378k ops).
+    """
     from PIL import Image, ImageDraw
 
     W, H = 1200, 630
-    # Use plain RGB no alpha compositing headaches
     img = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(img)
 
-    # ── Gradient background (diagonal: top-left indigo → bottom-right purple) ──
-    top_l = (49, 46, 129)   # #312E81
-    bot_r = (109, 40, 217)  # #6D28D9
+    # ── Background: fast top-to-bottom gradient (630 horizontal lines) ──────
+    top = (49, 46, 129)   # #312E81 deep indigo
+    bot = (88, 28, 135)   # #581C87 deep purple
     for y in range(H):
-        for x in range(0, W, 2):  # step=2 for speed; fill with line below
-            t = (x / W * 0.4 + y / H * 0.6)
-            draw.point((x, y), fill=_lerp_color(top_l, bot_r, t))
-            if x + 1 < W:
-                draw.point((x + 1, y), fill=_lerp_color(top_l, bot_r, t))
+        draw.line([(0, y), (W, y)], fill=_lerp_color(top, bot, y / H))
 
-    # Left accent stripe
-    for x in range(8):
-        for y in range(H):
-            t = y / H
-            draw.point((x, y), fill=_lerp_color((129, 140, 248), (167, 139, 250), t))
+    # Left accent bar
+    for y in range(H):
+        draw.line([(0, y), (7, y)], fill=_lerp_color((129, 140, 248), (167, 139, 250), y / H))
 
     PAD = 72
 
-    f_brand   = _get_font(26)
-    f_huge    = _get_font(80, bold=True)
-    f_large   = _get_font(44, bold=True)
-    f_pill    = _get_font(24)
-    f_college = _get_font(28, bold=True)
-    f_meta    = _get_font(24)
-    f_num     = _get_font(20, bold=True)
-    f_footer  = _get_font(22)
+    f_brand  = _get_font(26)
+    f_huge   = _get_font(88, bold=True)
+    f_large  = _get_font(48, bold=True)
+    f_pill   = _get_font(26)
+    f_sub    = _get_font(32)
+    f_footer = _get_font(22)
 
-    # ── Brand line ──────────────────────────────────────────────
-    draw.text((PAD, 52), "College Path Finder", font=f_brand, fill=(199, 210, 254))
-    dot_x = PAD + _text_width(f_brand, "College Path Finder") + 14
-    draw.text((dot_x, 52), f"· KCET 2025  ·  Round {round}", font=f_brand, fill=(148, 130, 220))
+    # ── Brand line ──────────────────────────────────────────────────────────
+    draw.text((PAD, 50), "College Path Finder", font=f_brand, fill=(199, 210, 254))
+    dot_x = PAD + _text_width(f_brand, "College Path Finder") + 16
+    draw.text((dot_x, 50), f"· KCET 2025", font=f_brand, fill=(148, 130, 220))
 
-    # ── Rank headline ───────────────────────────────────────────
-    draw.text((PAD, 110), f"Rank {rank:,}", font=f_huge, fill=(255, 255, 255))
+    # ── Rank headline ───────────────────────────────────────────────────────
+    draw.text((PAD, 105), f"Rank {rank:,}", font=f_huge, fill=(255, 255, 255))
 
-    # ── Eligible count ──────────────────────────────────────────
-    draw.text((PAD, 215), f"{total_count} Colleges Eligible", font=f_large, fill=(196, 181, 253))
+    # ── Eligible count ──────────────────────────────────────────────────────
+    count_text = f"{count} College{'s' if count != 1 else ''} Eligible"
+    draw.text((PAD, 220), count_text, font=f_large, fill=(196, 181, 253))
 
-    # ── Branch pills ────────────────────────────────────────────
+    # ── Round badge + branch pills ───────────────────────────────────────────
     pill_x = PAD
-    pill_y = 283
-    shown_branches = (branches or [])[:3]
-    if not shown_branches:
+    pill_y = 295
+    pill_x += _pill(draw, pill_x, pill_y, f"Round {round}", f_pill)
+    shown = (branches or [])[:2]
+    if not shown:
         _pill(draw, pill_x, pill_y, "All Branches", f_pill)
     else:
-        for b in shown_branches:
+        for b in shown:
             pill_x += _pill(draw, pill_x, pill_y, b, f_pill)
-        if branches and len(branches) > 3:
-            _pill(draw, pill_x, pill_y, f"+{len(branches) - 3} more", f_pill)
+        if branches and len(branches) > 2:
+            _pill(draw, pill_x, pill_y, f"+{len(branches) - 2} more", f_pill)
 
-    # ── Divider ─────────────────────────────────────────────────
-    draw.rectangle([PAD, 360, W - PAD, 362], fill=(130, 110, 200))
+    # ── Divider ─────────────────────────────────────────────────────────────
+    draw.rectangle([PAD, 380, W - PAD, 382], fill=(100, 80, 180))
 
-    # ── Top colleges ────────────────────────────────────────────
-    row_y = 378
-    row_gap = 72
-    num_bg = [(180, 140, 20), (140, 140, 150), (160, 120, 10)]  # gold, silver, bronze-ish
+    # ── CTA text ────────────────────────────────────────────────────────────
+    draw.text((PAD, 410), "Find colleges you're eligible for at", font=f_sub, fill=(167, 139, 250))
+    draw.text((PAD, 460), "collegepathfinder.chetanr25.in", font=_get_font(36, bold=True), fill=(255, 255, 255))
 
-    for i, c in enumerate(colleges[:3]):
-        ny = row_y + i * row_gap
+    # ── Decorative large rank echo (right side, faded) ───────────────────────
+    f_watermark = _get_font(180, bold=True)
+    wm = f"#{rank:,}"
+    ww = _text_width(f_watermark, wm)
+    draw.text((W - PAD - ww, H // 2 - 90), wm, font=f_watermark, fill=(80, 60, 160))
 
-        # Number circle
-        circ_r = 18
-        cx, cy = PAD + circ_r, ny + circ_r + 2
-        draw.ellipse(
-            [cx - circ_r, cy - circ_r, cx + circ_r, cy + circ_r],
-            fill=num_bg[i],
-        )
-        num_str = str(i + 1)
-        nw = _text_width(f_num, num_str)
-        draw.text((cx - nw // 2, cy - getattr(f_num, "size", 20) // 2), num_str,
-                  font=f_num, fill=(255, 255, 255))
-
-        # College name
-        name = c.get("college_name", "")
-        if len(name) > 46:
-            name = name[:43] + "..."
-        draw.text((PAD + 50, ny), name, font=f_college, fill=(255, 255, 255))
-
-        # Branch + cutoff
-        branch = c.get("branch_name", "")
-        cutoff = c.get("cutoff_rank")
-        meta = f"{branch}  ·  Cutoff: {cutoff:,}" if cutoff else branch
-        draw.text((PAD + 50, ny + 34), meta, font=f_meta, fill=(196, 181, 253))
-
-    # ── Footer URL ───────────────────────────────────────────────
-    footer_text = "collegepathfinder.app/predictor"
-    fw = _text_width(f_footer, footer_text)
-    draw.text((W - PAD - fw, H - 52), footer_text, font=f_footer, fill=(130, 110, 200))
+    # ── Footer ───────────────────────────────────────────────────────────────
+    footer = "Powered by College Path Finder · KCET 2025 Cutoff Data"
+    fw = _text_width(f_footer, footer)
+    draw.text((W // 2 - fw // 2, H - 46), footer, font=f_footer, fill=(110, 90, 180))
 
     buf = io.BytesIO()
-    img.save(buf, format="PNG", optimize=True)
+    img.save(buf, format="JPEG", quality=90, optimize=True)
     return buf.getvalue()
 
 
@@ -220,15 +176,18 @@ def _generate_og_image(
 async def share_predictor_image(
     rank: int = Query(..., gt=0),
     round: int = Query(1, ge=1, le=3),
+    count: int = Query(0, ge=0),          # passed by frontend — exact result count
     branches: Optional[List[str]] = Query(None),
 ):
-    """Returns a 1200×630 PNG for use as the og:image in link previews."""
-    colleges, total_count = _fetch_data(rank, round, branches)
-    png = _generate_og_image(rank, round, branches, colleges, total_count)
+    """
+    Returns a 1200×630 JPEG for use as the og:image in link previews.
+    No DB query — renders entirely from URL params for maximum speed.
+    """
+    jpg = _generate_og_image(rank, round, branches, count)
     return StreamingResponse(
-        io.BytesIO(png),
-        media_type="image/png",
-        headers={"Cache-Control": "public, max-age=300"},
+        io.BytesIO(jpg),
+        media_type="image/jpeg",
+        headers={"Cache-Control": "public, max-age=3600"},
     )
 
 
@@ -238,6 +197,7 @@ async def share_predictor_results(
     rank: int = Query(..., gt=0),
     round: int = Query(1, ge=1, le=3),
     limit: int = Query(10, ge=1, le=500),
+    count: int = Query(0, ge=0),          # passed by frontend — exact result count
     branches: Optional[List[str]] = Query(None),
 ):
     """
@@ -245,9 +205,7 @@ async def share_predictor_results(
     apps render a rich preview card. Immediately redirects humans to the
     frontend predictor with the same query params.
     """
-    colleges, total_count = _fetch_data(rank, round, branches)
-
-    # Build frontend redirect URL
+    # Build frontend redirect URL (without count — it's only for OG metadata)
     params = [f"rank={rank}", f"round={round}", f"limit={limit}"]
     if branches:
         params += [f"branches={b}" for b in branches]
@@ -266,34 +224,28 @@ async def share_predictor_results(
     )
     public_base = f"{proto}://{host}"
 
-    # OG image URL (absolute, must be reachable by WhatsApp / Telegram servers)
-    img_params = [f"rank={rank}", f"round={round}"]
+    # OG image URL — passes count so image renders instantly, no DB query
+    img_params = [f"rank={rank}", f"round={round}", f"count={count}"]
     if branches:
         img_params += [f"branches={b}" for b in branches]
     image_url = f"{public_base}/share/image?" + "&".join(img_params)
 
-    # OG title
+    # OG title — use count from frontend, always accurate
     branch_str = ""
     if branches:
         shown = branches[:2]
         branch_str = " | " + ", ".join(shown)
         if len(branches) > 2:
             branch_str += f" +{len(branches) - 2}"
-    og_title = f"KCET Rank {rank:,} - {total_count} Colleges Eligible (Round {round}{branch_str})"
+    og_title = f"KCET Rank {rank:,} - {count} Colleges Eligible (Round {round}{branch_str})"
 
-    # OG description
-    medals = ["🥇", "🥈", "🥉"]
-    lines = []
-    for i, c in enumerate(colleges[:3]):
-        name = c.get("college_name", "")[:45]
-        branch = c.get("branch_name", "")
-        cutoff = c.get("cutoff_rank")
-        cutoff_str = f"{cutoff:,}" if cutoff else "N/A"
-        lines.append(f"{medals[i]} {name} - {branch} (Cutoff: {cutoff_str})")
+    # OG description — no DB query, built from params
+    branch_desc = ", ".join(branches[:2]) if branches else "all branches"
+    if branches and len(branches) > 2:
+        branch_desc += f" and {len(branches) - 2} more"
     og_desc = (
-        f"For KCET Rank {rank:,} in Round {round}: {total_count} eligible colleges! "
-        + " | ".join(lines)
-        + " · Check College Path Finder for your full list."
+        f"Found {count} colleges eligible for KCET Rank {rank:,} in Round {round} "
+        f"({branch_desc}). Check College Path Finder to see the full list and find your best options."
     )
 
     html = f"""<!DOCTYPE html>

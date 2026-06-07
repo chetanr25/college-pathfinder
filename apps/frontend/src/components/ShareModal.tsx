@@ -22,11 +22,13 @@ function buildFrontendUrl(rank: number, round: number, branches: string[], limit
   return `${window.location.origin}/predictor?${params.toString()}`;
 }
 
-function buildBackendShareUrl(baseUrl: string, rank: number, round: number, branches: string[], limit: number): string {
+function buildBackendShareUrl(baseUrl: string, rank: number, round: number, branches: string[], limit: number, count: number): string {
   const params = new URLSearchParams({
     rank: String(rank),
     round: String(round),
     limit: String(Math.min(limit, 500)),
+    count: String(count),
+    v: '2',   // cache-bust — increment if OG scraper needs to re-fetch
   });
   branches.forEach(b => params.append('branches', b));
   return `${baseUrl}/share?${params.toString()}`;
@@ -64,7 +66,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ rank, round, branches, colleges
   const [copiedDirect, setCopiedDirect] = useState(false);
 
   const frontendUrl = buildFrontendUrl(rank, round, branches, colleges.length);
-  const backendUrl = buildBackendShareUrl(shareBaseUrl, rank, round, branches, colleges.length);
+  const backendUrl = buildBackendShareUrl(shareBaseUrl, rank, round, branches, colleges.length, colleges.length);
   const shareText = buildShareText(rank, round, branches, colleges);
   const top5 = colleges.slice(0, 5);
 
