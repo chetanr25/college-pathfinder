@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { HelmetProvider } from 'react-helmet-async';
+import { Analytics } from '@vercel/analytics/react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { useScrollRestoration } from './hooks/useScrollRestoration';
 import { useServerStatus } from './hooks/useServerStatus';
@@ -111,6 +112,7 @@ const App: React.FC = () => {
           <Router>
             <ScrollManager />
             <AppContent />
+            <Analytics />
           </Router>
         </AuthProvider>
       </GoogleOAuthProvider>
