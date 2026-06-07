@@ -36,7 +36,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onSignOut }) => {
   const isMobile = useMediaQuery('(max-width: 900px)');
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 12);
+    const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -57,23 +57,23 @@ const Navbar: React.FC<NavbarProps> = ({ user, onSignOut }) => {
   const handleMenuClose = () => setAnchorEl(null);
   const handleSignOut = () => { handleMenuClose(); setMobileMenuOpen(false); onSignOut?.(); };
 
-  const navbarStyle: React.CSSProperties = {
+  /* Floating pill: sits 12px from the top, leaves 16px on each side */
+  const pillStyle: React.CSSProperties = {
     position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
+    top: '12px',
+    left: '16px',
+    right: '16px',
     zIndex: 9999,
-    backdropFilter: scrolled ? 'blur(28px) saturate(200%)' : 'blur(12px) saturate(150%)',
-    WebkitBackdropFilter: scrolled ? 'blur(28px) saturate(200%)' : 'blur(12px) saturate(150%)',
+    borderRadius: '18px',
+    backdropFilter: 'blur(40px) saturate(220%) brightness(0.85)',
+    WebkitBackdropFilter: 'blur(40px) saturate(220%) brightness(0.85)',
     backgroundColor: scrolled
-      ? 'rgba(8, 8, 18, 0.82)'
-      : 'rgba(8, 8, 18, 0.35)',
-    borderBottom: scrolled
-      ? '1px solid rgba(255,255,255,0.08)'
-      : '1px solid rgba(255,255,255,0.04)',
+      ? 'rgba(8, 8, 20, 0.88)'
+      : 'rgba(8, 8, 20, 0.65)',
+    border: '1px solid rgba(255,255,255,0.14)',
     boxShadow: scrolled
-      ? '0 8px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)'
-      : 'none',
+      ? '0 16px 56px rgba(0,0,0,0.6), 0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12), 0 0 0 1px rgba(255,255,255,0.04)'
+      : '0 8px 32px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1)',
     transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
   };
 
@@ -89,35 +89,35 @@ const Navbar: React.FC<NavbarProps> = ({ user, onSignOut }) => {
               display: 'flex',
               alignItems: 'center',
               gap: '7px',
-              padding: mobile ? '13px 16px' : '9px 15px',
+              padding: mobile ? '13px 16px' : '8px 14px',
               textDecoration: 'none',
               fontSize: '0.875rem',
               fontWeight: active ? 600 : 500,
-              borderRadius: '10px',
+              borderRadius: '11px',
               transition: 'all 0.2s cubic-bezier(0.4,0,0.2,1)',
-              color: active ? '#ffffff' : 'rgba(255,255,255,0.62)',
+              color: active ? '#ffffff' : 'rgba(255,255,255,0.58)',
               background: active
-                ? 'linear-gradient(135deg, rgba(102,126,234,0.85) 0%, rgba(118,75,162,0.85) 100%)'
+                ? 'linear-gradient(135deg, rgba(102,126,234,0.9) 0%, rgba(118,75,162,0.9) 100%)'
                 : 'transparent',
-              boxShadow: active ? '0 4px 16px rgba(102,126,234,0.35)' : 'none',
-              border: active ? '1px solid rgba(255,255,255,0.12)' : '1px solid transparent',
-              ...(mobile ? { width: '100%', marginBottom: '4px' } : {}),
+              boxShadow: active ? '0 3px 14px rgba(102,126,234,0.4)' : 'none',
+              border: active ? '1px solid rgba(255,255,255,0.14)' : '1px solid transparent',
+              ...(mobile ? { width: '100%', marginBottom: '2px' } : {}),
             }}
             onMouseEnter={e => {
               if (!active) {
-                (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.9)';
-                (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)';
+                (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.92)';
+                (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)';
               }
             }}
             onMouseLeave={e => {
               if (!active) {
-                (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.62)';
+                (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.58)';
                 (e.currentTarget as HTMLElement).style.background = 'transparent';
               }
             }}
             onClick={() => mobile && setMobileMenuOpen(false)}
           >
-            <span style={{ display: 'flex', alignItems: 'center', fontSize: '1.1rem' }}>
+            <span style={{ display: 'flex', alignItems: 'center', fontSize: '1.05rem' }}>
               {link.icon}
             </span>
             <span style={{ fontFamily: theme.typography.fontFamily.primary }}>{link.label}</span>
@@ -131,11 +131,11 @@ const Navbar: React.FC<NavbarProps> = ({ user, onSignOut }) => {
     <>
       {user ? (
         <>
-          <IconButton onClick={handleMenuOpen} sx={{ ml: mobile ? 0 : '4px' }}>
+          <IconButton onClick={handleMenuOpen} sx={{ ml: mobile ? 0 : '2px' }}>
             {user.avatar_url ? (
-              <Avatar src={user.avatar_url} sx={{ width: 34, height: 34 }} />
+              <Avatar src={user.avatar_url} sx={{ width: 32, height: 32 }} />
             ) : (
-              <AccountCircle sx={{ fontSize: 34, color: 'rgba(255,255,255,0.7)' }} />
+              <AccountCircle sx={{ fontSize: 32, color: 'rgba(255,255,255,0.65)' }} />
             )}
           </IconButton>
           <Menu
@@ -144,20 +144,20 @@ const Navbar: React.FC<NavbarProps> = ({ user, onSignOut }) => {
             onClose={handleMenuClose}
             PaperProps={{
               sx: {
-                borderRadius: '14px',
-                background: 'rgba(15,15,28,0.92)',
-                backdropFilter: 'blur(24px)',
+                borderRadius: '16px',
+                background: 'rgba(12,12,24,0.95)',
+                backdropFilter: 'blur(28px)',
                 border: '1px solid rgba(255,255,255,0.1)',
                 boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
                 minWidth: '200px',
-                mt: '8px',
+                mt: '10px',
               }
             }}
           >
-            <MenuItem disabled sx={{ color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>
+            <MenuItem sx={{ color: 'rgba(255,255,255,0.95)', fontWeight: 700, pointerEvents: 'none', fontSize: '0.95rem' }}>
               {user.name}
             </MenuItem>
-            <MenuItem disabled sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.825rem' }}>
+            <MenuItem sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', pointerEvents: 'none', pt: 0 }}>
               {user.email}
             </MenuItem>
             <MenuItem
@@ -175,31 +175,31 @@ const Navbar: React.FC<NavbarProps> = ({ user, onSignOut }) => {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
-            padding: mobile ? '9px 18px' : '9px 20px',
+            gap: '7px',
+            padding: '8px 18px',
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             color: '#ffffff',
             textDecoration: 'none',
-            borderRadius: '10px',
+            borderRadius: '11px',
             fontWeight: 600,
             fontSize: '0.875rem',
-            marginLeft: mobile ? 0 : '6px',
+            marginLeft: mobile ? 0 : '4px',
             marginRight: mobile ? '6px' : 0,
-            boxShadow: '0 4px 18px rgba(102,126,234,0.4)',
-            border: '1px solid rgba(255,255,255,0.15)',
+            boxShadow: '0 4px 16px rgba(102,126,234,0.45)',
+            border: '1px solid rgba(255,255,255,0.16)',
             transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
           }}
           onMouseEnter={e => {
             (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
-            (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 28px rgba(102,126,234,0.55)';
+            (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 26px rgba(102,126,234,0.6)';
           }}
           onMouseLeave={e => {
             (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
-            (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 18px rgba(102,126,234,0.4)';
+            (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px rgba(102,126,234,0.45)';
           }}
           onClick={() => mobile && setMobileMenuOpen(false)}
         >
-          <Login style={{ fontSize: '1.15rem' }} />
+          <Login style={{ fontSize: '1.1rem' }} />
           <span>Sign In</span>
         </Link>
       )}
@@ -207,34 +207,35 @@ const Navbar: React.FC<NavbarProps> = ({ user, onSignOut }) => {
   );
 
   return (
-    <nav style={navbarStyle}>
+    <nav style={pillStyle}>
       <div style={{
         maxWidth: '1400px',
         margin: '0 auto',
-        padding: '10px 24px',
+        padding: '8px 16px',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        minHeight: '52px',
+        minHeight: '48px',
       }}>
         {/* Logo */}
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
+        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '11px', textDecoration: 'none' }}>
           <div style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '11px',
+            width: '36px',
+            height: '36px',
+            borderRadius: '10px',
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 16px rgba(102,126,234,0.4)',
-            border: '1px solid rgba(255,255,255,0.15)',
+            boxShadow: '0 4px 14px rgba(102,126,234,0.45)',
+            border: '1px solid rgba(255,255,255,0.16)',
+            flexShrink: 0,
           }}>
-            <School style={{ fontSize: '1.35rem', color: '#fff' }} />
+            <School style={{ fontSize: '1.2rem', color: '#fff' }} />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <span style={{
-              fontSize: '1.1rem',
+              fontSize: '1.05rem',
               fontWeight: 700,
               background: 'linear-gradient(135deg, #c4caff 0%, #e0c3fc 100%)',
               WebkitBackgroundClip: 'text',
@@ -245,10 +246,10 @@ const Navbar: React.FC<NavbarProps> = ({ user, onSignOut }) => {
               College Path
             </span>
             <span style={{
-              fontSize: '0.6rem',
-              color: 'rgba(255,255,255,0.35)',
+              fontSize: '0.58rem',
+              color: 'rgba(255,255,255,0.3)',
               fontWeight: 600,
-              letterSpacing: '0.15em',
+              letterSpacing: '0.14em',
               textTransform: 'uppercase',
             }}>
               FINDER
@@ -258,7 +259,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onSignOut }) => {
 
         {/* Desktop nav */}
         {!isMobile && (
-          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
             {renderNavLinks()}
             {renderAuthSection()}
           </div>
@@ -270,7 +271,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onSignOut }) => {
             {renderAuthSection(true)}
             <IconButton
               onClick={() => setMobileMenuOpen(true)}
-              sx={{ color: 'rgba(255,255,255,0.75)', '&:hover': { background: 'rgba(255,255,255,0.08)' } }}
+              sx={{ color: 'rgba(255,255,255,0.7)', '&:hover': { background: 'rgba(255,255,255,0.08)' } }}
             >
               <MenuIcon />
             </IconButton>
@@ -296,7 +297,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onSignOut }) => {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: '24px',
+            marginBottom: '20px',
             paddingBottom: '16px',
             borderBottom: '1px solid rgba(255,255,255,0.07)',
           }}>
@@ -310,7 +311,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onSignOut }) => {
               <Close />
             </IconButton>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
             {renderNavLinks(true)}
           </div>
         </Drawer>

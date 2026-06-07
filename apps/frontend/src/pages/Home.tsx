@@ -305,7 +305,7 @@ const Home: React.FC = () => {
         <div style={styles.heroBottomFade} />
       </section>
 
-      {/* ── STATS STRIP ── */}
+      {/* ── STATS STRIP ──
       <section style={styles.statsStrip}>
         <div style={styles.statsInner}>
           {[
@@ -322,7 +322,7 @@ const Home: React.FC = () => {
             </div>
           ))}
         </div>
-      </section>
+      </section> */}
 
       {/* ── AI COUNSELOR ── */}
       <section style={styles.aiSection}>

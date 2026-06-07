@@ -64,6 +64,11 @@ class AuthService:
 
                 if user:
                     print(f"DEBUG: Found existing user {user.id}", file=sys.stderr, flush=True)
+                    # Refresh avatar/name in case they changed in Google
+                    if avatar_url and user.avatar_url != avatar_url:
+                        user.avatar_url = avatar_url
+                        await db.commit()
+                        await db.refresh(user)
                     return {
                         "id": str(user.id),
                         "email": user.email,

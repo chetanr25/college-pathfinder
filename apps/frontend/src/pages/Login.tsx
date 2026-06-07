@@ -232,6 +232,7 @@ const styles: Record<string, React.CSSProperties> = {
   page: {
     display: 'flex',
     minHeight: '100vh',
+    paddingTop: 'var(--navbar-height, 80px)',
     fontFamily: "'Inter', sans-serif",
   },
 
@@ -336,6 +337,7 @@ const styles: Record<string, React.CSSProperties> = {
   /* ── Mobile layout ── */
   mobilePage: {
     minHeight: '100vh',
+    paddingTop: 'var(--navbar-height, 80px)',
     background: '#F9FAFB',
     fontFamily: "'Inter', sans-serif",
     display: 'flex',

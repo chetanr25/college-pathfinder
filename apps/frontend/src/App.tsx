@@ -62,8 +62,7 @@ const AppContent: React.FC = () => {
   const { user, signOut } = useAuth();
   const location = useLocation();
   
-  // Hide navbar on login, callback, and ai-chat pages
-  const hideNavbar = ['/login', '/auth/callback', '/ai-chat'].includes(location.pathname) || 
+  const hideNavbar = ['/auth/callback', '/ai-chat'].includes(location.pathname) ||
                      location.pathname.startsWith('/ai-chat');
 
   return (
