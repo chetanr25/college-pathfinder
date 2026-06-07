@@ -2,7 +2,7 @@
 
 ## Overview
 
-The application uses SQLite database (`backend/data/kcet_2025.db`) containing KCET 2024 admission data.
+The application uses SQLite database (`backend/data/kcet_2025.db`) containing KCET 2025 admission data.
 
 ## Table: `kcet_2025`
 

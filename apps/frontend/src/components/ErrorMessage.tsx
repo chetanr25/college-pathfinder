@@ -2,6 +2,7 @@ import React from 'react';
 import { Error as ErrorIcon, Refresh } from '@mui/icons-material';
 import { Card, Button, Container } from './ui';
 import theme from '../theme';
+import ServerDownCard from './ServerDownCard';
 
 interface ErrorMessageProps {
   message: string;
@@ -9,11 +10,35 @@ interface ErrorMessageProps {
   fullScreen?: boolean;
 }
 
+const SERVER_ERROR_PATTERNS = [
+  'network error',
+  'err_network',
+  'econnrefused',
+  'econnreset',
+  'failed to fetch',
+  'networkerror',
+  'timeout',
+  'etimedout',
+  'net::err',
+  'xhr error',
+  'load failed',
+  'fetch failed',
+];
+
+function isServerDownError(message: string): boolean {
+  const lower = message.toLowerCase();
+  return SERVER_ERROR_PATTERNS.some((p) => lower.includes(p));
+}
+
 const ErrorMessage: React.FC<ErrorMessageProps> = ({
   message,
   onRetry,
   fullScreen = false,
 }) => {
+  if (isServerDownError(message)) {
+    return <ServerDownCard />;
+  }
+
   const containerStyles: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',

@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.exceptions import general_exception_handler, http_exception_handler
 from app.pg_database import close_db, init_db
-from app.routes import auth, branches, chat, colleges, email_routes
+from app.routes import auth, branches, chat, colleges, email_routes, share
 
 
 @asynccontextmanager
@@ -98,6 +98,7 @@ def create_app() -> FastAPI:
     app.include_router(chat.router)
     app.include_router(email_routes.router)
     app.include_router(auth.router)
+    app.include_router(share.router)
 
     return app
 

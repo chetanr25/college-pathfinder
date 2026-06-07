@@ -1,16 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp } from '@mui/icons-material';
+import { TrendingUp, Share } from '@mui/icons-material';
 import { Autocomplete, TextField, Chip } from '@mui/material';
-import { collegeApi, branchApi, type CollegeList } from '../services/api';
+import { useSearchParams } from 'react-router-dom';
+import { collegeApi, branchApi, type CollegeList, API_BASE_URL } from '../services/api';
 import CollegeCardModern from '../components/CollegeCardModern';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
+import ServerDownCard from '../components/ServerDownCard';
+import ShareModal from '../components/ShareModal';
 import { Hero, Container, Section, Grid, Card, Input, Button, Badge } from '../components/ui';
 import theme from '../theme';
 import SEO from '../components/SEO';
 import { usePersistedState } from '../hooks/usePersistedState';
+import { useServerStatus } from '../hooks/useServerStatus';
 
 const RankPredictor: React.FC = () => {
+  const { status: serverStatus } = useServerStatus();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [rank, setRank] = usePersistedState<string>('predictor:rank', '');
   const [selectedRound, setSelectedRound] = usePersistedState<number>('predictor:round', 1);
   const [limit, setLimit] = usePersistedState<string>('predictor:limit', '10');
@@ -21,6 +27,65 @@ const RankPredictor: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [hasSearched, setHasSearched] = usePersistedState<boolean>('predictor:hasSearched', false);
+  const [showShare, setShowShare] = useState(false);
+  const resultsRef = React.useRef<HTMLDivElement>(null);
+
+  // Auto-populate form + search from shared URL params
+  useEffect(() => {
+    const urlRank = searchParams.get('rank');
+    const urlRound = searchParams.get('round');
+    const urlLimit = searchParams.get('limit');
+    const urlBranches = searchParams.getAll('branches');
+
+    if (!urlRank) return;
+
+    const rankNum = parseInt(urlRank);
+    const roundNum = parseInt(urlRound || '1');
+    const limitNum = parseInt(urlLimit || '10');
+
+    if (!rankNum || rankNum <= 0) return;
+
+    setRank(String(rankNum));
+    setSelectedRound(Math.min(Math.max(roundNum, 1), 3));
+    setLimit(String(Math.min(Math.max(limitNum, 1), 500)));
+    if (urlBranches.length > 0) setSelectedBranches(urlBranches);
+
+    // Clear URL params after reading so back-navigation doesn't re-trigger
+    setSearchParams({}, { replace: true });
+
+    // Trigger search after state settles
+    const doSearch = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        setHasSearched(true);
+        if (urlBranches.length > 0) {
+          const data = await collegeApi.searchColleges({
+            min_rank: rankNum,
+            branches: urlBranches,
+            round: Math.min(Math.max(roundNum, 1), 3),
+            limit: Math.min(Math.max(limitNum, 1), 500),
+            sort_order: 'asc',
+          });
+          setColleges(data.colleges);
+        } else {
+          const data = await collegeApi.getCollegesByRank(
+            rankNum,
+            Math.min(Math.max(roundNum, 1), 3),
+            Math.min(Math.max(limitNum, 1), 500),
+            'asc'
+          );
+          setColleges(data.colleges);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load shared results');
+      } finally {
+        setLoading(false);
+      }
+    };
+    doSearch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (availableBranches.length > 0) return;
@@ -77,8 +142,14 @@ const RankPredictor: React.FC = () => {
       setError(err instanceof Error ? err.message : 'Failed to Recommend colleges');
     } finally {
       setLoading(false);
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
     }
   };
+
+  if (serverStatus === 'checking') return <LoadingSpinner fullScreen message="Connecting to server..." />;
+  if (serverStatus === 'down') return <ServerDownCard />;
 
   return (
     <div style={styles.container}>
@@ -214,7 +285,7 @@ const RankPredictor: React.FC = () => {
       {!loading && !error && hasSearched && (
         <Section background="paper" padding="lg">
           <Container maxWidth="xl">
-          <div style={styles.resultsHeader}>
+          <div ref={resultsRef} style={styles.resultsHeader}>
             <h2 style={styles.resultsTitle}>
               {colleges.length} {colleges.length === 1 ? 'College' : 'Colleges'} Found
             </h2>
@@ -226,6 +297,12 @@ const RankPredictor: React.FC = () => {
                   </Badge>
               )}
             </p>
+            {colleges.length > 0 && (
+              <button style={styles.shareButton} onClick={() => setShowShare(true)}>
+                <Share style={{ fontSize: '1rem' }} />
+                <span>Share</span>
+              </button>
+            )}
           </div>
 
           {colleges.length === 0 ? (
@@ -257,6 +334,18 @@ const RankPredictor: React.FC = () => {
           )}
           </Container>
         </Section>
+      )}
+
+      {/* Share Modal */}
+      {showShare && (
+        <ShareModal
+          rank={parseInt(rank)}
+          round={selectedRound}
+          branches={selectedBranches}
+          colleges={colleges}
+          shareBaseUrl={API_BASE_URL}
+          onClose={() => setShowShare(false)}
+        />
       )}
 
       {/* Info Section */}
@@ -341,6 +430,22 @@ const styles: Record<string, React.CSSProperties> = {
   resultsHeader: {
     textAlign: 'center' as const,
     marginBottom: theme.spacing[6],
+  },
+  shareButton: {
+    marginTop: theme.spacing[3],
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: theme.spacing[2],
+    padding: `${theme.spacing[2]} ${theme.spacing[4]}`,
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: '#fff',
+    border: 'none',
+    borderRadius: theme.borderRadius.full,
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.semibold,
+    cursor: 'pointer',
+    boxShadow: '0 4px 15px rgba(102,126,234,0.35)',
+    transition: 'transform 0.15s, box-shadow 0.15s',
   },
   resultsTitle: {
     margin: 0,

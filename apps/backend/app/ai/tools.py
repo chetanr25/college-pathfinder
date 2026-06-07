@@ -36,7 +36,7 @@ def get_colleges_by_rank(rank: int, round: int = 1, limit: int = 10):
 
 def get_all_branches():
     """
-    Get complete list of all available engineering branches in KCET 2024 data.
+    Get complete list of all available engineering branches in KCET 2025 data.
     Use this to discover what branches are available.
     """
     branches = CollegeService.get_all_branches()

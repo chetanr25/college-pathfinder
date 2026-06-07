@@ -3,6 +3,8 @@ import { Box, Container, Typography, Alert, IconButton, useMediaQuery } from '@m
 import { SmartToy, Menu as MenuIcon, Home, Logout } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { chatService } from '../services/chatService';
+import ServerDownCard from '../components/ServerDownCard';
+import { useServerStatus } from '../hooks/useServerStatus';
 import type { ChatMessage as ChatMessageType, ChatSession } from '../services/chatService';
 import ChatMessage from '../components/chat/ChatMessage';
 import ChatInput from '../components/chat/ChatInput';
@@ -14,6 +16,7 @@ import SEO from '../components/SEO';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8005';
 
 const AIChat: React.FC = () => {
+  const { status: serverStatus } = useServerStatus();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -402,6 +405,13 @@ const AIChat: React.FC = () => {
       setSidebarOpen(!isMobile);
     }
   };
+
+  if (serverStatus === 'checking') return (
+    <Box sx={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#f9fafb' }}>
+      <Typography sx={{ color: '#6B7280' }}>Connecting to server…</Typography>
+    </Box>
+  );
+  if (serverStatus === 'down') return <ServerDownCard />;
 
   return (
     <Box sx={{ height: '100vh', display: 'flex', overflow: 'hidden', bgcolor: '#f9fafb' }}>

@@ -69,7 +69,7 @@ async def send_prediction_summary(
         "category": request.category,
         "round_number": request.round_number,
         "location": request.preferred_location,
-        "rank_year": "2024",
+        "rank_year": "2025",
         "analysis_date": datetime.now(),
         "total_colleges": len(request.colleges),
         "colleges": request.colleges,
@@ -183,7 +183,7 @@ async def send_shortlist(
 
     context = {
         "student_name": request.name,
-        "year": "2024",
+        "year": "2025",
         "shortlisted_colleges": request.colleges,
         "pdf_download_url": "https://collegepathfinder.com/download/shortlist.pdf",
         "excel_download_url": "https://collegepathfinder.com/download/shortlist.xlsx",
@@ -245,7 +245,7 @@ async def send_success_stories(
                 "branch": "Computer Science",
                 "rank": 5234,
                 "round": 1,
-                "year": 2024,
+                "year": 2025,
                 "testimonial": "The AI predictor was spot on! I got my dream college in the first round itself.",
                 "tags": ["First Round", "Dream College", "CS Branch"],
             }
