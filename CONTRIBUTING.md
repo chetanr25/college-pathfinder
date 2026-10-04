@@ -4,7 +4,6 @@ Thank you for your interest in contributing to College Path Finder. This documen
 
 ## Table of Contents
 
-- [Code of Conduct](#code-of-conduct)
 - [Getting Started](#getting-started)
 - [Development Setup](#development-setup)
 - [How to Contribute](#how-to-contribute)
@@ -12,16 +11,6 @@ Thank you for your interest in contributing to College Path Finder. This documen
 - [Commit Guidelines](#commit-guidelines)
 - [Pull Request Process](#pull-request-process)
 - [Documentation](#documentation)
-
-## Code of Conduct
-
-By participating in this project, you agree to maintain a respectful and inclusive environment. We expect all contributors to:
-
-- Use welcoming and inclusive language
-- Be respectful of differing viewpoints and experiences
-- Gracefully accept constructive criticism
-- Focus on what is best for the community
-- Show empathy towards other community members
 
 ## Getting Started
 
@@ -318,24 +307,6 @@ Add clarification for Windows users regarding virtual environment activation.
    - Add screenshots for UI changes
    - Request review from maintainers
 
-### Pull Request Checklist
-
-- [ ] Code follows project style guidelines
-- [ ] Self-review completed
-- [ ] Comments added for complex logic
-- [ ] Documentation updated
-- [ ] No new warnings or errors
-- [ ] Tests added/updated
-- [ ] All tests pass
-- [ ] Branch is up to date with main
-
-### Review Process
-
-- A maintainer will review your PR
-- Address any requested changes
-- Once approved, a maintainer will merge your PR
-- Your contribution will be credited in the release notes
-
 ## Documentation
 
 ### Code Documentation
@@ -382,31 +353,5 @@ When creating/modifying email templates:
 - Ensure responsive design
 - Test with various data inputs
 - Verify all links work correctly
-
-### Database Queries
-
-When writing database queries:
-
-- Use parameterized queries (prevent SQL injection)
-- Test with edge cases (null values, empty results)
-- Consider performance for large datasets
-- Use transactions for multiple operations
-
-## Getting Help
-
-If you need help:
-
-- Check existing [Issues](../../issues) and [Pull Requests](../../pulls)
-- Review the [README.md](README.md) and documentation
-- Ask questions by creating a new issue with the `question` label
-- Join our community discussions (if available)
-
-## Recognition
-
-Contributors will be recognized in:
-
-- The project's contributor list
-- Release notes for their contributions
-- The README.md (for significant contributions)
 
 Thank you for contributing to College Path Finder!
