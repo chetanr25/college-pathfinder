@@ -1,11 +1,21 @@
+<div align="center">
+  
 # College Path Finder
 
-An open-source counselling assistant for KCET engineering admissions. It helps students find colleges and branches within reach of their rank, compare options across counselling rounds, and ask questions in plain language, all backed by the official cutoff data published by KEA.
 
+  
 [![Backend CI/CD](https://github.com/chetanr25/college-pathfinder/actions/workflows/backend-ci-cd.yml/badge.svg)](https://github.com/chetanr25/college-pathfinder/actions/workflows/backend-ci-cd.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0+-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/)
+
+</div>
+
+<br />
+An open-source counselling assistant for KCET engineering admissions. It helps students find colleges and branches within reach of their rank, compare options across counselling rounds, and ask questions in plain language, all backed by the official cutoff data published by KEA.
+
+<br />
+
 
 **Live:** [college-finder.chetanr25.in](https://college-finder.chetanr25.in)
 
@@ -36,11 +46,13 @@ Cutoffs shift every year, so predictions are a guide for building a preference l
 
 ## Architecture
 
-<!-- Architecture diagram -->
+<img width="1061" height="1286" alt="Major project-2" src="https://github.com/user-attachments/assets/fa61f694-13f3-4bcf-98ac-e97bcf40d731" />
+
 
 ## Chat flow
 
-<!-- Chat flow diagram -->
+<img width="745" height="1419" alt="Major project-3" src="https://github.com/user-attachments/assets/c8d102c4-c853-41d3-81ac-31adbc41388f" />
+
 
 ## Documentation
 
@@ -57,7 +69,5 @@ Contributions are welcome. See [Contributing](CONTRIBUTING.md) to set up the pro
 ## License
 
 Released under the [MIT License](LICENSE).
-
----
 
 > ###### College Path Finder is an independent project. It is not affiliated with or endorsed by KEA or the Government of Karnataka.
