@@ -1,6 +1,6 @@
-# Contributing to KCET College Predictor
+# Contributing to College Path Finder
 
-Thank you for your interest in contributing to the KCET College Predictor! This document provides guidelines and instructions for contributing to the project.
+Thank you for your interest in contributing to College Path Finder. This document covers how to set up the project locally and how to submit changes.
 
 ## Table of Contents
 
@@ -11,10 +11,7 @@ Thank you for your interest in contributing to the KCET College Predictor! This 
 - [Coding Standards](#coding-standards)
 - [Commit Guidelines](#commit-guidelines)
 - [Pull Request Process](#pull-request-process)
-- [Testing](#testing)
 - [Documentation](#documentation)
-- [Reporting Bugs](#reporting-bugs)
-- [Suggesting Enhancements](#suggesting-enhancements)
 
 ## Code of Conduct
 
@@ -28,120 +25,69 @@ By participating in this project, you agree to maintain a respectful and inclusi
 
 ## Getting Started
 
-Before you begin:
-
-1. Ensure you have Python 3.11+ and Node.js 18+ installed
-2. Familiarize yourself with the project by reading the [README.md](README.md)
-3. Check the [Issues](../../issues) page for open tasks
-4. Look for issues labeled `good first issue` if you're new to the project
+1. Read the [README](README.md) to understand what the project does
+2. Check the [Issues](../../issues) page for open tasks
+3. Look for issues labeled `good first issue` if you are new to the project
 
 ## Development Setup
 
 ### Prerequisites
 
-Before you begin, ensure you have:
+- [Docker](https://docs.docker.com/get-docker/) and Docker Compose
+- Node.js 20.19 or later, and npm
+- Python 3.11, only if you run the backend without Docker
+- A [Gemini API key](https://aistudio.google.com/apikey)
+- A Google OAuth client ID, to use sign-in and the counselling assistant
+- A Gmail App Password, only if you work on email features
 
-- Python 3.11 or higher
-- Node.js 18+ and npm
-- Gmail account with App Password (for email features)
-- Google Gemini API key
-
-### Backend Setup
-
-1. Fork and clone the repository:
+### 1. Fork and clone
 
 ```bash
-git clone https://github.com/your-username/major_project.git
-cd major_project/backend
+git clone https://github.com/<your-username>/college-pathfinder.git
+cd college-pathfinder
+make init   # installs pre-commit hooks for Ruff
 ```
 
-2. Create and activate a virtual environment:
+### 2. Configure environment
 
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+cp .env.example .env
+cp apps/frontend/.env.example apps/frontend/.env
 ```
 
-3. Install dependencies:
+Set at least `GEMINI_API_KEY` and `JWT_SECRET_KEY` in `.env`, and `VITE_API_BASE_URL` and `VITE_GOOGLE_CLIENT_ID` in `apps/frontend/.env`. Every variable is described in [Environment variables](docs/ENVIRONMENT.md).
+
+### 3. Start the backend
 
 ```bash
-pip install -r requirements.txt
+make backend
 ```
 
-4. Create a `.env` file in the backend directory:
+This starts PostgreSQL and the backend in Docker and applies database migrations. The API runs at `http://localhost:8005`, with interactive docs at `http://localhost:8005/docs`.
 
-````bash
-# API Configuration
-APP_NAME="KCET College Predictor API"
-APP_VERSION="1.0.0"
-
-# Gemini AI
-GEMINI_API_KEY=your_gemini_api_key_here
-
-# Email Configuration (optional)
-EMAIL_ENABLED=true
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USERNAME=your_email@gmail.com
-SMTP_PASSWORD=your_app_password
-SMTP_FROM_EMAIL=your_email@gmail.com
-SMTP_FROM_NAME="KCET College Predictor"
-
-# Database
-DATABASE_URL=data/kcet_2024.db
-
-5. Run the development server:
-```bash
-python main.py
-````
-
-The API will be available at `http://localhost:8005`
-
-### Frontend Setup
-
-1. Navigate to the frontend directory:
+### 4. Start the frontend
 
 ```bash
-cd frontend
-```
-
-2. Install dependencies:
-
-```bash
+cd apps/frontend
 npm install
-```
-
-3. Create a `.env` file in the frontend directory:
-
-```bash
-VITE_API_BASE_URL=http://localhost:8005
-```
-
-4. Run the development server:
-
-```bash
 npm run dev
 ```
 
-The application will be available at `http://localhost:5173`
+The app runs at `http://localhost:5173`.
 
-### Environment Configuration
+### Running the backend without Docker
 
-#### Backend Environment Variables
+```bash
+make db                      # start PostgreSQL only
+cd apps/backend
+python -m venv .venv
+source .venv/bin/activate    # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+alembic upgrade head
+python main.py
+```
 
-| Variable         | Description                      | Required | Default             |
-| ---------------- | -------------------------------- | -------- | ------------------- |
-| `GEMINI_API_KEY` | Google Gemini API key            | Yes      | -                   |
-| `EMAIL_ENABLED`  | Enable/disable email features    | No       | `false`             |
-| `SMTP_USERNAME`  | Gmail address for sending emails | No       | -                   |
-| `SMTP_PASSWORD`  | Gmail app password               | No       | -                   |
-| `DATABASE_URL`   | Path to SQLite database          | No       | `data/kcet_2024.db` |
-
-#### Frontend Environment Variables
-
-| Variable            | Description     | Required | Default                 |
-| ------------------- | --------------- | -------- | ----------------------- |
-| `VITE_API_BASE_URL` | Backend API URL | No       | `http://localhost:8005` |
+See [Commands](docs/COMMANDS.md) for every available `make` target.
 
 ## How to Contribute
 
@@ -205,8 +151,7 @@ def getColleges(r,rd=1):
 - Write docstrings for all public functions (Google style)
 - Use meaningful variable names
 - Keep functions focused and small
-- Maximum line length: 100 characters
-- Use 4 spaces for indentation
+- Code is linted and formatted with Ruff (`ruff check . && ruff format .`), which also runs as a pre-commit hook
 
 **Project-Specific Guidelines:**
 
@@ -273,7 +218,7 @@ function CollegeCard(props) {
 ### File Organization
 
 ```
-backend/
+apps/backend/
 ├── app/
 │   ├── routes/          # API endpoints
 │   ├── ai/             # AI agent and tools
@@ -283,7 +228,7 @@ backend/
 │   ├── schemas.py      # Pydantic models
 │   └── config.py       # Configuration
 
-frontend/
+apps/frontend/
 ├── src/
 │   ├── components/     # Reusable UI components
 │   ├── pages/          # Page components
@@ -349,9 +294,9 @@ Add clarification for Windows users regarding virtual environment activation.
 
 3. **Test your changes**:
 
-   - Run backend tests
-   - Test frontend functionality
-   - Check for linting errors
+   - Run `ruff check .` in `apps/backend`
+   - Run `npm run lint` and `npm run build` in `apps/frontend`
+   - Test the affected features locally
 
 4. **Commit your changes**:
 
@@ -386,7 +331,7 @@ Add clarification for Windows users regarding virtual environment activation.
 
 ### Review Process
 
-- Maintainers will review your PR within 3-5 business days
+- A maintainer will review your PR
 - Address any requested changes
 - Once approved, a maintainer will merge your PR
 - Your contribution will be credited in the release notes
@@ -464,4 +409,4 @@ Contributors will be recognized in:
 - Release notes for their contributions
 - The README.md (for significant contributions)
 
-Thank you for contributing to KCET College Predictor!
+Thank you for contributing to College Path Finder!
